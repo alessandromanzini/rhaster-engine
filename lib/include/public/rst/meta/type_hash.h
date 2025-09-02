@@ -23,10 +23,11 @@ namespace rst::meta::hash
         {
 #if defined(__clang__) || defined(__GNUC__)
             constexpr std::string_view function = __PRETTY_FUNCTION__;
-            constexpr std::string_view prefix   = "type_utility::type_name() [class_t = ";
+            constexpr std::string_view prefix   = "type_name_impl() [TClass = ";
             constexpr std::string_view suffix   = "]";
 #elif defined(_MSC_VER)
-            constexpr std::string_view function = __FUNCSIG__; constexpr std::string_view prefix = "type_utility::type_name<";
+            constexpr std::string_view function = __FUNCSIG__;
+            constexpr std::string_view prefix = "type_name_impl<";
             //constexpr std::string_view prefix = "std::string_view __cdecl type_name<";
             constexpr std::string_view suffix = ">";
 #else
@@ -34,8 +35,7 @@ namespace rst::meta::hash
 #endif
             constexpr std::size_t prefix_pos = function.find( prefix );
 
-            // ReSharper disable once CppStaticAssertFailure
-            static_assert( prefix_pos != std::string_view::npos, "prefix format is incorrect!" );
+            static_assert( prefix_pos != std::string_view::npos, "type_name_impl( ): prefix format is incorrect!" );
 
             // cleanup
             constexpr std::size_t start = prefix_pos + prefix.size( );
@@ -72,7 +72,7 @@ namespace rst::meta::hash
         for ( size_t i{ 0U }; i < sizeof( castee ); ++i )
         {
             constexpr hash_value_t FNV_PRIME_64 = 0x100000001B3;
-            hash ^= ( castee >> ( i * 8U ) ) & 0xFF; // extract byte
+            hash ^= castee >> ( i * 8U ) & 0xFF; // extract byte
             hash *= FNV_PRIME_64;
         }
         return hash;
