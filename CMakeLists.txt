@@ -1,8 +1,8 @@
-﻿# "cmake-lists": master, "author": alessandromanzini
-# project configuration specifics.
+﻿# "cmake-lists": rst, "author": alessandromanzini
+# top-level cmake file, includes the lib and test subdirectories.
 #
 cmake_minimum_required( VERSION 3.26 )
-project( "master" )
+project( "rst" )
 
 # set the C++ standard to C++20 and ensure it is required
 set( CMAKE_CXX_STANDARD 20 )
@@ -16,7 +16,8 @@ if( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Ap
 endif()
 
 # append cmake module path, making sure cmake finds our custom modules (.cmake)
-set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake" )
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" )
 
 # include the lib subdirectory
 add_subdirectory( "lib" )
+add_subdirectory( "test" )
