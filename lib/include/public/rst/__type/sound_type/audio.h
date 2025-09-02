@@ -24,18 +24,18 @@ namespace rst
         auto operator=( Audio const& ) -> Audio&     = delete;
         auto operator=( Audio&& ) noexcept -> Audio& = delete;
 
-        [[nodiscard]] auto get_sound_id( ) const -> UID;
-        [[nodiscard]] auto get_tag_id( ) const -> UID;
+        [[nodiscard]] auto get_sound_id( ) const -> Uid;
+        [[nodiscard]] auto get_tag_id( ) const -> Uid;
         [[nodiscard]] auto get_type( ) const -> sound::SoundType;
 
     protected:
-        Audio( sound::SoundType type, UID sound_id, UID tag_id );
+        Audio( sound::SoundType type, Uid sound_id, Uid tag_id );
 
     private:
         sound::SoundType const type_{};
 
-        UID const sound_id_{ NULL_UID };
-        UID const tag_id_{ NULL_UID };
+        Uid const sound_id_{};
+        Uid const tag_id_{};
     };
 }
 

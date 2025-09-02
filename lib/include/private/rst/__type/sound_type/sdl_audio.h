@@ -26,7 +26,7 @@ namespace rst
          * @param sound_id
          * @param tag_id
          */
-        SdlAudio( std::filesystem::path const& path, sound::SoundType type, UID sound_id, UID tag_id );
+        SdlAudio( std::filesystem::path const& path, sound::SoundType type, Uid sound_id, Uid tag_id );
         ~SdlAudio( ) override;
 
         SdlAudio( SdlAudio const& )                        = delete;

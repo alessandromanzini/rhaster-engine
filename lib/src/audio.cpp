@@ -5,13 +5,13 @@
 
 namespace rst
 {
-    auto Audio::get_sound_id( ) const -> UID
+    auto Audio::get_sound_id( ) const -> Uid
     {
         return sound_id_;
     }
 
 
-    auto Audio::get_tag_id( ) const -> UID
+    auto Audio::get_tag_id( ) const -> Uid
     {
         return tag_id_;
     }
@@ -23,7 +23,7 @@ namespace rst
     }
 
 
-    Audio::Audio( sound::SoundType const type, UID const sound_id, UID const tag_id )
+    Audio::Audio( sound::SoundType const type, Uid const sound_id, Uid const tag_id )
         : type_{ type }
         , sound_id_{ sound_id }
         , tag_id_{ tag_id } { }

@@ -10,7 +10,7 @@ namespace rst
         : blackboard_ref_{ blackboard } { }
 
 
-    auto FiniteStateMachine::start( UID const start_state_id ) -> void
+    auto FiniteStateMachine::start( Uid const start_state_id ) -> void
     {
         assert( not started_ && "FiniteStateMachine::start: State machine already started!" );
         change_state( start_state_id );
@@ -18,7 +18,7 @@ namespace rst
     }
 
 
-    auto FiniteStateMachine::force_transition( UID const state_id ) -> void
+    auto FiniteStateMachine::force_transition( Uid const state_id ) -> void
     {
         change_state( state_id );
     }
@@ -44,7 +44,7 @@ namespace rst
 
     auto FiniteStateMachine::get_current_state( ) const -> fsm::State*
     {
-        if ( current_state_id_ != NULL_UID )
+        if ( current_state_id_ != uid::NONE )
         {
             return stacks_.at( current_state_id_ ).state.get( );
         }
@@ -52,20 +52,20 @@ namespace rst
     }
 
 
-    auto FiniteStateMachine::get_current_state_id( ) const -> UID
+    auto FiniteStateMachine::get_current_state_id( ) const -> Uid
     {
         return current_state_id_;
     }
 
 
-    auto FiniteStateMachine::create_state_impl( UID const state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State&
+    auto FiniteStateMachine::create_state_impl( Uid const state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State&
     {
         assert( not stacks_.contains( state_id ) && "FiniteStateMachine::create_state_impl: State already exists!" );
         return *( stacks_[state_id].state = std::move( state ) );
     }
 
 
-    auto FiniteStateMachine::add_transition_impl( UID const from, UID to, std::unique_ptr<fsm::Condition>&& condition ) -> void
+    auto FiniteStateMachine::add_transition_impl( Uid const from, Uid to, std::unique_ptr<fsm::Condition>&& condition ) -> void
     {
         stacks_[from].transitions.push_back( std::make_pair( std::move( condition ), to ) );
     }
@@ -88,7 +88,7 @@ namespace rst
     }
 
 
-    auto FiniteStateMachine::change_state( UID const uid ) -> void
+    auto FiniteStateMachine::change_state( Uid const uid ) -> void
     {
         assert( stacks_.contains( uid ) && "FiniteStateMachine::change_state: Invalid state!" );
 
@@ -98,7 +98,7 @@ namespace rst
         }
 
         // 1. On exit the current state
-        if ( current_state_id_ != NULL_UID )
+        if ( current_state_id_ != uid::NONE )
         {
             stacks_.at( current_state_id_ ).trigger_on_exit( blackboard_ref_ );
         }

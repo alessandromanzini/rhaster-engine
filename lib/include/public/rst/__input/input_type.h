@@ -108,12 +108,12 @@ namespace rst::input
      */
     struct InputAction final
     {
-        UID uid{ 0 };
+        Uid uid{ 0 };
         ModifierBitset modifiers{};
 
 
         template <typename... modifiers_t>
-        explicit InputAction( UID const uid, modifiers_t... modifier_args )
+        explicit InputAction( Uid const uid, modifiers_t... modifier_args )
             : uid{ uid }
         {
             if constexpr ( sizeof...( modifiers_t ) > 0 )
@@ -123,7 +123,7 @@ namespace rst::input
         }
 
 
-        explicit InputAction( UID const uid, ModifierBitset const& modifiers )
+        explicit InputAction( Uid const uid, ModifierBitset const& modifiers )
             : uid{ uid }
             , modifiers{ modifiers } { }
     };
@@ -134,7 +134,7 @@ namespace rst::input
      */
     struct InputSnapshot final
     {
-        UID uid{ 0 };
+        Uid uid{ 0 };
         InputValueVariant value{};
         TriggerEvent trigger{};
 

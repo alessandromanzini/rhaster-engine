@@ -67,7 +67,7 @@ namespace rst
          * @param tag_id
          */
         [[nodiscard]] virtual auto load_sound(
-            std::filesystem::path const& path, sound::SoundType type, UID tag_id ) -> std::shared_ptr<Audio> = 0;
+            std::filesystem::path const& path, sound::SoundType type, Uid tag_id ) -> std::shared_ptr<Audio> = 0;
 
         /**
          * Requests the sound system to play a sound.
@@ -141,14 +141,14 @@ namespace rst
          * @param tag_id
          * @param volume [0.0-1.0] as volume modifier
          */
-        virtual auto set_volume_by_tag( UID tag_id, float volume ) -> void = 0;
+        virtual auto set_volume_by_tag( Uid tag_id, float volume ) -> void = 0;
 
         /**
          * Gets the current volume for a tag grouping.
          * @param tag_id
          * @return [0.0-1.0] as volume modifier
          */
-        [[nodiscard]] virtual auto get_volume_by_tag( UID tag_id ) const -> float = 0;
+        [[nodiscard]] virtual auto get_volume_by_tag( Uid tag_id ) const -> float = 0;
     };
 }
 

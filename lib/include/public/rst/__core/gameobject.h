@@ -48,8 +48,8 @@ namespace rst
         [[nodiscard]] auto get_owning_scene( ) -> Scene&;
         [[nodiscard]] auto get_owning_scene( ) const -> Scene const&;
 
-        auto set_tag( UID tag ) -> void;
-        [[nodiscard]] auto get_tag( ) const -> UID;
+        auto set_tag( Uid tag ) -> void;
+        [[nodiscard]] auto get_tag( ) const -> Uid;
 
         auto set_visibility( bool visible ) -> void;
 
@@ -82,7 +82,7 @@ namespace rst
         auto mark_for_deletion( ) -> void override;
 
     private:
-        UID tag_{ NULL_UID };
+        Uid tag_{ uid::NONE };
         bool visible_{ true };
 
         Scene& scene_ref_;

@@ -40,7 +40,7 @@ namespace rst
         [[nodiscard]] auto get_service_type( ) -> ServiceType override;
 
         [[nodiscard]] auto load_sound(
-            std::filesystem::path const& path, sound::SoundType type, UID tag_id ) -> std::shared_ptr<Audio> override;
+            std::filesystem::path const& path, sound::SoundType type, Uid tag_id ) -> std::shared_ptr<Audio> override;
 
         auto play( Audio const& audio, float volume, int loops ) -> int override;
 
@@ -58,8 +58,8 @@ namespace rst
         auto set_master_volume( float volume ) -> void override;
         [[nodiscard]] auto get_master_volume( ) const -> float override;
 
-        auto set_volume_by_tag( UID tag_id, float volume ) -> void override;
-        [[nodiscard]] auto get_volume_by_tag( UID tag_id ) const -> float override;
+        auto set_volume_by_tag( Uid tag_id, float volume ) -> void override;
+        [[nodiscard]] auto get_volume_by_tag( Uid tag_id ) const -> float override;
 
     private:
         static constexpr uint8_t MAX_CHANNELS_{ 16U };
@@ -67,17 +67,17 @@ namespace rst
         uint8_t const channels_{};
         sound::QueuePolicy const policy_{};
 
-        std::unordered_map<UID, sound::SoundInstance> sound_resources_{};
+        std::unordered_map<Uid, sound::SoundInstance> sound_resources_{};
 
         int last_used_channel_{ -1 };
 
         float master_volume_{ 1.f };
-        std::unordered_map<UID, float> tag_volumes_{};
+        std::unordered_map<Uid, float> tag_volumes_{};
 
         sound::SoundInstance* current_track_ptr_{};
 
         auto assert_on_missing_sound( Audio const& audio ) const -> void;
-        auto assert_on_missing_tag( UID tag_id ) const -> void;
+        auto assert_on_missing_tag( Uid tag_id ) const -> void;
 
         auto unload_unused_resources( ) -> void;
 

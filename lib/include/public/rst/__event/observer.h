@@ -21,7 +21,7 @@ namespace rst
         auto operator=( Observer const& ) -> Observer&     = delete;
         auto operator=( Observer&& ) noexcept -> Observer& = delete;
 
-        virtual auto notify( UID event, event::BroadcastValue value ) -> void = 0;
+        virtual auto notify( Uid event, event::BroadcastValue value ) -> void = 0;
 
     private:
         Observer* next_ptr_{ nullptr };

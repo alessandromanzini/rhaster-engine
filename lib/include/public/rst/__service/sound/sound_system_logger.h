@@ -18,7 +18,7 @@ namespace rst
         [[nodiscard]] auto get_service_type( ) -> ServiceType override;
 
         [[nodiscard]] auto load_sound(
-            std::filesystem::path const& path, sound::SoundType type, UID tag_id ) -> std::shared_ptr<Audio> override;
+            std::filesystem::path const& path, sound::SoundType type, Uid tag_id ) -> std::shared_ptr<Audio> override;
 
         auto play( Audio const& audio, float volume, int loops ) -> int override;
 
@@ -36,8 +36,8 @@ namespace rst
         auto set_master_volume( float volume ) -> void override;
         [[nodiscard]] auto get_master_volume( ) const -> float override;
 
-        auto set_volume_by_tag( UID tag_id, float volume ) -> void override;
-        [[nodiscard]] auto get_volume_by_tag( UID tag_id ) const -> float override;
+        auto set_volume_by_tag( Uid tag_id, float volume ) -> void override;
+        [[nodiscard]] auto get_volume_by_tag( Uid tag_id ) const -> float override;
 
     private:
         std::string const logger_identifier_;

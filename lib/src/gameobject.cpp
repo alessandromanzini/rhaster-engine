@@ -85,13 +85,13 @@ namespace rst
     }
 
 
-    auto GameObject::set_tag( UID const tag ) -> void
+    auto GameObject::set_tag( Uid const tag ) -> void
     {
         tag_ = tag;
     }
 
 
-    auto GameObject::get_tag( ) const -> UID
+    auto GameObject::get_tag( ) const -> Uid
     {
         return tag_;
     }

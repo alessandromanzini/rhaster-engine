@@ -34,7 +34,7 @@ namespace rst
     class ResourceManager final : public Singleton<ResourceManager>
     {
         friend class Singleton;
-        using queued_event_t = std::pair<event::LifetimeEvent, UID>;
+        using queued_event_t = std::pair<event::LifetimeEvent, Uid>;
 
     public:
         auto init( std::filesystem::path const& data_path ) -> void;
@@ -47,7 +47,7 @@ namespace rst
         auto add_lifetime_observer( Observer& observer ) -> void;
         auto remove_lifetime_observer( Observer const& observer ) -> void;
 
-        auto signal_lifetime_event( event::LifetimeEvent event, UID value = NULL_UID ) -> void;
+        auto signal_lifetime_event( event::LifetimeEvent event, Uid value = uid::NONE ) -> void;
 
         auto unload_unused_resources( ) -> void;
 
@@ -60,8 +60,8 @@ namespace rst
         thread::SafeResource<std::set<queued_event_t>> queued_events_{ {} };
         Subject lifetime_subject_{};
 
-        std::map<UID, std::shared_ptr<Texture2D>> loaded_textures_{};
-        std::map<std::pair<UID, uint8_t>, std::shared_ptr<Font>> loaded_fonts_{};
+        std::map<Uid, std::shared_ptr<Texture2D>> loaded_textures_{};
+        std::map<std::pair<Uid, uint8_t>, std::shared_ptr<Font>> loaded_fonts_{};
 
         ResourceManager( ) = default;
     };

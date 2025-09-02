@@ -27,7 +27,7 @@ namespace rst
 
 
     auto SoundSystemLogger::load_sound(
-        std::filesystem::path const& path, sound::SoundType const type, UID const tag_id ) -> std::shared_ptr<Audio>
+        std::filesystem::path const& path, sound::SoundType const type, Uid const tag_id ) -> std::shared_ptr<Audio>
     {
         log_stream_ << logger_identifier_ << "Loading " << sound_type_to_string[type] << " from " << path << '\n';
         std::shared_ptr sound{ sound_system_ptr_->load_sound( path, type, tag_id ) };
@@ -136,7 +136,7 @@ namespace rst
     }
 
 
-    auto SoundSystemLogger::set_volume_by_tag( UID const tag_id, float const volume ) -> void
+    auto SoundSystemLogger::set_volume_by_tag( Uid const tag_id, float const volume ) -> void
     {
         sound_system_ptr_->set_volume_by_tag( tag_id, volume );
         log_stream_ << logger_identifier_ << "Set volume for tag " << tag_id.uid << " to " << sound_system_ptr_->
@@ -144,7 +144,7 @@ namespace rst
     }
 
 
-    auto SoundSystemLogger::get_volume_by_tag( UID const tag_id ) const -> float
+    auto SoundSystemLogger::get_volume_by_tag( Uid const tag_id ) const -> float
     {
         return sound_system_ptr_->get_volume_by_tag( tag_id );
     }

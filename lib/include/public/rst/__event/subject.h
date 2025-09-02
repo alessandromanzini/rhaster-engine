@@ -13,7 +13,7 @@ namespace rst
 {
     namespace event
     {
-        using BroadcastValue = std::variant<bool, int, float, double, std::string_view, UID>;
+        using BroadcastValue = std::variant<bool, int, float, double, std::string_view, Uid>;
     }
 
     class Subject final
@@ -30,7 +30,7 @@ namespace rst
         auto add_observer( Observer& observer ) -> void;
         auto remove_observer( Observer const& observer ) -> void;
 
-        auto broadcast( UID event, event::BroadcastValue const& value = {} ) const -> void;
+        auto broadcast( Uid event, event::BroadcastValue const& value = {} ) const -> void;
 
     private:
         Observer* head_ptr_{ nullptr };

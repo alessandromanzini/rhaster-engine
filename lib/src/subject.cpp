@@ -31,7 +31,7 @@ namespace rst
     }
 
 
-    auto Subject::broadcast( UID const event, event::BroadcastValue const& value ) const -> void
+    auto Subject::broadcast( Uid const event, event::BroadcastValue const& value ) const -> void
     {
         if ( head_ptr_ == nullptr ){ return; }
 

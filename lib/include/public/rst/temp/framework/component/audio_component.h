@@ -14,7 +14,7 @@ namespace rst
     {
     public:
         explicit AudioComponent(
-            owner_t& owner, std::filesystem::path const& path, sound::SoundType type, UID tag_id = UID( "default" ) );
+            owner_t& owner, std::filesystem::path const& path, sound::SoundType type, Uid tag_id = Uid( "default" ) );
         ~AudioComponent( ) noexcept override;
 
         AudioComponent( AudioComponent const& )                        = delete;

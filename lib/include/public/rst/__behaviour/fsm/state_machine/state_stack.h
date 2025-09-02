@@ -18,7 +18,7 @@ namespace rst::fsm
 // todo: Review code
 namespace rst::fsm
 {
-    using TTransitionPair = std::pair<std::unique_ptr<Condition>, UID>;
+    using TTransitionPair = std::pair<std::unique_ptr<Condition>, Uid>;
 
 
     struct SingleStateStack final

@@ -8,7 +8,7 @@ namespace rst
     FiniteMultiStateMachine::FiniteMultiStateMachine( Blackboard& blackboard ) : blackboard_ref_{ blackboard } { }
 
 
-    auto FiniteMultiStateMachine::start( UID const start_state_id ) -> void
+    auto FiniteMultiStateMachine::start( Uid const start_state_id ) -> void
     {
         assert( not started_ && "FiniteMultiStateMachine::start: State machine already started!" );
         change_state( start_state_id );
@@ -16,7 +16,7 @@ namespace rst
     }
 
 
-    auto FiniteMultiStateMachine::force_transition( UID const state_id ) -> void
+    auto FiniteMultiStateMachine::force_transition( Uid const state_id ) -> void
     {
         change_state( state_id );
     }
@@ -47,19 +47,19 @@ namespace rst
     }
 
 
-    auto FiniteMultiStateMachine::create_state_impl( UID const state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State&
+    auto FiniteMultiStateMachine::create_state_impl( Uid const state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State&
     {
         return *( stacks_[state_id].states.emplace_back( std::move( state ) ) );
     }
 
 
-    auto FiniteMultiStateMachine::add_transition_impl( UID const from, UID to, std::unique_ptr<fsm::Condition>&& cnd ) -> void
+    auto FiniteMultiStateMachine::add_transition_impl( Uid const from, Uid to, std::unique_ptr<fsm::Condition>&& cnd ) -> void
     {
         stacks_[from].transitions.push_back( std::make_pair( std::move( cnd ), to ) );
     }
 
 
-    auto FiniteMultiStateMachine::change_state( UID const uid ) -> void
+    auto FiniteMultiStateMachine::change_state( Uid const uid ) -> void
     {
         assert( stacks_.contains( uid ) && "FiniteMultiStateMachine::change_state: Invalid state!" );
 
@@ -69,7 +69,7 @@ namespace rst
         }
 
         // 1. On exit the current state (if any)
-        if ( current_state_id_ != NULL_UID )
+        if ( current_state_id_ != uid::NONE )
         {
             stacks_.at( current_state_id_ ).trigger_on_exit( blackboard_ref_ );
         }

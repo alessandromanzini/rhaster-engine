@@ -83,7 +83,7 @@ namespace rst
     // | PRIVATE SCOPE                  |
     // +--------------------------------+
     auto InputMappingContext::bind_to_input_action_impl(
-        PlayerController const& controller, UID const uid, InputCommandVariant&& command, TriggerEvent const trigger ) -> void
+        PlayerController const& controller, Uid const uid, InputCommandVariant&& command, TriggerEvent const trigger ) -> void
     {
         DeviceContext* const context = meta::find_or_none(
             device_contexts_, [&]( DeviceContext const& ctx ) { return ctx.get_controller( ) == controller; } );

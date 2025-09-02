@@ -68,7 +68,7 @@ namespace rst
          * @return true if the field was added successfully, false if the field already exists
          */
         template <typename data_t>
-        auto store( UID uid, data_t data ) -> bool;
+        auto store( Uid uid, data_t data ) -> bool;
 
         /**
          * Change the field of the blackboard.
@@ -78,7 +78,7 @@ namespace rst
          * @return true if the field was changed successfully, false if the field does not exist or type mismatch
          */
         template <typename data_t>
-        auto edit( UID uid, data_t data ) -> bool;
+        auto edit( Uid uid, data_t data ) -> bool;
 
         /**
          * Get data from the blackboard.
@@ -88,15 +88,15 @@ namespace rst
          * @return true if the data was retrieved successfully, false if the field does not exist or type mismatch
          */
         template <typename data_t>
-        auto retrieve( UID uid, data_t& data ) const -> bool;
+        auto retrieve( Uid uid, data_t& data ) const -> bool;
 
     private:
-        std::unordered_map<UID, std::unique_ptr<IBlackboardField>> blackboard_data_{};
+        std::unordered_map<Uid, std::unique_ptr<IBlackboardField>> blackboard_data_{};
     };
 
 
     template <typename data_t>
-    auto Blackboard::store( UID const uid, data_t data ) -> bool
+    auto Blackboard::store( Uid const uid, data_t data ) -> bool
     {
         if ( blackboard_data_.contains( uid ) )
         {
@@ -108,7 +108,7 @@ namespace rst
 
 
     template <typename data_t>
-    auto Blackboard::edit( UID const uid, data_t data ) -> bool
+    auto Blackboard::edit( Uid const uid, data_t data ) -> bool
     {
         // existence check
         auto const it = blackboard_data_.find( uid );
@@ -130,7 +130,7 @@ namespace rst
 
 
     template <typename data_t>
-    auto Blackboard::retrieve( UID const uid, data_t& data ) const -> bool
+    auto Blackboard::retrieve( Uid const uid, data_t& data ) const -> bool
     {
         // existence check
         auto const it = blackboard_data_.find( uid );

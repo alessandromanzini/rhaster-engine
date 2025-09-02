@@ -83,7 +83,7 @@ namespace rst::input
     }
 
 
-    auto DeviceContext::bind_command( UID const uid, CommandInfo&& command_info ) -> void
+    auto DeviceContext::bind_command( Uid const uid, CommandInfo&& command_info ) -> void
     {
         command_sets_[uid].set( std::move( command_info ) );
     }

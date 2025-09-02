@@ -6,7 +6,7 @@
 
 namespace rst
 {
-    AudioComponent::AudioComponent( owner_t& owner, std::filesystem::path const& path, sound::SoundType const type, UID const tag_id )
+    AudioComponent::AudioComponent( owner_t& owner, std::filesystem::path const& path, sound::SoundType const type, Uid const tag_id )
         : Component( owner )
         , audio_ptr_{ SERVICE_LOCATOR.get_sound_system( ).load_sound( path, type, tag_id ) } { }
 

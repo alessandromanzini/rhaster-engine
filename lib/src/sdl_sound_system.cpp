@@ -37,9 +37,9 @@ namespace rst
 
 
     auto SdlSoundSystem::load_sound(
-        std::filesystem::path const& path, sound::SoundType const type, UID const tag_id ) -> std::shared_ptr<Audio>
+        std::filesystem::path const& path, sound::SoundType const type, Uid const tag_id ) -> std::shared_ptr<Audio>
     {
-        UID const sound_id{ path.string( ) };
+        Uid const sound_id{ path.string( ) };
 
         // check if the sound is already registered. If not we can register it
         if ( not sound_resources_.contains( sound_id ) )
@@ -244,13 +244,13 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::set_volume_by_tag( UID const tag_id, float const volume ) -> void
+    auto SdlSoundSystem::set_volume_by_tag( Uid const tag_id, float const volume ) -> void
     {
         tag_volumes_.at( tag_id ) = std::clamp( volume, 0.f, 1.f );
     }
 
 
-    auto SdlSoundSystem::get_volume_by_tag( UID const tag_id ) const -> float
+    auto SdlSoundSystem::get_volume_by_tag( Uid const tag_id ) const -> float
     {
         assert_on_missing_tag( tag_id );
         return tag_volumes_.at( tag_id );
@@ -263,7 +263,7 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::assert_on_missing_tag( [[maybe_unused]] UID const tag_id ) const -> void
+    auto SdlSoundSystem::assert_on_missing_tag( [[maybe_unused]] Uid const tag_id ) const -> void
     {
         assert( tag_volumes_.contains( tag_id ) && "Tag not registered!" );
     }

@@ -31,7 +31,7 @@ namespace rst
 
 
     auto ParallelSoundSystem::load_sound(
-        std::filesystem::path const& path, sound::SoundType const type, UID const tag_id ) -> std::shared_ptr<Audio>
+        std::filesystem::path const& path, sound::SoundType const type, Uid const tag_id ) -> std::shared_ptr<Audio>
     {
         return impl_ptr_->load_sound( path, type, tag_id );
     }
@@ -123,13 +123,13 @@ namespace rst
     }
 
 
-    auto ParallelSoundSystem::set_volume_by_tag( UID const tag_id, float const volume ) -> void
+    auto ParallelSoundSystem::set_volume_by_tag( Uid const tag_id, float const volume ) -> void
     {
         return impl_ptr_->set_volume_by_tag( tag_id, volume );
     }
 
 
-    auto ParallelSoundSystem::get_volume_by_tag( UID const tag_id ) const -> float
+    auto ParallelSoundSystem::get_volume_by_tag( Uid const tag_id ) const -> float
     {
         return impl_ptr_->get_volume_by_tag( tag_id );
     }

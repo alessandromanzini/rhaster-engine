@@ -47,11 +47,11 @@ namespace rst
         // bind a member function to the input action of the given code. Command will be called once the input action is signaled.
         template <typename TMethod> requires std::derived_from<typename meta::function_traits<TMethod>::class_t, PlayerController>
         auto bind_to_input_action(
-            meta::function_traits<TMethod>::class_t* controller, UID uid, TMethod command,
+            meta::function_traits<TMethod>::class_t* controller, Uid uid, TMethod command,
             input::TriggerEvent trigger = input::TriggerEvent::TRIGGERED ) -> void;
 
         // TODO: make this
-        auto unbind_from_input_action( PlayerController& controller, UID uid ) -> void;
+        auto unbind_from_input_action( PlayerController& controller, Uid uid ) -> void;
 
         // signals the input action bound to the given code and trigger for the correct device.
         auto signal( input::UniformBindingCode code, input::TriggerEvent trigger, input::DeviceInfo device_info ) -> void;
@@ -68,14 +68,14 @@ namespace rst
         DeviceContextContainer device_contexts_{};
 
         auto bind_to_input_action_impl(
-            PlayerController const& controller, UID uid, input::InputCommandVariant&& command,
+            PlayerController const& controller, Uid uid, input::InputCommandVariant&& command,
             input::TriggerEvent trigger ) -> void;
     };
 
 
     template <typename TMethod> requires std::derived_from<typename meta::function_traits<TMethod>::class_t, PlayerController>
     auto InputMappingContext::bind_to_input_action(
-        typename meta::function_traits<TMethod>::class_t* controller, UID uid, TMethod command,
+        typename meta::function_traits<TMethod>::class_t* controller, Uid uid, TMethod command,
         input::TriggerEvent trigger ) -> void
     {
         assert( controller && "InputMappingContext::bind_to_input_action: controller cannot be nullptr!" );

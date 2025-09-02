@@ -67,7 +67,7 @@ namespace rst::input
          * @param uid
          * @param command_info
          */
-        auto bind_command( UID uid, CommandInfo&& command_info ) -> void;
+        auto bind_command( Uid uid, CommandInfo&& command_info ) -> void;
 
         /**
          * Signals the input action linked to the command, if previously bound. It will add a new record to the queue or update
@@ -91,7 +91,7 @@ namespace rst::input
         PlayerController& controller_ref_;
 
         QueueType signaled_inputs_queue_;
-        std::unordered_map<UID, CommandSet> command_sets_;
+        std::unordered_map<Uid, CommandSet> command_sets_;
     };
 }
 

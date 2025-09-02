@@ -21,22 +21,22 @@ namespace rst
     public:
         explicit FiniteMultiStateMachine( Blackboard& blackboard );
 
-        auto start( UID start_state_id ) -> void override;
-        auto force_transition( UID state_id ) -> void override;
+        auto start( Uid start_state_id ) -> void override;
+        auto force_transition( Uid state_id ) -> void override;
         auto tick( ) -> void override;
 
     protected:
-        auto create_state_impl( UID state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State& override;
-        auto add_transition_impl( UID from, UID to, std::unique_ptr<fsm::Condition>&& cnd ) -> void override;
+        auto create_state_impl( Uid state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State& override;
+        auto add_transition_impl( Uid from, Uid to, std::unique_ptr<fsm::Condition>&& cnd ) -> void override;
 
     private:
         Blackboard& blackboard_ref_;
-        std::map<UID, fsm::MultiStateStack> stacks_{};
+        std::map<Uid, fsm::MultiStateStack> stacks_{};
 
         bool started_{ false };
-        UID current_state_id_{ NULL_UID };
+        Uid current_state_id_{ uid::NONE };
 
-        auto change_state( UID uid ) -> void;
+        auto change_state( Uid uid ) -> void;
     };
 }
 

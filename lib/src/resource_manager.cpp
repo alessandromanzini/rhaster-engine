@@ -25,7 +25,7 @@ namespace rst
 
     auto ResourceManager::load_texture( std::filesystem::path const& path ) -> std::shared_ptr<Texture2D>
     {
-        UID const uid{ path.string( ) };
+        Uid const uid{ path.string( ) };
         std::filesystem::path const full_path{ data_path_ / path };
         if ( not loaded_textures_.contains( uid ) )
         {
@@ -37,7 +37,7 @@ namespace rst
 
     auto ResourceManager::load_font( std::filesystem::path const& path, uint8_t size ) -> std::shared_ptr<Font>
     {
-        UID const uid{ path.string( ) };
+        Uid const uid{ path.string( ) };
         std::filesystem::path const full_path{ data_path_ / path };
         auto const key = std::make_pair( uid, size );
         if ( not loaded_fonts_.contains( key ) )
@@ -63,7 +63,7 @@ namespace rst
     }
 
 
-    auto ResourceManager::signal_lifetime_event( event::LifetimeEvent event, UID value ) -> void
+    auto ResourceManager::signal_lifetime_event( event::LifetimeEvent event, Uid value ) -> void
     {
         auto [lock, events] = queued_events_.get( );
         events.insert( std::make_pair( event, value ) );
@@ -77,7 +77,7 @@ namespace rst
 
         for ( auto const& [event, value] : queued_events_.cget( ) )
         {
-            lifetime_subject_.broadcast( UID( event ), value );
+            lifetime_subject_.broadcast( Uid( event ), value );
         }
 
         auto [lock, events] = queued_events_.get( );
