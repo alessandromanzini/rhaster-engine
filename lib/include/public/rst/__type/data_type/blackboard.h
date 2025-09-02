@@ -34,7 +34,7 @@ namespace rst
     {
     public:
         explicit BlackboardField( field_t data )
-            : IBlackboardField( meta::hash::type_hash<field_t>( ) )
+            : IBlackboardField{ meta::hash::type_hash<field_t>( ) }
             , data_{ data } { }
 
 

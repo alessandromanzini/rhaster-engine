@@ -52,7 +52,7 @@ namespace rst::thread
 
 
     template <typename TResource>
-    SafeResource<TResource>::SafeResource( TResource&& resource ) : resource_( std::move( resource ) ) { }
+    SafeResource<TResource>::SafeResource( TResource&& resource ) : resource_{ std::move( resource ) } { }
 
 
     template <typename TResource>

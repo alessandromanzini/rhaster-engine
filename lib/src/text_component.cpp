@@ -10,7 +10,7 @@
 namespace rst
 {
     TextComponent::TextComponent( owner_t& owner, std::string const& text, std::shared_ptr<Font> font, bool const centered )
-        : Component( owner )
+        : Component{ owner }
         , centered_{ centered }
         , font_ptr_{ std::move( font ) }
     {

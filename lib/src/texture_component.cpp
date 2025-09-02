@@ -8,7 +8,7 @@
 namespace rst
 {
     TextureComponent::TextureComponent( owner_t& owner, std::string const& filename, glm::vec2 const offset )
-        : Component( owner )
+        : Component{ owner }
         , offset_{ offset }
         , texture_ptr_{ RESOURCE_MANAGER.load_texture( filename ) }
     {

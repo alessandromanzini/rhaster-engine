@@ -4,7 +4,7 @@
 namespace rst
 {
     SdlAudio::SdlAudio( std::filesystem::path const& path, sound::SoundType const type, Uid const sound_id, Uid const tag_id )
-        : Audio( type, sound_id, tag_id )
+        : Audio{ type, sound_id, tag_id }
     {
         assert( std::filesystem::exists( path ) && "Sound file does not exist!" );
 

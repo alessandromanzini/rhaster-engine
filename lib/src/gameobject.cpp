@@ -9,7 +9,7 @@
 namespace rst
 {
     // GameObject::GameObject( )
-    //     : view_ptr_( new GameObjectView{ *this } ) { }
+    //     : view_ptr_{ new GameObjectView{ *this } } { }
 
 
     GameObject::GameObject( Scene& scene )

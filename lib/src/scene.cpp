@@ -6,7 +6,7 @@
 namespace rst
 {
     Scene::Scene( std::string name )
-        : name_( std::move( name ) )
+        : name_{ std::move( name ) }
         , id_( s_id_counter_++ ) { }
 
 
