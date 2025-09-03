@@ -15,7 +15,7 @@ namespace rst
     SDL_Window* g_window_ptr{};
 
 
-    Hare::Hare( std::string const& window_title, std::filesystem::path const& data_path, glm::vec2 const viewport )
+    hare::hare( std::string const& window_title, std::filesystem::path const& data_path, glm::vec2 const viewport )
         : viewport_{ viewport }
     {
         if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER ) != 0 )
@@ -36,7 +36,7 @@ namespace rst
     }
 
 
-    Hare::~Hare( ) noexcept
+    hare::~hare( ) noexcept
     {
         // destroy singletons
         RENDERER.destroy( );
@@ -47,7 +47,7 @@ namespace rst
     }
 
 
-    auto Hare::run( ) -> void
+    auto hare::run( ) -> void
     {
         GAME_TIME.reset( );
         GAME_INSTANCE.set_screen_dimensions( viewport_ );
@@ -60,7 +60,7 @@ namespace rst
     }
 
 
-    auto Hare::run_one_frame( ) -> void
+    auto hare::run_one_frame( ) -> void
     {
         // +--------------------------------+
         // | TIME CALCULATIONS ( ticking )  |
@@ -77,7 +77,7 @@ namespace rst
         // +--------------------------------+
         while ( GAME_TIME.is_fixed_tick_required( ) )
         {
-            GAME_TIME.set_timing_type( time::TimingType::FIXED_DELTA_TIME );
+            GAME_TIME.set_timing_type( time::timing_type::fixed_delta_time );
             SCENE_POOL.fixed_tick( );
             GAME_TIME.fixed_tick( );
         }
@@ -86,7 +86,7 @@ namespace rst
         // +--------------------------------+
         // | TICK                           |
         // +--------------------------------+
-        GAME_TIME.set_timing_type( time::TimingType::DELTA_TIME );
+        GAME_TIME.set_timing_type( time::timing_type::delta_time );
         SCENE_POOL.tick( );
 
         // +--------------------------------+
@@ -103,6 +103,6 @@ namespace rst
         // +--------------------------------+
         // | SLEEPING                       |
         // +--------------------------------+
-        std::this_thread::sleep_for( GAME_TIME.get_sleep_time( ) );
+        std::this_thread::sleep_for( GAME_TIME.sleep_time( ) );
     }
 }

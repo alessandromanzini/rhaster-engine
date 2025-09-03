@@ -8,18 +8,23 @@
 
 namespace rst::input
 {
-    class InputBuffer final
+    class input_buffer final
     {
     public:
-        using PressedKeysRange = std::set<std::pair<UniformBindingCode, DeviceId>>;
+        using range_type = std::set<std::pair<unicode, device_id_type>>;
 
-        auto trigger( UniformBindingCode code, DeviceId device_id ) -> void;
-        auto release( UniformBindingCode code, DeviceId device_id ) -> void;
-        [[nodiscard]] auto is_pressed( UniformBindingCode code, DeviceId device_id ) const -> bool;
-        [[nodiscard]] auto pressed_this_frame( ) const -> std::ranges::ref_view<PressedKeysRange const>;
+        auto trigger( unicode code, device_id_type device_id ) -> void;
+        auto release( unicode code, device_id_type device_id ) -> void;
+        [[nodiscard]] auto is_pressed( unicode code, device_id_type device_id ) const -> bool;
+
+        auto begin( ) -> range_type::iterator;
+        auto end( ) -> range_type::iterator;
+
+        auto begin( ) const -> range_type::const_iterator;
+        auto end( ) const -> range_type::const_iterator;
 
     private:
-        PressedKeysRange pressed_this_frame_{};
+        range_type pressed_this_frame_{};
     };
 }
 

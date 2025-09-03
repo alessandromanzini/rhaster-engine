@@ -1,11 +1,11 @@
-#include <../include/public/rst/__type/font_type/font.h>
+#include <rst/__type/font/font.h>
 
 #include <SDL_ttf.h>
 
 
 namespace rst
 {
-    Font::Font( std::string const& full_path, unsigned int const size )
+    font::font( std::string const& full_path, unsigned int const size )
         : font_ptr_{ nullptr }
     {
         font_ptr_ = TTF_OpenFont( full_path.c_str( ), size );
@@ -16,13 +16,13 @@ namespace rst
     }
 
 
-    Font::~Font( ) noexcept
+    font::~font( ) noexcept
     {
         TTF_CloseFont( font_ptr_ );
     }
 
 
-    auto Font::get_font( ) const -> _TTF_Font*
+    auto font::handle( ) const -> _TTF_Font*
     {
         return font_ptr_;
     }

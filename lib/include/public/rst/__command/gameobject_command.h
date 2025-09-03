@@ -6,21 +6,21 @@
 
 namespace rst
 {
-    class GameObject;
+    class gameobject;
 }
-
+// todo: remove this
 namespace rst
 {
-    class GameObjectCommand : public Command
+    class gameobject_command : public command
     {
     public:
-        explicit GameObjectCommand( GameObject& object ) : object_ref_{ object } { }
+        explicit gameobject_command( gameobject& object ) : object_ref_{ object } { }
 
-        [[nodiscard]] auto object( ) const -> GameObject const& { return object_ref_; }
-        [[nodiscard]] auto object( ) -> GameObject& { return object_ref_; }
+        [[nodiscard]] auto object( ) const -> gameobject const& { return object_ref_; }
+        [[nodiscard]] auto object( ) -> gameobject& { return object_ref_; }
 
     private:
-        GameObject& object_ref_;
+        gameobject& object_ref_;
     };
 }
 

@@ -10,73 +10,78 @@
 
 namespace rst
 {
-    class Command;
-    class PlayerController;
+    class command;
+    class player_controller;
 }
 
 namespace rst
 {
+    namespace internal
+    {
+        template <typename TMethod> concept derived_player_controller =
+                std::derived_from<typename meta::function_traits<TMethod>::class_t, player_controller>;
+    }
+
+
     /**
      * This class takes care of abstracting input codes from input actions, allowing the registered devices to receive an input
      * as a named event. Additionally, it applies the requested modifiers on the input automatically before signaling it.
      */
-    class InputMappingContext final
+    class input_mapping_context final
     {
-        using DeviceContextContainer = std::list<input::DeviceContext>;
-        using OptionalDeviceIt       = std::optional<DeviceContextContainer::iterator>;
+        using context_range_type = std::list<input::device_context>;
 
     public:
-        InputMappingContext( )           = default;
-        ~InputMappingContext( ) noexcept = default;
+        input_mapping_context( )           = default;
+        ~input_mapping_context( ) noexcept = default;
 
-        InputMappingContext( InputMappingContext const& )                        = delete;
-        InputMappingContext( InputMappingContext&& ) noexcept                    = delete;
-        auto operator=( InputMappingContext const& ) -> InputMappingContext&     = delete;
-        auto operator=( InputMappingContext&& ) noexcept -> InputMappingContext& = delete;
+        input_mapping_context( input_mapping_context const& )                        = delete;
+        input_mapping_context( input_mapping_context&& ) noexcept                    = delete;
+        auto operator=( input_mapping_context const& ) -> input_mapping_context&     = delete;
+        auto operator=( input_mapping_context&& ) noexcept -> input_mapping_context& = delete;
 
         /**
          * Registers an input action as a UID bound to the given key code and modifiers.
          * @param action
          * @param code
          */
-        auto register_input_action( input::InputAction const& action, input::UniformBindingCode code ) -> void;
+        auto register_input_action( input::input_action const& action, input::unicode code ) -> void;
 
-        auto register_device( PlayerController& controller, input::DeviceInfo device_info ) -> void;
-        auto unregister_device( PlayerController const& controller ) -> void;
+        auto register_device( player_controller& controller, input::device_info device_info ) -> void;
+        auto unregister_device( player_controller const& controller ) -> void;
 
         // bind a member function to the input action of the given code. Command will be called once the input action is signaled.
-        template <typename TMethod> requires std::derived_from<typename meta::function_traits<TMethod>::class_t, PlayerController>
+        template <typename TMethod> requires internal::derived_player_controller<TMethod>
         auto bind_to_input_action(
-            meta::function_traits<TMethod>::class_t* controller, Uid uid, TMethod command,
-            input::TriggerEvent trigger = input::TriggerEvent::TRIGGERED ) -> void;
+            meta::function_traits<TMethod>::class_t* controller, earmark mark, TMethod command,
+            input::trigger trigger = input::trigger::triggered ) -> void;
 
         // TODO: make this
-        auto unbind_from_input_action( PlayerController& controller, Uid uid ) -> void;
+        auto unbind_from_input_action( player_controller& controller, earmark mark ) -> void;
 
         // signals the input action bound to the given code and trigger for the correct device.
-        auto signal( input::UniformBindingCode code, input::TriggerEvent trigger, input::DeviceInfo device_info ) -> void;
+        auto signal( input::unicode code, input::trigger trigger, input::device_info device_info ) -> void;
 
         // dispatches the merged signaled events to the corresponding commands.
         auto dispatch( ) -> void;
 
-        [[nodiscard]] auto get_devices( ) const -> DeviceContextContainer const&;
+        [[nodiscard]] auto devices( ) const -> context_range_type const&;
 
     private:
-        std::unordered_map<input::UniformBindingCode, std::vector<input::InputAction>, input::UniformBindingCodeHasher>
-        action_binds_{};
+        std::unordered_map<input::unicode, std::vector<input::input_action>, input::unicode_hasher> action_binds_{};
 
-        DeviceContextContainer device_contexts_{};
+        context_range_type device_contexts_{};
 
         auto bind_to_input_action_impl(
-            PlayerController const& controller, Uid uid, input::InputCommandVariant&& command,
-            input::TriggerEvent trigger ) -> void;
+            player_controller const& controller, earmark mark, input::input_command_type&& command,
+            input::trigger trigger ) -> void;
     };
 
 
-    template <typename TMethod> requires std::derived_from<typename meta::function_traits<TMethod>::class_t, PlayerController>
-    auto InputMappingContext::bind_to_input_action(
-        typename meta::function_traits<TMethod>::class_t* controller, Uid uid, TMethod command,
-        input::TriggerEvent trigger ) -> void
+    template <typename TMethod> requires internal::derived_player_controller<TMethod>
+    auto input_mapping_context::bind_to_input_action(
+        typename meta::function_traits<TMethod>::class_t* controller, earmark mark, TMethod command,
+        input::trigger trigger ) -> void
     {
         assert( controller && "InputMappingContext::bind_to_input_action: controller cannot be nullptr!" );
 
@@ -84,11 +89,11 @@ namespace rst
         using param_t  = meta::safe_tuple_element_t<0, typename traits_t::params_t, bool>;
 
         static_assert(
-            traits_t::ARITY <= 1, "InputMappingContext::bind_to_input_action only supports one/zero-parameter functions." );
+            traits_t::arity <= 1, "InputMappingContext::bind_to_input_action only supports one/zero-parameter functions." );
 
         std::function<void( param_t )> wrapper = [=]( [[maybe_unused]] auto param )
         {
-            if constexpr ( traits_t::ARITY == 0 )
+            if constexpr ( traits_t::arity == 0 )
             {
                 std::invoke( command, controller );
             }
@@ -98,8 +103,8 @@ namespace rst
             }
         };
 
-        // reSharper disable once CppDFANullDereference
-        bind_to_input_action_impl( *controller, uid, wrapper, trigger );
+        // ReSharper disable once CppDFANullDereference
+        this->bind_to_input_action_impl( *controller, mark, wrapper, trigger );
     }
 }
 

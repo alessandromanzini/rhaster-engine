@@ -8,23 +8,23 @@
 
 namespace rst
 {
-    class Observer
+    class observer
     {
-        friend class Subject;
+        friend class subject;
 
     public:
-        Observer( )          = default;
-        virtual ~Observer( ) = default;
+        observer( )          = default;
+        virtual ~observer( ) = default;
 
-        Observer( Observer const& )                        = delete;
-        Observer( Observer&& ) noexcept                    = delete;
-        auto operator=( Observer const& ) -> Observer&     = delete;
-        auto operator=( Observer&& ) noexcept -> Observer& = delete;
+        observer( observer const& )                        = delete;
+        observer( observer&& ) noexcept                    = delete;
+        auto operator=( observer const& ) -> observer&     = delete;
+        auto operator=( observer&& ) noexcept -> observer& = delete;
 
-        virtual auto notify( Uid event, event::BroadcastValue value ) -> void = 0;
+        virtual auto notify( earmark event, event::broadcast_value_type value ) -> void = 0;
 
     private:
-        Observer* next_ptr_{ nullptr };
+        observer* next_ptr_{ nullptr };
     };
 }
 

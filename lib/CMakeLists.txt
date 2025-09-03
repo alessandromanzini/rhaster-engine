@@ -42,11 +42,11 @@ add_library(
         "src/collider_component.cpp"
         "src/physics_component.cpp"
 
-        "include/public/rst/__type/data_type/blackboard.h"
-        "include/public/rst/__type/data_type/deleter.h"
-        "include/public/rst/__type/data_type/optional_ref.h"
-        "include/public/rst/__type/data_type/sparse_set.h"
-        "src/Font.cpp"
+        "include/public/rst/type/blackboard.h"
+        "include/public/rst/type/deleter.h"
+        "include/public/rst/type/optional_ref.h"
+        "include/public/rst/type/sparse_set.h"
+        "src/font.cpp"
         "src/Sprite2D.cpp"
         "src/Texture2D.cpp"
         "src/Audio.cpp"
@@ -66,12 +66,13 @@ add_library(
         "src/service_locator.cpp"
 
         "include/public/rst/pch.h"
-        "include/public/rst/framework/data_type.h"
-        "include/public/rst/framework/resource_type.h"
+
         include/public/rst/fsm.h
         include/public/rst/framework/multicast_delegate.h
         include/public/rst/framework/observer.h
         include/public/rst/framework/event_queue.h
+        include/public/rst/__core/test.h
+        src/earmark.cpp
 )
 
 # include directories

@@ -1,8 +1,9 @@
 #include <rst/__service/sound/sdl/sdl_sound_system.h>
 
 #include <rst/temp/singleton/resource_manager.h>
-#include <rst/__type/sound_type/sdl_audio.h>
+#include <rst/__type/sound/sdl_audio.h>
 
+#include <SDL_audio.h>
 #include <SDL_mixer.h>
 
 
@@ -10,11 +11,11 @@ namespace rst
 {
     // TODO: make assertion engine configurable
     // TODO: assess code
-    SdlSoundSystem::SdlSoundSystem( uint8_t const channels, sound::SdlInitInfo info, sound::QueuePolicy const policy )
+    sdl_sound_system::sdl_sound_system( uint8_t const channels, sound::sdl_init_info info, sound::queue_policy const policy )
         : channels_{ channels }
         , policy_{ policy }
     {
-        assert( channels_ <= MAX_CHANNELS_ && "Too many channels requested!" );
+        assert( channels_ <= max_channels_ && "Too many channels requested!" );
 
         Mix_OpenAudio(
             static_cast<int>( info.sample_rate ), MIX_DEFAULT_FORMAT, static_cast<int>( info.channel_type ), info.buffer_size );
@@ -23,62 +24,62 @@ namespace rst
     }
 
 
-    SdlSoundSystem::~SdlSoundSystem( )
+    sdl_sound_system::~sdl_sound_system( )
     {
         Mix_CloseAudio( );
         Mix_Quit( );
     }
 
 
-    auto SdlSoundSystem::get_service_type( ) -> ServiceType
+    auto sdl_sound_system::service_type( ) -> rst::service_type
     {
-        return ServiceType::SDL;
+        return service_type::sdl;
     }
 
 
-    auto SdlSoundSystem::load_sound(
-        std::filesystem::path const& path, sound::SoundType const type, Uid const tag_id ) -> std::shared_ptr<Audio>
+    auto sdl_sound_system::load_sound(
+        std::filesystem::path const& path, sound::sound_type const type, earmark const tag_mark ) -> std::shared_ptr<audio>
     {
-        Uid const sound_id{ path.string( ) };
+        earmark const sound_mark{ path.string( ) };
 
         // check if the sound is already registered. If not we can register it
-        if ( not sound_resources_.contains( sound_id ) )
+        if ( not sound_resources_.contains( sound_mark ) )
         {
-            sound_resources_[sound_id] = sound::SoundInstance{
-                std::make_shared<SdlAudio>( RESOURCE_MANAGER.get_data_path( ) / path, type, sound_id, tag_id )
+            sound_resources_[sound_mark] = sound::sound_instance{
+                std::make_shared<sdl_audio>( RESOURCE_MANAGER.data_path( ) / path, type, sound_mark, tag_mark )
             };
         }
         else
         {
             assert(
-                sound_resources_.at( sound_id ).instance->get_tag_id( ) == tag_id &&
+                sound_resources_.at( sound_mark ).instance->tag_mark( ) == tag_mark &&
                 "Sound already registered with a different tag!" );
         }
 
         // initialize the tag volume to 1.0f if it doesn't exist
-        if ( not tag_volumes_.contains( tag_id ) )
+        if ( not tag_volumes_.contains( tag_mark ) )
         {
-            tag_volumes_[tag_id] = 1.f;
+            tag_volumes_[tag_mark] = 1.f;
         }
 
-        return sound_resources_.at( sound_id ).instance;
+        return sound_resources_.at( sound_mark ).instance;
     }
 
 
-    auto SdlSoundSystem::play( Audio const& audio, float const volume, int const loops ) -> int
+    auto sdl_sound_system::play( audio const& audio, float const volume, int const loops ) -> int
     {
         assert_on_missing_sound( audio );
 
-        auto& sound          = sound_resources_.at( audio.get_sound_id( ) );
-        auto const* instance = static_cast<SdlAudio*>( sound.instance.get( ) );
+        auto& sound          = sound_resources_.at( audio.sound_mark( ) );
+        auto const* instance = static_cast<sdl_audio*>( sound.instance.get( ) );
 
-        int const mix_volume{ static_cast<int>( MIX_MAX_VOLUME * volume * tag_volumes_.at( audio.get_tag_id( ) ) ) };
+        int const mix_volume{ static_cast<int>( MIX_MAX_VOLUME * volume * tag_volumes_.at( audio.tag_mark( ) ) ) };
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT:
+            case sound::sound_type::sound_effect:
             {
-                auto const effect = std::get<Mix_Chunk*>( instance->get_resource( ) );
+                auto const effect = std::get<Mix_Chunk*>( instance->resource( ) );
                 Mix_VolumeChunk( effect, mix_volume );
 
                 // play the sound effect and store the channel
@@ -91,9 +92,9 @@ namespace rst
                 return channel;
             }
 
-            case sound::SoundType::SOUND_TRACK:
+            case sound::sound_type::sound_track:
             {
-                auto const track = std::get<Mix_Music*>( instance->get_resource( ) );
+                auto const track = std::get<Mix_Music*>( instance->resource( ) );
                 Mix_VolumeMusic( mix_volume );
                 Mix_PlayMusic( track, loops );
                 current_track_ptr_ = &sound;
@@ -104,15 +105,15 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::stop( Audio const& audio ) -> bool
+    auto sdl_sound_system::stop( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
-        auto& [instance, channel] = sound_resources_.at( audio.get_sound_id( ) );
+        auto& [instance, channel] = sound_resources_.at( audio.sound_mark( ) );
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT:
+            case sound::sound_type::sound_effect:
             {
                 auto const result = Mix_HaltChannel( channel.value( ) );
                 handle_mixer_result( result );
@@ -120,7 +121,7 @@ namespace rst
                 return true;
             }
 
-            case sound::SoundType::SOUND_TRACK: if ( current_track_ptr_ )
+            case sound::sound_type::sound_track: if ( current_track_ptr_ )
                 {
                     Mix_HaltMusic( );
                     current_track_ptr_ = nullptr;
@@ -131,7 +132,7 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::stop_all( ) -> void
+    auto sdl_sound_system::stop_all( ) -> void
     {
         current_track_ptr_ = nullptr;
         Mix_HaltMusic( );
@@ -140,20 +141,20 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::pause( Audio const& audio ) -> bool
+    auto sdl_sound_system::pause( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT: if ( auto& [instance, channel] = sound_resources_.at( audio.get_sound_id( ) );
+            case sound::sound_type::sound_effect: if ( auto& [instance, channel] = sound_resources_.at( audio.sound_mark( ) );
                     channel.has_value( ) )
                 {
                     Mix_Pause( channel.value( ) );
                     return true;
                 }
 
-            case sound::SoundType::SOUND_TRACK: if ( current_track_ptr_ )
+            case sound::sound_type::sound_track: if ( current_track_ptr_ )
                 {
                     Mix_PauseMusic( );
                     return true;
@@ -163,20 +164,20 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::resume( Audio const& audio ) -> bool
+    auto sdl_sound_system::resume( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT: if ( auto& [instance, channel] = sound_resources_.at( audio.get_sound_id( ) );
+            case sound::sound_type::sound_effect: if ( auto& [instance, channel] = sound_resources_.at( audio.sound_mark( ) );
                     channel.has_value( ) )
                 {
                     Mix_Resume( channel.value( ) );
                     return true;
                 }
 
-            case sound::SoundType::SOUND_TRACK: if ( current_track_ptr_ )
+            case sound::sound_type::sound_track: if ( current_track_ptr_ )
                 {
                     Mix_ResumeMusic( );
                     return true;
@@ -186,51 +187,51 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::is_playing( Audio const& audio ) const -> bool
+    auto sdl_sound_system::is_playing( audio const& audio ) const -> bool
     {
         assert_on_missing_sound( audio );
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT: if ( auto const& [instance, channel] = sound_resources_.at(
-                    audio.get_sound_id( ) ); channel.has_value( ) )
+            case sound::sound_type::sound_effect: if ( auto const& [instance, channel] = sound_resources_.at(
+                    audio.sound_mark( ) ); channel.has_value( ) )
                 {
                     return Mix_Playing( channel.value( ) );
                 }
 
-            case sound::SoundType::SOUND_TRACK: if ( not current_track_ptr_ ) { return false; }
-                return audio.get_sound_id( ) == current_track_ptr_->instance->get_sound_id( ) && Mix_PlayingMusic( );
+            case sound::sound_type::sound_track: if ( not current_track_ptr_ ) { return false; }
+                return audio.sound_mark( ) == current_track_ptr_->instance->sound_mark( ) && Mix_PlayingMusic( );
         }
         return false;
     }
 
 
-    auto SdlSoundSystem::is_paused( Audio const& audio ) const -> bool
+    auto sdl_sound_system::is_paused( audio const& audio ) const -> bool
     {
         assert_on_missing_sound( audio );
 
-        switch ( audio.get_type( ) )
+        switch ( audio.type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT: if ( auto const& [instance, channel] = sound_resources_.at(
-                    audio.get_sound_id( ) ); channel.has_value( ) )
+            case sound::sound_type::sound_effect: if ( auto const& [instance, channel] = sound_resources_.at(
+                    audio.sound_mark( ) ); channel.has_value( ) )
                 {
                     return Mix_Paused( channel.value( ) );
                 }
 
-            case sound::SoundType::SOUND_TRACK: if ( not current_track_ptr_ ) { return false; }
-                return audio.get_sound_id( ) == current_track_ptr_->instance->get_sound_id( ) && Mix_PausedMusic( );
+            case sound::sound_type::sound_track: if ( not current_track_ptr_ ) { return false; }
+                return audio.sound_mark( ) == current_track_ptr_->instance->sound_mark( ) && Mix_PausedMusic( );
         }
         return false;
     }
 
 
-    auto SdlSoundSystem::get_current_track( ) const -> Audio const*
+    auto sdl_sound_system::current_track( ) const -> audio const*
     {
         return current_track_ptr_ ? current_track_ptr_->instance.get( ) : nullptr;
     }
 
 
-    auto SdlSoundSystem::set_master_volume( float const volume ) -> void
+    auto sdl_sound_system::set_master_volume( float const volume ) -> void
     {
         master_volume_ = std::clamp( volume, 0.f, 1.f );
         Mix_Volume( -1, static_cast<int>( master_volume_ * MIX_MAX_VOLUME ) );
@@ -238,38 +239,38 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::get_master_volume( ) const -> float
+    auto sdl_sound_system::master_volume( ) const -> float
     {
         return master_volume_;
     }
 
 
-    auto SdlSoundSystem::set_volume_by_tag( Uid const tag_id, float const volume ) -> void
+    auto sdl_sound_system::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
     {
-        tag_volumes_.at( tag_id ) = std::clamp( volume, 0.f, 1.f );
+        tag_volumes_.at( tag_mark ) = std::clamp( volume, 0.f, 1.f );
     }
 
 
-    auto SdlSoundSystem::get_volume_by_tag( Uid const tag_id ) const -> float
+    auto sdl_sound_system::volume_by_tag( earmark const tag_mark ) const -> float
     {
-        assert_on_missing_tag( tag_id );
-        return tag_volumes_.at( tag_id );
+        assert_on_missing_tag( tag_mark );
+        return tag_volumes_.at( tag_mark );
     }
 
 
-    auto SdlSoundSystem::assert_on_missing_sound( [[maybe_unused]] Audio const& audio ) const -> void
+    auto sdl_sound_system::assert_on_missing_sound( [[maybe_unused]] audio const& audio ) const -> void
     {
-        assert( sound_resources_.contains( audio.get_sound_id( ) ) && "Sound not registered!" );
+        assert( sound_resources_.contains( audio.sound_mark( ) ) && "Sound not registered!" );
     }
 
 
-    auto SdlSoundSystem::assert_on_missing_tag( [[maybe_unused]] Uid const tag_id ) const -> void
+    auto sdl_sound_system::assert_on_missing_tag( [[maybe_unused]] earmark const tag_mark ) const -> void
     {
-        assert( tag_volumes_.contains( tag_id ) && "Tag not registered!" );
+        assert( tag_volumes_.contains( tag_mark ) && "Tag not registered!" );
     }
 
 
-    auto SdlSoundSystem::unload_unused_resources( ) -> void
+    auto sdl_sound_system::unload_unused_resources( ) -> void
     {
         // for ( auto it = sound_resources_.begin( ); it != sound_resources_.end( ); )
         // {
@@ -301,21 +302,21 @@ namespace rst
     }
 
 
-    auto SdlSoundSystem::find_channel( ) const -> int
+    auto sdl_sound_system::find_channel( ) const -> int
     {
         // TODO: Correctly implement channel replacement policies
         switch ( policy_ )
         {
-            case sound::QueuePolicy::REPLACE_OLDEST: return last_used_channel_;
+            case sound::queue_policy::replace_oldest: return last_used_channel_;
 
-            case sound::QueuePolicy::REPLACE_NEWEST: return last_used_channel_;
+            case sound::queue_policy::replace_newest: return last_used_channel_;
 
-            default: case sound::QueuePolicy::DISCARD: return -1;
+            default: case sound::queue_policy::discard: return -1;
         }
     }
 
 
-    auto SdlSoundSystem::handle_mixer_result( int const result ) -> void
+    auto sdl_sound_system::handle_mixer_result( int const result ) -> void
     {
         if ( result == -1 )
         {

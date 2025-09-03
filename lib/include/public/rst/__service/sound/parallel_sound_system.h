@@ -3,8 +3,8 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/data_type.h>
 #include <rst/framework/event_queue.h>
+#include <rst/type/safe_resource.h>
 #include <rst/__service/sound/sound_system.h>
 
 
@@ -12,67 +12,64 @@ namespace rst
 {
     namespace sound
     {
-        enum class PlaybackMode : uint8_t
+        enum class playback_mode : uint8_t
         {
-            PLAY,
-            STOP,
-            PAUSE,
-            RESUME
+            play, stop, pause, resume
         };
 
-        struct SoundPlaybackOptions final
+        struct sound_playback_options final
         {
-            PlaybackMode mode{ PlaybackMode::PLAY };
-            Audio const* audio{ nullptr };
+            playback_mode mode{ playback_mode::play };
+            audio const* audio{ nullptr };
             float volume{ 0.f };
             int loops{ 0 };
         };
     }
 
 
-    class ParallelSoundSystem final : public SoundSystem
+    class parallel_sound_system final : public sound_system
     {
     public:
-        explicit ParallelSoundSystem( std::unique_ptr<SoundSystem>&& ss );
-        ~ParallelSoundSystem( ) override;
+        explicit parallel_sound_system( std::unique_ptr<sound_system>&& ss );
+        ~parallel_sound_system( ) override;
 
-        ParallelSoundSystem( ParallelSoundSystem const& )                        = delete;
-        ParallelSoundSystem( ParallelSoundSystem&& ) noexcept                    = delete;
-        auto operator=( ParallelSoundSystem const& ) -> ParallelSoundSystem&     = delete;
-        auto operator=( ParallelSoundSystem&& ) noexcept -> ParallelSoundSystem& = delete;
+        parallel_sound_system( parallel_sound_system const& )                        = delete;
+        parallel_sound_system( parallel_sound_system&& ) noexcept                    = delete;
+        auto operator=( parallel_sound_system const& ) -> parallel_sound_system&     = delete;
+        auto operator=( parallel_sound_system&& ) noexcept -> parallel_sound_system& = delete;
 
-        [[nodiscard]] auto get_service_type( ) -> ServiceType override;
+        [[nodiscard]] auto service_type( ) -> rst::service_type override;
 
         [[nodiscard]] auto load_sound(
-            std::filesystem::path const& path, sound::SoundType type, Uid tag_id ) -> std::shared_ptr<Audio> override;
+            std::filesystem::path const& path, sound::sound_type type, earmark tag_mark ) -> std::shared_ptr<audio> override;
 
-        auto play( Audio const& audio, float volume, int loops ) -> int override;
+        auto play( audio const& audio, float volume, int loops ) -> int override;
 
-        auto stop( Audio const& audio ) -> bool override;
+        auto stop( audio const& audio ) -> bool override;
         auto stop_all( ) -> void override;
 
-        auto pause( Audio const& audio ) -> bool override;
-        auto resume( Audio const& audio ) -> bool override;
+        auto pause( audio const& audio ) -> bool override;
+        auto resume( audio const& audio ) -> bool override;
 
-        [[nodiscard]] auto is_playing( Audio const& audio ) const -> bool override;
-        [[nodiscard]] auto is_paused( Audio const& audio ) const -> bool override;
+        [[nodiscard]] auto is_playing( audio const& audio ) const -> bool override;
+        [[nodiscard]] auto is_paused( audio const& audio ) const -> bool override;
 
-        [[nodiscard]] auto get_current_track( ) const -> Audio const* override;
+        [[nodiscard]] auto current_track( ) const -> audio const* override;
 
         auto set_master_volume( float volume ) -> void override;
-        [[nodiscard]] auto get_master_volume( ) const -> float override;
+        [[nodiscard]] auto master_volume( ) const -> float override;
 
-        auto set_volume_by_tag( Uid tag_id, float volume ) -> void override;
-        [[nodiscard]] auto get_volume_by_tag( Uid tag_id ) const -> float override;
+        auto set_volume_by_tag( earmark tag_mark, float volume ) -> void override;
+        [[nodiscard]] auto volume_by_tag( earmark tag_id ) const -> float override;
 
     private:
         bool running_{ true };
 
         std::thread worker_thread_;
         std::condition_variable loop_cv_;
-        thread::SafeResource<EventQueue<sound::SoundPlaybackOptions>> playback_queue_;
+        thread::safe_resource<event_queue<sound::sound_playback_options>> playback_queue_;
 
-        std::unique_ptr<SoundSystem> impl_ptr_{};
+        std::unique_ptr<sound_system> impl_ptr_{};
 
         auto create_worker_thread( ) -> void;
     };

@@ -10,31 +10,31 @@
 namespace rst
 {
     // todo: Review code
-    class FiniteStateMachine final : public BaseFiniteStateMachine
+    class finite_state_machine final : public base_finite_state_machine
     {
     public:
-        explicit FiniteStateMachine( Blackboard& blackboard );
+        explicit finite_state_machine( blackboard& blackboard );
 
-        auto start( Uid start_state_id ) -> void override;
-        auto force_transition( Uid state_id ) -> void override;
+        auto start( earmark start_state_mark ) -> void override;
+        auto force_transition( earmark state_mark ) -> void override;
         auto tick( ) -> void override;
 
-        [[nodiscard]] auto get_current_state( ) const -> fsm::State*;
-        [[nodiscard]] auto get_current_state_id( ) const -> Uid;
+        [[nodiscard]] auto current_state( ) const -> fsm::state*;
+        [[nodiscard]] auto current_state_mark( ) const -> earmark;
 
     protected:
-        auto create_state_impl( Uid state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State& override;
-        auto add_transition_impl( Uid from, Uid to, std::unique_ptr<fsm::Condition>&& cnd ) -> void override;
+        auto create_state_impl( earmark state_mark, std::unique_ptr<fsm::state>&& state ) -> fsm::state& override;
+        auto add_transition_impl( earmark from, earmark to, std::unique_ptr<fsm::condition>&& cnd ) -> void override;
 
     private:
-        Blackboard& blackboard_ref_;
-        std::map<Uid, fsm::SingleStateStack> stacks_{};
+        blackboard& blackboard_ref_;
+        std::map<earmark, fsm::single_state_stack> stacks_{};
 
         bool started_{ false };
-        Uid current_state_id_{};
+        earmark current_state_mark_{};
 
         auto evaluate_transitions( ) -> void;
-        auto change_state( Uid uid ) -> void;
+        auto change_state( earmark mark ) -> void;
     };
 }
 

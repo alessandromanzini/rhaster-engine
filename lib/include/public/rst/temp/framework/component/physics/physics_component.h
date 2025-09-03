@@ -9,17 +9,17 @@
 namespace rst
 {
     // TODO: Improve this class -> add more physics parameters
-    class PhysicsComponent final : public Component
+    class physics_component final : public component
     {
     public:
-        explicit PhysicsComponent( owner_t& owner );
+        explicit physics_component( owner_type& owner );
 
         auto fixed_tick( ) -> void override;
 
         auto set_simulate_physics( bool simulate ) -> void;
         [[nodiscard]] auto is_simulating_physics( ) const -> bool;
 
-        [[nodiscard]] auto get_velocity( ) const -> glm::vec2;
+        [[nodiscard]] auto velocity( ) const -> glm::vec2;
 
         auto add_force( glm::vec2 force, bool acceleration = false ) -> void;
 

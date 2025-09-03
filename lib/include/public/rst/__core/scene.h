@@ -3,35 +3,35 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/data_type.h>
+#include <rst/type/deleter.h>
 #include <rst/__core/gameobject.h>
 
 
 // TODO: Add documentation
 namespace rst
 {
-    class Scene final
+    class scene final
     {
     public:
-        explicit Scene( std::string name );
-        ~Scene( ) noexcept = default;
+        explicit scene( std::string name );
+        ~scene( ) noexcept = default;
 
-        Scene( Scene const& )                        = delete;
-        Scene( Scene&& ) noexcept                    = delete;
-        auto operator=( Scene const& ) -> Scene&     = delete;
-        auto operator=( Scene&& ) noexcept -> Scene& = delete;
+        scene( scene const& )                        = delete;
+        scene( scene&& ) noexcept                    = delete;
+        auto operator=( scene const& ) -> scene&     = delete;
+        auto operator=( scene&& ) noexcept -> scene& = delete;
 
-        auto add( std::unique_ptr<GameObject> object ) -> void;
-        auto remove( GameObject& object ) -> void;
+        auto add( std::unique_ptr<gameobject> object ) -> void;
+        auto remove( gameobject& object ) -> void;
         auto remove_all( ) -> void;
 
         // todo: make const correct
         [[nodiscard]] auto find_object(
-            std::function<bool( GameObject const& )> const& predicate ) const -> OptionalRef<GameObject>;
-        [[nodiscard]] auto create_object( ) -> GameObject&;
+            std::function<bool( gameobject const& )> const& predicate ) const -> OptionalRef<gameobject>;
+        [[nodiscard]] auto create_object( ) -> gameobject&;
 
-        [[nodiscard]] auto get_name( ) const -> std::string const&;
-        [[nodiscard]] auto get_id( ) const -> uint16_t;
+        [[nodiscard]] auto name( ) const -> std::string const&;
+        [[nodiscard]] auto id( ) const -> uint16_t;
 
         auto fixed_tick( ) const -> void;
         auto tick( ) const -> void;
@@ -45,8 +45,8 @@ namespace rst
         std::string const name_;
         uint16_t const id_{};
 
-        std::vector<std::unique_ptr<GameObject>> objects_{};
-        Deleter<GameObject> deleter_{};
+        std::vector<std::unique_ptr<gameobject>> objects_{};
+        deleter<gameobject> deleter_{};
     };
 }
 

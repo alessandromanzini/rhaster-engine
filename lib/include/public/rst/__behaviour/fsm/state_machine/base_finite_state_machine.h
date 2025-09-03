@@ -8,55 +8,55 @@
 
 namespace rst
 {
-    class BaseFiniteStateMachine
+    class base_finite_state_machine
     {
     public:
-        BaseFiniteStateMachine( )          = default;
-        virtual ~BaseFiniteStateMachine( ) = default;
+        base_finite_state_machine( )          = default;
+        virtual ~base_finite_state_machine( ) = default;
 
-        BaseFiniteStateMachine( BaseFiniteStateMachine const& )                        = delete;
-        BaseFiniteStateMachine( BaseFiniteStateMachine&& ) noexcept                    = delete;
-        auto operator=( BaseFiniteStateMachine const& ) -> BaseFiniteStateMachine&     = delete;
-        auto operator=( BaseFiniteStateMachine&& ) noexcept -> BaseFiniteStateMachine& = delete;
+        base_finite_state_machine( base_finite_state_machine const& )                        = delete;
+        base_finite_state_machine( base_finite_state_machine&& ) noexcept                    = delete;
+        auto operator=( base_finite_state_machine const& ) -> base_finite_state_machine&     = delete;
+        auto operator=( base_finite_state_machine&& ) noexcept -> base_finite_state_machine& = delete;
 
         /**
          * Create a state in the state machine linked to the UID. Multiple states can exist with the same UID, and they will all take action.
-         * @tparam state_t Type of the state
-         * @tparam state_args_t Arguments to be passed to the state constructor
-         * @param state_id
+         * @tparam TState Type of the state
+         * @tparam TStateArgs Arguments to be passed to the state constructor
+         * @param state_mark
          * @param args
          */
-        template <typename state_t, typename... state_args_t> requires
-            std::derived_from<state_t, fsm::State> && std::constructible_from<state_t, state_args_t...>
-        auto create_state( Uid state_id, state_args_t&&... args ) -> state_t&;
+        template <typename TState, typename... TStateArgs> requires
+            std::derived_from<TState, fsm::state> && std::constructible_from<TState, TStateArgs...>
+        auto create_state( earmark state_mark, TStateArgs&&... args ) -> TState&;
 
         /**
          * Mark a state as an intermediate state. Intermediate states will immediately transition to the next state when the condition is met instead of waiting for next tick.
-         * @param state_id
+         * @param state_mark
          */
-        auto mark_intermediate_state( Uid state_id ) -> void;
-        [[nodiscard]] auto is_intermediate( Uid state_id ) const -> bool;
+        auto mark_intermediate_state( earmark state_mark ) -> void;
+        [[nodiscard]] auto is_intermediate( earmark state_mark ) const -> bool;
 
         /**
          * Add a transition between two states. The transition will be triggered when the condition is met.
-         * @tparam condition_t
+         * @tparam TCondition
          * @param from
          * @param to
          */
-        template <typename condition_t> requires std::derived_from<condition_t, fsm::Condition>
-        auto add_transition( Uid from, Uid to ) -> void;
+        template <typename TCondition> requires std::derived_from<TCondition, fsm::condition>
+        auto add_transition( earmark from, earmark to ) -> void;
 
         /**
          * Initialize the state machine with a start state. The state machine will start in this state.
-         * @param start_state_id
+         * @param start_state_mark
          */
-        virtual auto start( Uid start_state_id ) -> void = 0;
+        virtual auto start( earmark start_state_mark ) -> void = 0;
 
         /**
          * Force a transition to a specific state. This will immediately change the current state to the specified state, regardless of the current state or conditions.
-         * @param state_id
+         * @param state_mark
          */
-        virtual auto force_transition( Uid state_id ) -> void = 0;
+        virtual auto force_transition( earmark state_mark ) -> void = 0;
 
         /**
          * Updates the current state. The state machine will check if the current state has any transitions to other states.
@@ -64,39 +64,39 @@ namespace rst
         virtual auto tick( ) -> void = 0;
 
     protected:
-        virtual auto create_state_impl( Uid state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State& = 0;
-        virtual auto add_transition_impl( Uid from, Uid to, std::unique_ptr<fsm::Condition>&& condition ) -> void = 0;
+        virtual auto create_state_impl( earmark state_mark, std::unique_ptr<fsm::state>&& state ) -> fsm::state& = 0;
+        virtual auto add_transition_impl( earmark from, earmark to, std::unique_ptr<fsm::condition>&& condition ) -> void = 0;
 
     private:
-        std::set<Uid> intermediate_states_{};
+        std::set<earmark> intermediate_states_{};
     };
 
 
-    template <typename state_t, typename... state_args_t> requires
-        std::derived_from<state_t, fsm::State> && std::constructible_from<state_t, state_args_t...>
-    auto BaseFiniteStateMachine::create_state( Uid const state_id, state_args_t&&... args ) -> state_t&
+    template <typename TState, typename... TStateArgs> requires
+        std::derived_from<TState, fsm::state> && std::constructible_from<TState, TStateArgs...>
+    auto base_finite_state_machine::create_state( earmark const state_mark, TStateArgs&&... args ) -> TState&
     {
-        return static_cast<state_t&>( create_state_impl(
-            state_id, std::make_unique<state_t>( std::forward<state_args_t>( args )... ) ) );
+        return static_cast<TState&>( create_state_impl(
+            state_mark, std::make_unique<TState>( std::forward<TStateArgs>( args )... ) ) );
     }
 
 
-    inline auto BaseFiniteStateMachine::mark_intermediate_state( Uid const state_id ) -> void
+    inline auto base_finite_state_machine::mark_intermediate_state( earmark const state_mark ) -> void
     {
-        intermediate_states_.insert( state_id );
+        intermediate_states_.insert( state_mark );
     }
 
 
-    inline auto BaseFiniteStateMachine::is_intermediate( Uid const state_id ) const -> bool
+    inline auto base_finite_state_machine::is_intermediate( earmark const state_mark ) const -> bool
     {
-        return intermediate_states_.contains( state_id );
+        return intermediate_states_.contains( state_mark );
     }
 
 
-    template <typename condition_t> requires std::derived_from<condition_t, fsm::Condition>
-    auto BaseFiniteStateMachine::add_transition( Uid const from, Uid const to ) -> void
+    template <typename TCondition> requires std::derived_from<TCondition, fsm::condition>
+    auto base_finite_state_machine::add_transition( earmark const from, earmark const to ) -> void
     {
-        add_transition_impl( from, to, std::make_unique<condition_t>( ) );
+        add_transition_impl( from, to, std::make_unique<TCondition>( ) );
     }
 }
 

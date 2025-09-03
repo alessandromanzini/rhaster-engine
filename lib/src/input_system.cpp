@@ -11,7 +11,7 @@ using namespace rst::input;
 
 namespace rst
 {
-    auto InputSystem::process_input( ) -> bool
+    auto input_system::process_input( ) -> bool
     {
         // poll SDL events
         poll( );
@@ -23,16 +23,16 @@ namespace rst
     }
 
 
-    auto InputSystem::fetch_free_gamepad_id( ) -> DeviceId
+    auto input_system::fetch_free_gamepad_id( ) -> device_id_type
     {
-        auto ids = get_connected_gamepad_ids( );
+        auto ids = connected_gamepad_ids( );
 
         // remove already-used gamepad IDs
-        for ( auto const& device : input_mapping_context_.get_devices( ) )
+        for ( auto const& device : input_mapping_context_.devices( ) )
         {
-            if ( device.get_device_info( ).type == DeviceType::GAMEPAD )
+            if ( device.device_info( ).type == device_type::gamepad )
             {
-                std::erase( ids, device.get_device_info( ).id );
+                std::erase( ids, device.device_info( ).id );
             }
             if ( ids.empty( ) )
             {
@@ -51,19 +51,19 @@ namespace rst
     }
 
 
-    auto InputSystem::get_input_mapping_context( ) -> InputMappingContext&
+    auto input_system::input_mapping_context( ) -> rst::input_mapping_context&
     {
         return input_mapping_context_;
     }
 
 
-    auto InputSystem::poll( ) -> void
+    auto input_system::poll( ) -> void
     {
         SDL_Event e;
         while ( SDL_PollEvent( &e ) )
         {
-            UniformBindingCode key{ static_cast<KeyCode>( e.key.keysym.sym ) };
-            UniformBindingCode btn{ static_cast<KeyCode>( e.cbutton.button ) };
+            unicode key{ static_cast<key_type>( e.key.keysym.sym ) };
+            unicode btn{ static_cast<key_type>( e.cbutton.button ) };
 
             switch ( e.type )
             {
@@ -75,13 +75,13 @@ namespace rst
 
                 case SDL_KEYDOWN:
                 {
-                    forward_code_to_contexts( key, TriggerEvent::TRIGGERED, { DeviceType::KEYBOARD } );
+                    forward_code_to_contexts( key, trigger::triggered, { device_type::keyboard } );
                     break;
                 }
 
                 case SDL_KEYUP:
                 {
-                    forward_code_to_contexts( key, TriggerEvent::RELEASED, { DeviceType::KEYBOARD } );
+                    forward_code_to_contexts( key, trigger::released, { device_type::keyboard } );
                     break;
                 }
 
@@ -90,10 +90,10 @@ namespace rst
                 {
                     if ( auto it = joystick_id_to_device_id_.find( e.cbutton.which ); it != joystick_id_to_device_id_.end( ) )
                     {
-                        TriggerEvent const event{
-                            e.type == SDL_CONTROLLERBUTTONDOWN ? TriggerEvent::TRIGGERED : TriggerEvent::RELEASED
+                        trigger const event{
+                            e.type == SDL_CONTROLLERBUTTONDOWN ? trigger::triggered : trigger::released
                         };
-                        forward_code_to_contexts( btn, event, { DeviceType::GAMEPAD, it->second } );
+                        forward_code_to_contexts( btn, event, { device_type::gamepad, it->second } );
                     }
                     break;
                 }
@@ -103,70 +103,70 @@ namespace rst
         }
 
         // dispatch all keys and buttons pressed every frame
-        forward_state_to_contexts( DeviceType::KEYBOARD );
-        forward_state_to_contexts( DeviceType::GAMEPAD );
+        forward_state_to_contexts( device_type::keyboard );
+        forward_state_to_contexts( device_type::gamepad );
     }
 
 
-    auto InputSystem::forward_code_to_contexts(
-        UniformBindingCode const code, TriggerEvent const trigger, DeviceInfo const device_info ) -> void
+    auto input_system::forward_code_to_contexts(
+        unicode const code, trigger const trigger, device_info const device_info ) -> void
     {
-        InputBuffer& buffer{ select_buffer( device_info.type ) };
+        input_buffer& buffer{ select_buffer( device_info.type ) };
 
         // ReSharper disable once CppIncompleteSwitchStatement
         // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
         switch ( trigger )
         {
-            case TriggerEvent::TRIGGERED:
+            case trigger::triggered:
             {
                 // we must trigger only if the key/button is not already pressed (was released)
                 if ( not buffer.is_pressed( code, device_info.id ) )
                 {
                     buffer.trigger( code, device_info.id );
-                    input_mapping_context_.signal( code, TriggerEvent::TRIGGERED, device_info );
+                    input_mapping_context_.signal( code, trigger::triggered, device_info );
                 }
                 break;
             }
 
-            case TriggerEvent::PRESSED:
+            case trigger::pressed:
             {
-                input_mapping_context_.signal( code, TriggerEvent::PRESSED, device_info );
+                input_mapping_context_.signal( code, trigger::pressed, device_info );
                 break;
             }
 
-            case TriggerEvent::RELEASED:
+            case trigger::released:
             {
                 buffer.release( code, device_info.id );
-                input_mapping_context_.signal( code, TriggerEvent::RELEASED, device_info );
+                input_mapping_context_.signal( code, trigger::released, device_info );
                 break;
             }
         }
     }
 
 
-    auto InputSystem::forward_state_to_contexts( DeviceType const device_type ) -> void
+    auto input_system::forward_state_to_contexts( device_type const device_type ) -> void
     {
-        for ( auto const& [code, device_id] : select_buffer( device_type ).pressed_this_frame( ) )
+        for ( auto const& [code, device_id] : select_buffer( device_type ) )
         {
-            input_mapping_context_.signal( code, TriggerEvent::PRESSED, { device_type, device_id } );
+            input_mapping_context_.signal( code, trigger::pressed, { device_type, device_id } );
         }
     }
 
 
-    auto InputSystem::select_buffer( DeviceType const device_type ) -> InputBuffer&
+    auto input_system::select_buffer( device_type const device_type ) -> input_buffer&
     {
         switch ( device_type )
         {
-            case DeviceType::KEYBOARD: return keyboard_buffer_;
-            case DeviceType::GAMEPAD: return gamepad_buffer_;
+            case device_type::keyboard: return keyboard_buffer_;
+            case device_type::gamepad: return gamepad_buffer_;
         }
         throw std::invalid_argument( "Invalid device type." );
     }
 
 
-    auto InputSystem::get_connected_gamepad_ids( ) -> std::vector<DeviceId>
+    auto input_system::connected_gamepad_ids( ) -> std::vector<device_id_type>
     {
-        std::vector<DeviceId> gamepad_ids{};
+        std::vector<device_id_type> gamepad_ids{};
         for ( int i{}; i < SDL_NumJoysticks( ); ++i )
         {
             if ( SDL_IsGameController( i ) )
@@ -175,8 +175,8 @@ namespace rst
                 {
                     SDL_Joystick* joystick                 = SDL_GameControllerGetJoystick( controller );
                     SDL_JoystickID instance_id             = SDL_JoystickInstanceID( joystick );
-                    joystick_id_to_device_id_[instance_id] = static_cast<DeviceId>( i );
-                    gamepad_ids.push_back( static_cast<DeviceId>( i ) );
+                    joystick_id_to_device_id_[instance_id] = static_cast<device_id_type>( i );
+                    gamepad_ids.push_back( static_cast<device_id_type>( i ) );
                 }
             }
         }
@@ -184,5 +184,5 @@ namespace rst
     }
 
 
-    InputSystem& INPUT_SYSTEM = InputSystem::get_instance( );
+    input_system& INPUT_SYSTEM = input_system::instance( );
 }

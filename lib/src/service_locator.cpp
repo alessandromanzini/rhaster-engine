@@ -3,26 +3,26 @@
 
 namespace rst
 {
-    auto ServiceLocator::register_sound_system( std::unique_ptr<SoundSystem>&& ss ) -> SoundSystem&
+    auto service_locator::register_sound_system( std::unique_ptr<rst::sound_system>&& ss ) -> rst::sound_system&
     {
         sound_system_instance_ptr_ = std::move( ss );
-        return get_sound_system( );
+        return sound_system( );
     }
 
 
-    auto ServiceLocator::get_sound_system( ) const -> SoundSystem&
+    auto service_locator::sound_system( ) const -> rst::sound_system&
     {
         assert( is_sound_system_registered( ) && "SoundSystem instance not registered" );
         return *sound_system_instance_ptr_;
     }
 
 
-    auto ServiceLocator::is_sound_system_registered( ) const -> bool
+    auto service_locator::is_sound_system_registered( ) const -> bool
     {
         return sound_system_instance_ptr_ != nullptr;
     }
 
 
-    ServiceLocator& SERVICE_LOCATOR = ServiceLocator::get_instance( );
+    service_locator& SERVICE_LOCATOR = service_locator::instance( );
 
 }

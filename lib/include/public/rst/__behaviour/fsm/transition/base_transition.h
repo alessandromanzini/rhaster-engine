@@ -2,40 +2,40 @@
 #ifndef RST_FSM_BASE_TRANSITIONS_H
 #define RST_FSM_BASE_TRANSITIONS_H
 
-#include <rst/framework/data_type.h>
+#include <rst/type/blackboard.h>
 
 
 namespace rst::fsm
 {
-    class State
+    class state
     {
     public:
-        State( )          = default;
-        virtual ~State( ) = default;
+        state( )          = default;
+        virtual ~state( ) = default;
 
-        State( State const& )                        = delete;
-        State( State&& ) noexcept                    = delete;
-        auto operator=( State const& ) -> State&     = delete;
-        auto operator=( State&& ) noexcept -> State& = delete;
+        state( state const& )                        = delete;
+        state( state&& ) noexcept                    = delete;
+        auto operator=( state const& ) -> state&     = delete;
+        auto operator=( state&& ) noexcept -> state& = delete;
 
-        virtual auto on_enter( Blackboard& ) -> void { }
-        virtual auto on_exit( Blackboard& ) -> void { }
-        virtual auto tick( Blackboard& ) -> void { }
+        virtual auto on_enter( blackboard& ) -> void { }
+        virtual auto on_exit( blackboard& ) -> void { }
+        virtual auto tick( blackboard& ) -> void { }
     };
 
 
-    class Condition
+    class condition
     {
     public:
-        Condition( )          = default;
-        virtual ~Condition( ) = default;
+        condition( )          = default;
+        virtual ~condition( ) = default;
 
-        Condition( Condition const& )                        = delete;
-        Condition( Condition&& ) noexcept                    = delete;
-        auto operator=( Condition const& ) -> Condition&     = delete;
-        auto operator=( Condition&& ) noexcept -> Condition& = delete;
+        condition( condition const& )                        = delete;
+        condition( condition&& ) noexcept                    = delete;
+        auto operator=( condition const& ) -> condition&     = delete;
+        auto operator=( condition&& ) noexcept -> condition& = delete;
 
-        virtual auto evaluate( Blackboard& blackboard ) const -> bool = 0;
+        virtual auto evaluate( blackboard& blackboard ) const -> bool = 0;
     };
 }
 

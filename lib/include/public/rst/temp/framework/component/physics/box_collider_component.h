@@ -9,16 +9,16 @@
 namespace rst
 {
     // TODO: Add support for inclusive and exclusive edges
-    class BoxColliderComponent final : public ColliderComponent
+    class box_collider_component final : public collider_component
     {
     public:
-        explicit BoxColliderComponent( owner_t& owner, glm::vec2 size, glm::vec2 position = {} );
-        [[nodiscard]] auto get_pivots( ) const -> std::span<glm::vec2 const> override;
+        explicit box_collider_component( owner_type& owner, glm::vec2 size, glm::vec2 position = {} );
+        [[nodiscard]] auto pivots( ) const -> std::span<glm::vec2 const> override;
 
     private:
         std::array<glm::vec2, 4> pivots_{};
 
-        [[nodiscard]] auto hit_test_impl( ColliderComponent& other ) const -> CollisionInfo override;
+        [[nodiscard]] auto hit_test_impl( collider_component& other ) const -> collision_info override;
 
     };
 

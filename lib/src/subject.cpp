@@ -5,7 +5,7 @@
 
 namespace rst
 {
-    auto Subject::add_observer( Observer& observer ) -> void
+    auto subject::add_observer( observer& observer ) -> void
     {
         // add the observer to the front of the list
         observer.next_ptr_ = head_ptr_;
@@ -13,7 +13,7 @@ namespace rst
     }
 
 
-    auto Subject::remove_observer( Observer const& observer ) -> void
+    auto subject::remove_observer( observer const& observer ) -> void
     {
         if ( head_ptr_ == &observer )
         {
@@ -21,7 +21,7 @@ namespace rst
         }
         else
         {
-            Observer* current = head_ptr_;
+            rst::observer* current = head_ptr_;
             while ( current->next_ptr_ != &observer )
             {
                 current = current->next_ptr_;
@@ -31,11 +31,11 @@ namespace rst
     }
 
 
-    auto Subject::broadcast( Uid const event, event::BroadcastValue const& value ) const -> void
+    auto subject::broadcast( earmark const event, event::broadcast_value_type const& value ) const -> void
     {
         if ( head_ptr_ == nullptr ){ return; }
 
-        Observer* current = head_ptr_;
+        observer* current = head_ptr_;
         while ( current != nullptr )
         {
             current->notify( event, value );

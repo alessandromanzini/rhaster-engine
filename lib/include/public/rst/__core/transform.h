@@ -6,7 +6,7 @@
 
 namespace rst
 {
-    class GameObject;
+    class gameobject;
 }
 
 namespace rst
@@ -14,46 +14,46 @@ namespace rst
     /**
      * This class is a matrix wrapper for 2D transformations.
      */
-    class Transform final
+    class transform final
     {
-        using matrix_t = glm::mat3x3;
+        using matrix_type = glm::mat3x3;
 
     public:
-        Transform( ) = default;
+        transform( ) = default;
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        Transform( matrix_t const& matrix );
+        transform( matrix_type const& matrix );
 
-        [[nodiscard]] auto get_position( ) const -> glm::vec2;
-        [[nodiscard]] auto get_matrix( ) const -> matrix_t const&;
+        [[nodiscard]] auto position( ) const -> glm::vec2;
+        [[nodiscard]] auto matrix( ) const -> matrix_type const&;
 
-        [[nodiscard]] auto translate( glm::vec2 translation ) const -> Transform;
-        [[nodiscard]] auto rotate( float rotation ) const -> Transform;
-        [[nodiscard]] auto scale( glm::vec2 scale ) const -> Transform;
+        [[nodiscard]] auto translate( glm::vec2 translation ) const -> transform;
+        [[nodiscard]] auto rotate( float rotation ) const -> transform;
+        [[nodiscard]] auto scale( glm::vec2 scale ) const -> transform;
 
-        auto combine( Transform const& other ) -> void;
-        [[nodiscard]] auto operator*( Transform const& other ) const -> Transform;
+        auto combine( transform const& other ) -> void;
+        [[nodiscard]] auto operator*( transform const& other ) const -> transform;
 
-        [[nodiscard]] static auto from_translation( glm::vec2 translation ) -> Transform;
-        [[nodiscard]] static auto from_rotation( float rotation ) -> Transform;
-        [[nodiscard]] static auto from_scale( glm::vec2 scale ) -> Transform;
+        [[nodiscard]] static auto from_translation( glm::vec2 translation ) -> transform;
+        [[nodiscard]] static auto from_rotation( float rotation ) -> transform;
+        [[nodiscard]] static auto from_scale( glm::vec2 scale ) -> transform;
 
     private:
-        matrix_t matrix_{ 1.f };
+        matrix_type matrix_{ 1.f };
     };
 
     /**
      * This class streamlines the transform operations on a game object.
      */
-    class TransformOperator final
+    class transform_operator final
     {
     public:
-        explicit TransformOperator( GameObject& gameobject );
+        explicit transform_operator( gameobject& gameobject );
 
         auto translate( glm::vec2 translation ) const -> void;
         auto rotate( float rotation ) const -> void;
 
     private:
-        GameObject& gameobject_ref_;
+        gameobject& gameobject_ref_;
     };
 }
 

@@ -1,4 +1,4 @@
-#include <rst/__type/texture_type/sprite2D.h>
+#include <rst/__type/texture/sprite2D.h>
 
 #include <rst/temp/singleton/game_time.h>
 #include <rst/temp/singleton/renderer.h>
@@ -8,7 +8,7 @@
 
 namespace rst
 {
-    Sprite2D::Sprite2D(
+    sprite_2d::sprite_2d(
         std::string const& filename, uint8_t const rows, uint8_t const cols, float const frame_delay, float const scale,
         glm::vec2 const offset, bool const loop )
         : rows_{ rows }
@@ -23,12 +23,12 @@ namespace rst
         assert( frame_delay_ > 0.f && "Frame delay must be greater than 0" );
         assert( total_frames_ > 0 && "Total frames must be greater than 0" );
 
-        frame_width_  = texture_ptr_->get_size( ).x / static_cast<float>( cols_ );
-        frame_height_ = texture_ptr_->get_size( ).y / static_cast<float>( rows_ );
+        frame_width_  = texture_ptr_->size( ).x / static_cast<float>( cols_ );
+        frame_height_ = texture_ptr_->size( ).y / static_cast<float>( rows_ );
     }
 
 
-    auto Sprite2D::render( glm::vec2 const position ) const -> void
+    auto sprite_2d::render( glm::vec2 const position ) const -> void
     {
         glm::vec4 const dst_rect{ position + offset_, frame_width_ * scale_, frame_height_ * scale_ };
         glm::vec4 const src_rect{
@@ -39,9 +39,9 @@ namespace rst
     }
 
 
-    auto Sprite2D::tick( ) -> void
+    auto sprite_2d::tick( ) -> void
     {
-        accumulated_time_ += GAME_TIME.get_delta_time( );
+        accumulated_time_ += GAME_TIME.delta_time( );
         if ( accumulated_time_ >= frame_delay_ )
         {
             accumulated_time_ -= frame_delay_;
@@ -56,32 +56,32 @@ namespace rst
     }
 
 
-    auto Sprite2D::flip( bool const horizontal, bool const vertical ) -> void
+    auto sprite_2d::flip( bool const horizontal, bool const vertical ) -> void
     {
         flip_.first  = horizontal ? -1 : 1;
         flip_.second = vertical ? -1 : 1;
     }
 
 
-    auto Sprite2D::is_animation_completed( ) const -> bool
+    auto sprite_2d::is_animation_completed( ) const -> bool
     {
         return completed_;
     }
 
 
-    auto Sprite2D::is_looping( ) const -> bool
+    auto sprite_2d::is_looping( ) const -> bool
     {
         return loop_;
     }
 
 
-    auto Sprite2D::get_frame_index( ) const -> uint16_t
+    auto sprite_2d::frame_index( ) const -> uint16_t
     {
         return static_cast<uint16_t>( current_frame_ );
     }
 
 
-    auto Sprite2D::reset( ) -> void
+    auto sprite_2d::reset( ) -> void
     {
         accumulated_time_ = 0.f;
         current_frame_    = 0;
@@ -90,7 +90,7 @@ namespace rst
     }
 
 
-    auto Sprite2D::wrap_frame( ) -> void
+    auto sprite_2d::wrap_frame( ) -> void
     {
         if ( loop_ )
         {

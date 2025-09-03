@@ -11,32 +11,32 @@
 // TODO: Review code
 namespace rst
 {
-    class Blackboard;
+    class blackboard;
 }
 
 namespace rst
 {
-    class FiniteMultiStateMachine final : public BaseFiniteStateMachine
+    class finite_multi_state_machine final : public base_finite_state_machine
     {
     public:
-        explicit FiniteMultiStateMachine( Blackboard& blackboard );
+        explicit finite_multi_state_machine( blackboard& blackboard );
 
-        auto start( Uid start_state_id ) -> void override;
-        auto force_transition( Uid state_id ) -> void override;
+        auto start( earmark start_state_mark ) -> void override;
+        auto force_transition( earmark state_mark ) -> void override;
         auto tick( ) -> void override;
 
     protected:
-        auto create_state_impl( Uid state_id, std::unique_ptr<fsm::State>&& state ) -> fsm::State& override;
-        auto add_transition_impl( Uid from, Uid to, std::unique_ptr<fsm::Condition>&& cnd ) -> void override;
+        auto create_state_impl( earmark state_mark, std::unique_ptr<fsm::state>&& state ) -> fsm::state& override;
+        auto add_transition_impl( earmark from, earmark to, std::unique_ptr<fsm::condition>&& cnd ) -> void override;
 
     private:
-        Blackboard& blackboard_ref_;
-        std::map<Uid, fsm::MultiStateStack> stacks_{};
+        blackboard& blackboard_ref_;
+        std::map<earmark, fsm::multi_state_stack> stacks_{};
 
         bool started_{ false };
-        Uid current_state_id_{ uid::NONE };
+        earmark current_state_mark_{ earmark::null };
 
-        auto change_state( Uid uid ) -> void;
+        auto change_state( earmark mark ) -> void;
     };
 }
 

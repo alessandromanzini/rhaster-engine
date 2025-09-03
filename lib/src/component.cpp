@@ -5,28 +5,28 @@
 
 namespace rst
 {
-    Component::~Component( )
+    component::~component( )
     {
-        get_owner( ).on_deletion.unbind( this );
+        owner( ).on_deletion.unbind( this );
     }
 
 
-    auto Component::get_owner( ) const -> owner_t&
+    auto component::owner( ) const -> owner_type&
     {
         return owner_ref_;
     }
 
 
-    auto Component::mark_for_deletion( ) -> void
+    auto component::mark_for_deletion( ) -> void
     {
-        get_owner( ).remove_component( *this );
+        owner( ).remove_component( *this );
     }
 
 
-    Component::Component( owner_t& owner )
+    component::component( owner_type& owner )
         : owner_ref_{ owner }
     {
-        get_owner( ).on_deletion.bind( this, &Component::begin_owner_deletion );
+        owner.on_deletion.bind( this, &component::begin_owner_deletion );
     }
 
 }

@@ -8,40 +8,40 @@
 
 namespace rst
 {
-    class GameObject;
+    class gameobject;
 }
 
 // TODO: add documentation
 namespace rst
 {
     // ReSharper disable once CppClassCanBeFinal
-    class Component : public Deletable
+    class component : public deletable
     {
     public:
-        using owner_t = GameObject;
+        using owner_type = gameobject;
 
-        ~Component( ) override;
+        ~component( ) override;
 
-        Component( Component const& )                        = delete;
-        Component( Component&& ) noexcept                    = delete;
-        auto operator=( Component const& ) -> Component&     = delete;
-        auto operator=( Component&& ) noexcept -> Component& = delete;
+        component( component const& )                        = delete;
+        component( component&& ) noexcept                    = delete;
+        auto operator=( component const& ) -> component&     = delete;
+        auto operator=( component&& ) noexcept -> component& = delete;
 
         virtual auto fixed_tick( ) -> void { }
         virtual auto tick( ) -> void { }
         virtual auto render( ) const -> void { }
 
-        [[nodiscard]] auto get_owner( ) const -> owner_t&;
+        [[nodiscard]] auto owner( ) const -> owner_type&;
 
         auto mark_for_deletion( ) -> void final;
 
     protected:
-        explicit Component( owner_t& owner );
+        explicit component( owner_type& owner );
 
         virtual auto begin_owner_deletion( ) -> void { }
 
     private:
-        owner_t& owner_ref_;
+        owner_type& owner_ref_;
     };
 }
 

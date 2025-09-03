@@ -1,31 +1,26 @@
 #include <rst/__core/gameobject.h>
 
 #include <rst/temp/singleton/renderer.h>
-#include <rst/temp/singleton/resource_manager.h>
+
 #include <rst/__core/component.h>
 #include <rst/__core/scene.h>
 
 
 namespace rst
 {
-    // GameObject::GameObject( )
-    //     : view_ptr_{ new GameObjectView{ *this } } { }
+    gameobject::gameobject( scene& scene ) : scene_ref_{ scene } { }
 
 
-    GameObject::GameObject( Scene& scene )
-        : scene_ref_{ scene } { }
-
-
-    GameObject::~GameObject( ) noexcept
+    gameobject::~gameobject( ) noexcept
     {
         // notify hierarchy that this object is being deleted
         if ( parent_ptr_ != nullptr )
         {
             parent_ptr_->remove_child( this );
         }
-        for ( size_t i{}; i < children_.size( ); ++i )
+        for ( gameobject* child : children_ )
         {
-            children_[i]->set_parent( nullptr, false );
+            child->set_parent( nullptr, false );
         }
 
         // broadcast that owner is being deleted
@@ -33,38 +28,38 @@ namespace rst
     }
 
 
-    auto GameObject::fixed_tick( ) -> void
+    auto gameobject::fixed_tick( ) -> void
     {
-        for ( auto const& [key, component] : components_ )
+        for ( auto const& component : components_ | std::views::values )
         {
             component->fixed_tick( );
         }
     }
 
 
-    auto GameObject::tick( ) -> void
+    auto gameobject::tick( ) -> void
     {
-        for ( auto const& [key, component] : components_ )
+        for ( auto const& component : components_ | std::views::values )
         {
             component->tick( );
         }
     }
 
 
-    auto GameObject::render( ) const -> void
+    auto gameobject::render( ) const -> void
     {
         if ( not visible_ )
         {
             return;
         }
-        for ( auto const& [key, component] : components_ )
+        for ( auto const& component : components_ | std::views::values )
         {
             component->render( );
         }
     }
 
 
-    auto GameObject::cleanup( ) -> void
+    auto gameobject::cleanup( ) -> void
     {
         if ( deleter_.is_cleanup_needed( ) )
         {
@@ -73,31 +68,31 @@ namespace rst
     }
 
 
-    auto GameObject::get_owning_scene( ) -> Scene&
+    auto gameobject::owning_scene( ) -> scene&
     {
         return scene_ref_;
     }
 
 
-    auto GameObject::get_owning_scene( ) const -> Scene const&
+    auto gameobject::owning_scene( ) const -> scene const&
     {
         return scene_ref_;
     }
 
 
-    auto GameObject::set_tag( Uid const tag ) -> void
+    auto gameobject::set_tag( earmark const tag ) -> void
     {
         tag_ = tag;
     }
 
 
-    auto GameObject::get_tag( ) const -> Uid
+    auto gameobject::tag( ) const -> earmark
     {
         return tag_;
     }
 
 
-    auto GameObject::set_visibility( bool const visible ) -> void
+    auto gameobject::set_visibility( bool const visible ) -> void
     {
         visible_ = visible;
         for ( auto const child : children_ )
@@ -107,7 +102,7 @@ namespace rst
     }
 
 
-    auto GameObject::set_parent( GameObject* const parent, bool const keep_world_position /* = true */ ) -> void
+    auto gameobject::set_parent( gameobject* const parent, bool const keep_world_position /* = true */ ) -> void
     {
         // parent validation
         if ( is_child( parent ) || parent == this || parent == parent_ptr_ )
@@ -118,42 +113,42 @@ namespace rst
         if ( parent == nullptr )
         {
             // if becoming root object, local transform becomes world space transform
-            set_local_transform( get_world_transform( ) );
+            set_local_transform( world_transform( ) );
         }
         else
         {
-            // if parent is provided, we need to adjust the local transform to keep the world position
-            // and set it dirty to recalculate the world transform.
+            // if parent is provided, we need to adjust the local transform to keep the world position and set it dirty to
+            // recalculate the world transform.
             if ( keep_world_position )
             {
                 // TODO: test if rotation is canceled
-                auto const translation = get_world_transform( ).get_position( ) - parent->get_world_transform( ).get_position( );
-                set_local_transform( Transform::from_translation( translation ) );
+                auto const translation = world_transform( ).position( ) - parent->world_transform( ).position( );
+                set_local_transform( transform::from_translation( translation ) );
             }
             set_transform_dirty( );
         }
 
-        // re-parenting logic
+        // parenting logic
         if ( parent_ptr_ != nullptr ) { parent_ptr_->remove_child( this ); }
         if ( parent != nullptr ) { parent->add_child( this ); }
         parent_ptr_ = parent;
     }
 
 
-    auto GameObject::get_world_transform( ) -> Transform const&
+    auto gameobject::world_transform( ) -> transform const&
     {
         update_world_transform( );
         return world_transform_;
     }
 
 
-    auto GameObject::get_local_transform( ) const -> Transform const&
+    auto gameobject::local_transform( ) const -> transform const&
     {
         return local_transform_;
     }
 
 
-    auto GameObject::set_world_transform( Transform const& transform ) -> void
+    auto gameobject::set_world_transform( transform const& transform ) -> void
     {
         if ( parent_ptr_ == nullptr )
         {
@@ -161,39 +156,39 @@ namespace rst
         }
         else
         {
-            glm::mat3x3 const parentInverse{ inverse( parent_ptr_->get_world_transform( ).get_matrix( ) ) };
-            set_local_transform( parentInverse * transform.get_matrix( ) );
+            glm::mat3x3 const parent_inverse{ glm::inverse( parent_ptr_->world_transform( ).matrix( ) ) };
+            set_local_transform( parent_inverse * transform.matrix( ) );
         }
     }
 
 
-    auto GameObject::set_local_transform( Transform const& transform ) -> void
+    auto gameobject::set_local_transform( transform const& transform ) -> void
     {
         local_transform_ = transform;
         set_transform_dirty( );
     }
 
 
-    auto GameObject::set_local_transform( Transform&& transform ) -> void
+    auto gameobject::set_local_transform( transform&& transform ) -> void
     {
         local_transform_ = transform;
         set_transform_dirty( );
     }
 
 
-    auto GameObject::get_transform_operator( ) -> TransformOperator
+    auto gameobject::transform_operator( ) -> rst::transform_operator
     {
-        return TransformOperator{ *this };
+        return rst::transform_operator{ *this };
     }
 
 
-    auto GameObject::remove_component( Component& component ) -> void
+    auto gameobject::remove_component( component& component ) -> void
     {
         deleter_.mark_element_for_deletion( &component );
     }
 
 
-    auto GameObject::create_child( ) -> GameObject&
+    auto gameobject::create_child( ) -> gameobject&
     {
         auto& child = scene_ref_.create_object( );
         child.set_parent( this, false );
@@ -201,19 +196,19 @@ namespace rst
     }
 
 
-    auto GameObject::get_children( ) -> std::vector<GameObject*>&
+    auto gameobject::children( ) -> std::vector<gameobject*>&
     {
         return children_;
     }
 
 
-    auto GameObject::get_children( ) const -> std::vector<GameObject*> const&
+    auto gameobject::children( ) const -> std::vector<gameobject*> const&
     {
         return children_;
     }
 
 
-    auto GameObject::collect_children( std::vector<GameObject*>& children ) const -> void
+    auto gameobject::collect_children( std::vector<gameobject*>& children ) const -> void
     {
         for ( auto* child : children_ )
         {
@@ -223,45 +218,46 @@ namespace rst
     }
 
 
-    auto GameObject::mark_for_deletion( ) -> void
+    auto gameobject::mark_for_deletion( ) -> void
     {
         scene_ref_.remove( *this );
     }
 
 
-    auto GameObject::is_child( GameObject const* const game_object ) const -> bool
+    auto gameobject::is_child( gameobject const* const gameobject ) const -> bool
     {
-        return std::ranges::any_of( children_,
-                                    [game_object]( auto const* child )
-                                        {
-                                            return child == game_object || child->is_child( game_object );
-                                        } );
+        return std::ranges::any_of(
+            children_,
+            [gameobject]( auto const* child )
+            {
+                return child == gameobject || child->is_child( gameobject );
+            } );
     }
 
 
-    auto GameObject::add_child( GameObject* gameobject ) -> void
+    auto gameobject::add_child( gameobject* gameobject ) -> void
     {
         children_.push_back( gameobject );
     }
 
 
-    auto GameObject::remove_child( GameObject* gameobject ) -> void
+    auto gameobject::remove_child( gameobject* gameobject ) -> void
     {
         // todo: check this
-        if (children_.size())
+        if ( children_.size( ) )
         {
             std::erase( children_, gameobject );
         }
     }
 
 
-    auto GameObject::has_children( ) const -> bool
+    auto gameobject::has_children( ) const -> bool
     {
         return !children_.empty( );
     }
 
 
-    auto GameObject::set_transform_dirty( ) -> void
+    auto gameobject::set_transform_dirty( ) -> void
     {
         transform_dirty_ = true;
 
@@ -273,20 +269,19 @@ namespace rst
     }
 
 
-    auto GameObject::update_world_transform( ) -> void
+    auto gameobject::update_world_transform( ) -> void
     {
         if ( transform_dirty_ )
         {
             if ( parent_ptr_ == nullptr )
             {
-                world_transform_ = get_local_transform( );
+                world_transform_ = local_transform( );
             }
             else
             {
-                world_transform_ = parent_ptr_->get_world_transform( ) * local_transform_;
+                world_transform_ = parent_ptr_->world_transform( ) * local_transform_;
             }
             transform_dirty_ = false;
         }
     }
-
 }

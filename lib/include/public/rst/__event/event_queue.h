@@ -7,16 +7,16 @@
 namespace rst
 {
     template <typename TEvent>
-    class EventQueue final
+    class event_queue final
     {
     public:
-        EventQueue( )  = default;
-        ~EventQueue( ) = default;
+        event_queue( )  = default;
+        ~event_queue( ) = default;
 
-        EventQueue( EventQueue const& );
-        EventQueue( EventQueue&& ) noexcept;
-        auto operator=( EventQueue const& ) -> EventQueue&     = delete;
-        auto operator=( EventQueue&& ) noexcept -> EventQueue& = delete;
+        event_queue( event_queue const& );
+        event_queue( event_queue&& ) noexcept;
+        auto operator=( event_queue const& ) -> event_queue&     = delete;
+        auto operator=( event_queue&& ) noexcept -> event_queue& = delete;
 
         auto push( TEvent&& event ) -> void;
         auto push( TEvent const& event ) -> void;
@@ -50,58 +50,58 @@ namespace rst
     };
 
 
-    template <typename event_t>
-    EventQueue<event_t>::EventQueue( EventQueue const& other ) : queue_{ other.queue_ } { }
+    template <typename TEvent>
+    event_queue<TEvent>::event_queue( event_queue const& other ) : queue_{ other.queue_ } { }
 
 
-    template <typename event_t>
-    EventQueue<event_t>::EventQueue( EventQueue&& other ) noexcept : queue_{ std::move( other.queue_ ) } { }
+    template <typename TEvent>
+    event_queue<TEvent>::event_queue( event_queue&& other ) noexcept : queue_{ std::move( other.queue_ ) } { }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::push( event_t&& event ) -> void
+    template <typename TEvent>
+    auto event_queue<TEvent>::push( TEvent&& event ) -> void
     {
         queue_.emplace_back( std::move( event ) );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::push( event_t const& event ) -> void
+    template <typename TEvent>
+    auto event_queue<TEvent>::push( TEvent const& event ) -> void
     {
         queue_.push_back( event );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::front( ) -> event_t&
+    template <typename TEvent>
+    auto event_queue<TEvent>::front( ) -> TEvent&
     {
         return queue_.front( );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::front( ) const -> event_t const&
+    template <typename TEvent>
+    auto event_queue<TEvent>::front( ) const -> TEvent const&
     {
         return queue_.front( );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::pop( ) -> void
+    template <typename TEvent>
+    auto event_queue<TEvent>::pop( ) -> void
     {
         queue_.pop_front( );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::empty( ) const -> bool
+    template <typename TEvent>
+    auto event_queue<TEvent>::empty( ) const -> bool
     {
         return queue_.empty( );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::pop( event_t& event ) -> bool
+    template <typename TEvent>
+    auto event_queue<TEvent>::pop( TEvent& event ) -> bool
     {
         if ( empty( ) )
         {
@@ -113,10 +113,10 @@ namespace rst
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::is_queued( event_t const& event ) const -> bool
+    template <typename TEvent>
+    auto event_queue<TEvent>::is_queued( TEvent const& event ) const -> bool
     {
-        if constexpr ( std::equality_comparable<event_t> )
+        if constexpr ( std::equality_comparable<TEvent> )
         {
             return queue_.contains( event );
         }
@@ -127,15 +127,15 @@ namespace rst
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::is_queued( std::function<bool( event_t const& )> const& predicate ) const -> bool
+    template <typename TEvent>
+    auto event_queue<TEvent>::is_queued( std::function<bool( TEvent const& )> const& predicate ) const -> bool
     {
         return queue_.contains( predicate );
     }
 
 
-    template <typename event_t>
-    auto EventQueue<event_t>::clear( ) -> void
+    template <typename TEvent>
+    auto event_queue<TEvent>::clear( ) -> void
     {
         queue_.clear( );
     }

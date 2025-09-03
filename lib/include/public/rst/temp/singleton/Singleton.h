@@ -5,25 +5,25 @@
 namespace rst
 {
     template <typename T>
-    class Singleton
+    class singleton
     {
     public:
-        virtual ~Singleton( ) = default;
+        virtual ~singleton( ) = default;
 
-        Singleton( Singleton const& )                        = delete;
-        Singleton( Singleton&& ) noexcept                    = delete;
-        auto operator=( Singleton const& ) -> Singleton&     = delete;
-        auto operator=( Singleton&& ) noexcept -> Singleton& = delete;
+        singleton( singleton const& )                        = delete;
+        singleton( singleton&& ) noexcept                    = delete;
+        auto operator=( singleton const& ) -> singleton&     = delete;
+        auto operator=( singleton&& ) noexcept -> singleton& = delete;
 
 
-        static auto get_instance( ) -> T&
+        static auto instance( ) -> T&
         {
             static T instance{};
             return instance;
         }
 
     protected:
-        Singleton( ) = default;
+        singleton( ) = default;
     };
 }
 

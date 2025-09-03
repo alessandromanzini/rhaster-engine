@@ -8,21 +8,21 @@ namespace rst
     // +---------------------------+
     // | COLLIDER COMPONENT        |
     // +---------------------------+
-    ColliderComponent::ColliderComponent( owner_t& owner, glm::vec2 const position )
-        : Component{ owner }
+    collider_component::collider_component( owner_type& owner, glm::vec2 const position )
+        : component{ owner }
     {
         s_colliders_.emplace_back( this );
         offset_to( position );
     }
 
 
-    ColliderComponent::~ColliderComponent( )
+    collider_component::~collider_component( )
     {
         std::erase( s_colliders_, this );
     }
 
 
-    auto ColliderComponent::late_tick( ) -> void
+    auto collider_component::late_tick( ) -> void
     {
         // TODO: This should be done in a better way
         // check for overlaps with colliders that are not in the overlapping set or persisting overlaps
@@ -35,46 +35,46 @@ namespace rst
         {
             for ( size_t j{ i + 1u }; j < s_colliders_.size( ); ++j )
             {
-                auto& colliderA{ *s_colliders_[i] };
-                auto& colliderB{ *s_colliders_[j] };
+                auto& collider_a{ *s_colliders_[i] };
+                auto& collider_b{ *s_colliders_[j] };
 
-                if ( not colliderA.is_enabled( ) or not colliderB.is_enabled( ) )
+                if ( not collider_a.is_enabled( ) or not collider_b.is_enabled( ) )
                 {
                     continue;
                 }
 
-                if ( colliderA.overlapping_colliders_.contains( &colliderB ) )
+                if ( collider_a.overlapping_colliders_.contains( &collider_b ) )
                 {
-                    colliderA.handle_persist_overlap( colliderB );
+                    collider_a.handle_persist_overlap( collider_b );
                 }
                 else
                 {
-                    colliderA.hit_test( colliderB );
+                    collider_a.hit_test( collider_b );
                 }
             }
         }
     }
 
 
-    auto ColliderComponent::offset_by( glm::vec2 const offset ) -> void
+    auto collider_component::offset_by( glm::vec2 const offset ) -> void
     {
         offset_ += offset;
     }
 
 
-    auto ColliderComponent::offset_to( glm::vec2 const offset ) -> void
+    auto collider_component::offset_to( glm::vec2 const offset ) -> void
     {
         offset_ = offset;
     }
 
 
-    auto ColliderComponent::get_offset( ) const -> glm::vec2
+    auto collider_component::offset( ) const -> glm::vec2
     {
         return offset_;
     }
 
 
-    auto ColliderComponent::set_enabled( bool const enabled ) -> void
+    auto collider_component::set_enabled( bool const enabled ) -> void
     {
         enabled_ = enabled;
         if ( not enabled )
@@ -87,33 +87,33 @@ namespace rst
     }
 
 
-    auto ColliderComponent::is_enabled( ) const -> bool
+    auto collider_component::is_enabled( ) const -> bool
     {
         return enabled_;
     }
 
 
-    auto ColliderComponent::get_position( ) const -> glm::vec2
+    auto collider_component::position( ) const -> glm::vec2
     {
-        return offset_ + get_owner( ).get_world_transform( ).get_position( );
+        return offset_ + owner( ).world_transform( ).position( );
     }
 
 
-    auto ColliderComponent::clear_overlap( ColliderComponent& other ) -> void
+    auto collider_component::clear_overlap( collider_component& other ) -> void
     {
         handle_end_overlap( other );
         other.handle_end_overlap( *this );
     }
 
 
-    auto ColliderComponent::hit_test( ColliderComponent& other, bool const ignore_cache ) -> CollisionInfo
+    auto collider_component::hit_test( collider_component& other, bool const ignore_cache ) -> collision_info
     {
         if ( not ignore_cache && overlapping_colliders_.contains( &other ) )
         {
-            return { .status = CollisionStatus::CACHED };
+            return { .status = collision_status::cached };
         }
 
-        if ( CollisionInfo info = hit_test_impl( other ); info.has_collided( ) )
+        if ( collision_info info = hit_test_impl( other ); info.has_collided( ) )
         {
             if ( not ignore_cache )
             {
@@ -126,11 +126,11 @@ namespace rst
             return info;
         }
 
-        return { .status = CollisionStatus::NONE };
+        return { .status = collision_status::none };
     }
 
 
-    auto ColliderComponent::handle_persist_overlap( ColliderComponent& other ) -> void
+    auto collider_component::handle_persist_overlap( collider_component& other ) -> void
     {
         if ( not hit_test( other, true ).has_collided( ) )
         {
@@ -139,14 +139,14 @@ namespace rst
     }
 
 
-    auto ColliderComponent::handle_begin_overlap( ColliderComponent& other, CollisionInfo const& info ) -> void
+    auto collider_component::handle_begin_overlap( collider_component& other, collision_info const& info ) -> void
     {
         on_begin_overlap_dispatcher_.broadcast( *this, other, info );
         overlapping_colliders_.insert( &other );
     }
 
 
-    auto ColliderComponent::handle_end_overlap( ColliderComponent& other ) -> void
+    auto collider_component::handle_end_overlap( collider_component& other ) -> void
     {
         on_end_overlap_dispatcher_.broadcast( *this, other );
         overlapping_colliders_.remove( &other );

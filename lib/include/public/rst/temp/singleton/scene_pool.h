@@ -10,12 +10,12 @@
 namespace rst
 {
     // todo: make tick and render inaccessible from outside
-    class ScenePool final : public Singleton<ScenePool>
+    class scene_pool final : public singleton<scene_pool>
     {
-        friend class Singleton;
+        friend class singleton;
 
     public:
-        auto create_scene( std::string const& name ) -> Scene&;
+        auto create_scene( std::string const& name ) -> scene&;
 
         auto select_scene( std::string const& name ) -> void;
         auto select_first_scene( ) -> void;
@@ -29,21 +29,21 @@ namespace rst
 
         [[nodiscard]] auto does_scene_exist( std::string const& name ) const -> bool;
 
-        [[nodiscard]] auto get_active_scene( ) -> Scene&;
-        [[nodiscard]] auto get_active_scene( ) const -> Scene&;
-        [[nodiscard]] auto get_scene( std::string const& name ) const -> Scene&;
-        [[nodiscard]] auto get_scene( uint16_t id ) const -> Scene&;
+        [[nodiscard]] auto active_scene( ) -> scene&;
+        [[nodiscard]] auto active_scene( ) const -> scene&;
+        [[nodiscard]] auto scene( std::string const& name ) const -> scene&;
+        [[nodiscard]] auto scene( uint16_t id ) const -> rst::scene&;
 
         auto cleanup( ) const -> void;
 
     private:
-        std::vector<std::unique_ptr<Scene>> scenes_;
-        Scene* active_scene_ptr_{ nullptr };
+        std::vector<std::unique_ptr<rst::scene>> scenes_;
+        rst::scene* active_scene_ptr_{ nullptr };
 
-        ScenePool( ) = default;
+        scene_pool( ) = default;
     };
 
-    extern ScenePool& SCENE_POOL;
+    extern scene_pool& SCENE_POOL;
 }
 
 

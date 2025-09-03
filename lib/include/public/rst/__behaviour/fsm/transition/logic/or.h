@@ -9,7 +9,7 @@ namespace rst::fsm::logic
     template <typename... conditions_t>
     struct Or final : Combine<conditions_t...>
     {
-        auto evaluate( Blackboard& blackboard ) const -> bool override
+        auto evaluate( blackboard& blackboard ) const -> bool override
         {
             for ( auto const& condition : Combine<conditions_t...>::conditions_ )
             {

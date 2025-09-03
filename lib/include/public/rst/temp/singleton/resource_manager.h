@@ -3,51 +3,51 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/data_type.h>
 #include <rst/framework/observer.h>
 #include <rst/temp/singleton/Singleton.h>
+#include <rst/type/safe_resource.h>
 
 
 namespace rst
 {
     namespace event
     {
-        enum class LifetimeEvent
+        enum class lifetime_event
         {
             // Unload unused for all resources
-            UNLOAD_ALL,
+            unload_all,
 
             // Unload unused audio resources
-            UNLOAD_AUDIO,
+            unload_audio,
 
             // Unload unused texture resources
-            UNLOAD_TEXTURES,
+            unload_textures,
 
             // Unload unused font resources
-            UNLOAD_FONTS
+            unload_fonts
         };
     }
 
     // TODO: move all loading functions to services and use Observer pattern to notify when unloading
-    class Texture2D;
-    class Font;
-    class ResourceManager final : public Singleton<ResourceManager>
+    class texture_2d;
+    class font;
+    class resource_manager final : public singleton<resource_manager>
     {
-        friend class Singleton;
-        using queued_event_t = std::pair<event::LifetimeEvent, Uid>;
+        friend class singleton;
+        using queued_event_type = std::pair<event::lifetime_event, earmark>;
 
     public:
         auto init( std::filesystem::path const& data_path ) -> void;
 
-        auto load_texture( std::filesystem::path const& path ) -> std::shared_ptr<Texture2D>;
-        auto load_font( std::filesystem::path const& path, uint8_t size ) -> std::shared_ptr<Font>;
+        auto load_texture( std::filesystem::path const& path ) -> std::shared_ptr<texture_2d>;
+        auto load_font( std::filesystem::path const& path, uint8_t size ) -> std::shared_ptr<font>;
 
-        [[nodiscard]] auto get_data_path( ) const -> std::filesystem::path const&;
+        [[nodiscard]] auto data_path( ) const -> std::filesystem::path const&;
 
-        auto add_lifetime_observer( Observer& observer ) -> void;
-        auto remove_lifetime_observer( Observer const& observer ) -> void;
+        auto add_lifetime_observer( observer& observer ) -> void;
+        auto remove_lifetime_observer( observer const& observer ) -> void;
 
-        auto signal_lifetime_event( event::LifetimeEvent event, Uid value = uid::NONE ) -> void;
+        auto signal_lifetime_event( event::lifetime_event event, earmark value = earmark::null ) -> void;
 
         auto unload_unused_resources( ) -> void;
 
@@ -57,13 +57,13 @@ namespace rst
     private:
         std::filesystem::path data_path_{};
 
-        thread::SafeResource<std::set<queued_event_t>> queued_events_{ {} };
-        Subject lifetime_subject_{};
+        thread::safe_resource<std::set<queued_event_type>> queued_events_{ {} };
+        subject lifetime_subject_{};
 
-        std::map<Uid, std::shared_ptr<Texture2D>> loaded_textures_{};
-        std::map<std::pair<Uid, uint8_t>, std::shared_ptr<Font>> loaded_fonts_{};
+        std::map<earmark, std::shared_ptr<texture_2d>> loaded_textures_{};
+        std::map<std::pair<earmark, uint8_t>, std::shared_ptr<font>> loaded_fonts_{};
 
-        ResourceManager( ) = default;
+        resource_manager( ) = default;
     };
 
 
@@ -84,7 +84,7 @@ namespace rst
     // }
 
 
-    extern ResourceManager& RESOURCE_MANAGER;
+    extern resource_manager& RESOURCE_MANAGER;
 }
 
 #endif //!RST_RESOURCE_MANAGER_H

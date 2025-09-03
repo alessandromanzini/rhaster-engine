@@ -6,40 +6,40 @@
 
 namespace rst
 {
-    class Blackboard;
+    class blackboard;
 }
 
 namespace rst::fsm
 {
-    class Condition;
-    class State;
+    class condition;
+    class state;
 }
 
 // todo: Review code
 namespace rst::fsm
 {
-    using TTransitionPair = std::pair<std::unique_ptr<Condition>, Uid>;
+    using transition_pair_t = std::pair<std::unique_ptr<condition>, earmark>;
 
 
-    struct SingleStateStack final
+    struct single_state_stack final
     {
-        std::unique_ptr<State> state{ nullptr };
-        std::vector<TTransitionPair> transitions;
+        std::unique_ptr<state> state{ nullptr };
+        std::vector<transition_pair_t> transitions;
 
-        auto trigger_on_enter( Blackboard& blackboard ) const -> void;
-        auto trigger_on_exit( Blackboard& blackboard ) const -> void;
-        auto trigger_tick( Blackboard& blackboard ) const -> void;
+        auto trigger_on_enter( blackboard& blackboard ) const -> void;
+        auto trigger_on_exit( blackboard& blackboard ) const -> void;
+        auto trigger_tick( blackboard& blackboard ) const -> void;
     };
 
 
-    struct MultiStateStack final
+    struct multi_state_stack final
     {
-        std::vector<std::unique_ptr<State>> states{};
-        std::vector<TTransitionPair> transitions{};
+        std::vector<std::unique_ptr<state>> states{};
+        std::vector<transition_pair_t> transitions{};
 
-        auto trigger_on_enter( Blackboard& blackboard ) const -> void;
-        auto trigger_on_exit( Blackboard& blackboard ) const -> void;
-        auto trigger_tick( Blackboard& blackboard ) const -> void;
+        auto trigger_on_enter( blackboard& blackboard ) const -> void;
+        auto trigger_on_exit( blackboard& blackboard ) const -> void;
+        auto trigger_tick( blackboard& blackboard ) const -> void;
     };
 }
 

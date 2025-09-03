@@ -5,31 +5,31 @@
 
 namespace rst
 {
-    Scene::Scene( std::string name )
+    scene::scene( std::string name )
         : name_{ std::move( name ) }
         , id_( s_id_counter_++ ) { }
 
 
-    auto Scene::add( std::unique_ptr<GameObject> object ) -> void
+    auto scene::add( std::unique_ptr<gameobject> object ) -> void
     {
         assert( object != nullptr && "Object pointer cannot be null!" );
         objects_.emplace_back( std::move( object ) );
     }
 
 
-    auto Scene::remove( GameObject& object ) -> void
+    auto scene::remove( gameobject& object ) -> void
     {
         deleter_.mark_element_for_deletion( &object );
 
         // remove children as well
-        for ( auto* child : object.get_children( ) )
+        for ( auto* child : object.children( ) )
         {
             remove( *child );
         }
     }
 
 
-    auto Scene::remove_all( ) -> void
+    auto scene::remove_all( ) -> void
     {
         for ( auto& object : objects_ )
         {
@@ -38,7 +38,7 @@ namespace rst
     }
 
 
-    auto Scene::find_object( std::function<bool( GameObject const& )> const& predicate ) const -> OptionalRef<GameObject>
+    auto scene::find_object( std::function<bool( gameobject const& )> const& predicate ) const -> OptionalRef<gameobject>
     {
         for ( auto const& object : objects_ )
         {
@@ -51,25 +51,25 @@ namespace rst
     }
 
 
-    auto Scene::create_object( ) -> GameObject&
+    auto scene::create_object( ) -> gameobject&
     {
-        return *objects_.emplace_back( std::make_unique<GameObject>( *this ) );
+        return *objects_.emplace_back( std::make_unique<gameobject>( *this ) );
     }
 
 
-    auto Scene::get_name( ) const -> std::string const&
+    auto scene::name( ) const -> std::string const&
     {
         return name_;
     }
 
 
-    auto Scene::get_id( ) const -> uint16_t
+    auto scene::id( ) const -> uint16_t
     {
         return id_;
     }
 
 
-    auto Scene::fixed_tick( ) const -> void
+    auto scene::fixed_tick( ) const -> void
     {
         for ( auto const& object : objects_ )
         {
@@ -78,7 +78,7 @@ namespace rst
     }
 
 
-    auto Scene::tick( ) const -> void
+    auto scene::tick( ) const -> void
     {
         for ( auto const& object : objects_ )
         {
@@ -87,7 +87,7 @@ namespace rst
     }
 
 
-    auto Scene::render( ) const -> void
+    auto scene::render( ) const -> void
     {
         for ( auto const& object : objects_ )
         {
@@ -96,7 +96,7 @@ namespace rst
     }
 
 
-    auto Scene::cleanup( ) -> void
+    auto scene::cleanup( ) -> void
     {
         // delete marked objects
         if ( deleter_.is_cleanup_needed( ) )
@@ -112,5 +112,5 @@ namespace rst
     }
 
 
-    uint16_t Scene::s_id_counter_ = 0;
+    uint16_t scene::s_id_counter_ = 0;
 }

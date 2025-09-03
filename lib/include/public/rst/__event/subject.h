@@ -6,34 +6,34 @@
 
 namespace rst
 {
-    class Observer;
+    class observer;
 }
 
 namespace rst
 {
     namespace event
     {
-        using BroadcastValue = std::variant<bool, int, float, double, std::string_view, Uid>;
+        using broadcast_value_type = std::variant<bool, int, float, double, std::string_view, earmark>;
     }
 
-    class Subject final
+    class subject final
     {
     public:
-        Subject( )           = default;
-        ~Subject( ) noexcept = default;
+        subject( )           = default;
+        ~subject( ) noexcept = default;
 
-        Subject( Subject const& )                        = delete;
-        Subject( Subject&& ) noexcept                    = delete;
-        auto operator=( Subject const& ) -> Subject&     = delete;
-        auto operator=( Subject&& ) noexcept -> Subject& = delete;
+        subject( subject const& )                        = delete;
+        subject( subject&& ) noexcept                    = delete;
+        auto operator=( subject const& ) -> subject&     = delete;
+        auto operator=( subject&& ) noexcept -> subject& = delete;
 
-        auto add_observer( Observer& observer ) -> void;
-        auto remove_observer( Observer const& observer ) -> void;
+        auto add_observer( observer& observer ) -> void;
+        auto remove_observer( observer const& observer ) -> void;
 
-        auto broadcast( Uid event, event::BroadcastValue const& value = {} ) const -> void;
+        auto broadcast( earmark event, event::broadcast_value_type const& value = {} ) const -> void;
 
     private:
-        Observer* head_ptr_{ nullptr };
+        observer* head_ptr_{ nullptr };
     };
 }
 

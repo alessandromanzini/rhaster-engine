@@ -41,7 +41,7 @@
 // +--------------------------------+
 // | ENGINE HEADERS                 |
 // +--------------------------------+
-#include <rst/__core/uid.h>
+#include <rst/__core/earmark.h>
 
 
 #endif //!RST_PCH_H

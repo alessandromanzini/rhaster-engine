@@ -1,31 +1,31 @@
-#include <rst/__type/sound_type/audio.h>
+#include <rst/__type/sound/audio.h>
 
 #include <rst/temp/singleton/resource_manager.h>
 
 
 namespace rst
 {
-    auto Audio::get_sound_id( ) const -> Uid
+    auto audio::sound_mark( ) const -> earmark
     {
-        return sound_id_;
+        return sound_mark_;
     }
 
 
-    auto Audio::get_tag_id( ) const -> Uid
+    auto audio::tag_mark( ) const -> earmark
     {
-        return tag_id_;
+        return tag_mark_;
     }
 
 
-    auto Audio::get_type( ) const -> sound::SoundType
+    auto audio::type( ) const -> sound::sound_type
     {
         return type_;
     }
 
 
-    Audio::Audio( sound::SoundType const type, Uid const sound_id, Uid const tag_id )
+    audio::audio( sound::sound_type const type, earmark const sound_mark, earmark const tag_mark )
         : type_{ type }
-        , sound_id_{ sound_id }
-        , tag_id_{ tag_id } { }
+        , sound_mark_{ sound_mark }
+        , tag_mark_{ tag_mark } { }
 
 }

@@ -11,7 +11,7 @@ namespace rst::fsm::logic
     template <typename... TConditions>
     struct Nor final : Combine<TConditions...>
     {
-        auto evaluate( Blackboard& blackboard ) const -> bool override
+        auto evaluate( blackboard& blackboard ) const -> bool override
         {
             for ( auto const& condition : Combine<TConditions...>::conditions_ )
             {

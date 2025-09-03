@@ -1,12 +1,12 @@
 #include <rst/temp/singleton/renderer.h>
 
-#include <rst/framework/resource_type.h>
 #include <rst/temp/singleton/scene_pool.h>
+#include <rst/__type/texture/texture2D.h>
 
 
 namespace rst
 {
-    Renderer& RENDERER = Renderer::get_instance( );
+    renderer& RENDERER = renderer::instance( );
 
     // +---------------------------+
     // | HELPERS                   |
@@ -55,7 +55,7 @@ namespace rst
     // +---------------------------+
     // | RENDERER                  |
     // +---------------------------+
-    auto Renderer::init( SDL_Window* window ) -> void
+    auto renderer::init( SDL_Window* window ) -> void
     {
         window_ptr_   = window;
         renderer_ptr_ = SDL_CreateRenderer( window, get_open_gl_driver_index( ), SDL_RENDERER_ACCELERATED );
@@ -66,21 +66,21 @@ namespace rst
     }
 
 
-    auto Renderer::render( ) -> void
+    auto renderer::render( ) -> void
     {
-        auto const& [r, g, b, a] = get_background_color( );
+        auto const& [r, g, b, a] = background_color( );
 
         SDL_SetRenderDrawColor( renderer_ptr_, r, g, b, a );
         SDL_RenderClear( renderer_ptr_ );
 
         SCENE_POOL.render( );
 
-        render_requests(  );
+        render_requests( );
         SDL_RenderPresent( renderer_ptr_ );
     }
 
 
-    auto Renderer::destroy( ) -> void
+    auto renderer::destroy( ) -> void
     {
         if ( renderer_ptr_ != nullptr )
         {
@@ -90,40 +90,42 @@ namespace rst
     }
 
 
-    auto Renderer::set_z_index( int const z_index ) -> void
+    auto renderer::set_z_index( int const z_index ) -> void
     {
         z_index_ = z_index;
     }
 
 
-    auto Renderer::render_texture( Texture2D const& texture, glm::vec2 const position ) -> void
+    auto renderer::render_texture( texture_2d const& texture, glm::vec2 const position ) -> void
     {
-        render::RenderRequest request{
-            .texture = texture.get_sdl_texture( ),
+        render::request request{
+            .texture = texture.sdl_texture( ),
             .dst = create_rect( position ),
             .ex = false,
             .z_index = z_index_
         };
-        SDL_QueryTexture( texture.get_sdl_texture( ), nullptr, nullptr, &request.dst.w, &request.dst.h );
+        SDL_QueryTexture( request.texture, nullptr, nullptr, &request.dst.w, &request.dst.h );
         render_queue_.insert( request );
     }
 
 
-    auto Renderer::render_texture( Texture2D const& texture, glm::vec4 const& dst_rect ) -> void
+    auto renderer::render_texture( texture_2d const& texture, glm::vec4 const& dst_rect ) -> void
     {
-        render_queue_.insert( {
-            .texture = texture.get_sdl_texture( ),
-            .dst = create_rect( dst_rect ),
-            .ex = false,
-            .z_index = z_index_
-        } );
+        render_queue_.insert(
+            {
+                .texture = texture.sdl_texture( ),
+                .dst = create_rect( dst_rect ),
+                .ex = false,
+                .z_index = z_index_
+            } );
     }
 
 
-    auto Renderer::render_partial_texture( Texture2D const& texture, glm::vec2 const position, glm::vec4 const& src_rect ) -> void
+    auto renderer::render_partial_texture(
+        texture_2d const& texture, glm::vec2 const position, glm::vec4 const& src_rect ) -> void
     {
-        render::RenderRequest request{
-            .texture = texture.get_sdl_texture( ),
+        render::request request{
+            .texture = texture.sdl_texture( ),
             .dst = create_rect( position ),
             .src = create_rect( src_rect ),
             .ex = true,
@@ -135,38 +137,39 @@ namespace rst
     }
 
 
-    auto Renderer::render_partial_texture(
-        Texture2D const& texture, glm::vec4 const& dst_rect, glm::vec4 const& src_rect ) -> void
+    auto renderer::render_partial_texture(
+        texture_2d const& texture, glm::vec4 const& dst_rect, glm::vec4 const& src_rect ) -> void
     {
-        render_queue_.insert( {
-            .texture = texture.get_sdl_texture( ),
-            .dst = create_rect( dst_rect ),
-            .src = create_rect( src_rect ),
-            .ex = true,
-            .z_index = z_index_
-        } );
+        render_queue_.insert(
+            {
+                .texture = texture.sdl_texture( ),
+                .dst = create_rect( dst_rect ),
+                .src = create_rect( src_rect ),
+                .ex = true,
+                .z_index = z_index_
+            } );
     }
 
 
-    auto Renderer::get_sdl_renderer( ) const -> SDL_Renderer*
+    auto renderer::sdl_renderer( ) const -> SDL_Renderer*
     {
         return renderer_ptr_;
     }
 
 
-    auto Renderer::get_background_color( ) const -> SDL_Color const&
+    auto renderer::background_color( ) const -> SDL_Color const&
     {
         return clear_color_;
     }
 
 
-    auto Renderer::set_background_color( SDL_Color const& color ) -> void
+    auto renderer::set_background_color( SDL_Color const& color ) -> void
     {
         clear_color_ = color;
     }
 
 
-    auto Renderer::render_requests( ) -> void
+    auto renderer::render_requests( ) -> void
     {
         for ( auto const& request : render_queue_ )
         {
@@ -184,7 +187,7 @@ namespace rst
     }
 
 
-    auto Renderer::render_texture_ex_impl( SDL_Texture* texture, SDL_Rect const* dst, SDL_Rect* src ) const -> void
+    auto renderer::render_texture_ex_impl( SDL_Texture* texture, SDL_Rect const* dst, SDL_Rect* src ) const -> void
     {
         SDL_RendererFlip flip{ SDL_FLIP_NONE };
         if ( src->w < 0 )
@@ -198,13 +201,12 @@ namespace rst
             src->h = -src->h;
         }
 
-        SDL_RenderCopyEx( get_sdl_renderer( ), texture, src, dst, 0, nullptr, flip );
+        SDL_RenderCopyEx( sdl_renderer( ), texture, src, dst, 0, nullptr, flip );
     }
 
 
-    auto Renderer::render_texture_impl( SDL_Texture* texture, SDL_Rect const* dst, SDL_Rect const* src ) const -> void
+    auto renderer::render_texture_impl( SDL_Texture* texture, SDL_Rect const* dst, SDL_Rect const* src ) const -> void
     {
-        SDL_RenderCopy( get_sdl_renderer( ), texture, src, dst );
+        SDL_RenderCopy( sdl_renderer( ), texture, src, dst );
     }
-
 }

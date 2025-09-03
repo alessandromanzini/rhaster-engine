@@ -8,49 +8,49 @@
 
 namespace rst
 {
-    class BaseController
+    class base_controller
     {
     public:
-        virtual ~BaseController( ) = default;
+        virtual ~base_controller( ) = default;
 
-        BaseController( BaseController const& )                        = delete;
-        BaseController( BaseController&& ) noexcept                    = delete;
-        auto operator=( BaseController const& ) -> BaseController&     = delete;
-        auto operator=( BaseController&& ) noexcept -> BaseController& = delete;
+        base_controller( base_controller const& )                        = delete;
+        base_controller( base_controller&& ) noexcept                    = delete;
+        auto operator=( base_controller const& ) -> base_controller&     = delete;
+        auto operator=( base_controller&& ) noexcept -> base_controller& = delete;
 
         /**
          * This method is called when a controller possesses a GameObject.
          * @param pawn The pointer to the possessed GameObject
          */
-        virtual auto possess( GameObject* pawn ) -> void;
+        virtual auto possess( gameobject* pawn ) -> void;
 
         /**
          * This method is called when a controller unpossesses a GameObject.
          */
         virtual auto unpossess( ) -> void;
 
-        [[nodiscard]] auto get_pawn( ) const -> GameObject const*;
-        [[nodiscard]] auto get_pawn( ) -> GameObject*;
+        [[nodiscard]] auto pawn( ) const -> gameobject const*;
+        [[nodiscard]] auto pawn( ) -> gameobject*;
 
         [[nodiscard]] auto has_pawn( ) const -> bool;
 
-        [[nodiscard]] auto get_id( ) const -> int32_t;
+        [[nodiscard]] auto id( ) const -> int32_t;
 
-        [[nodiscard]] auto operator==( BaseController const& other ) const -> bool;
-        [[nodiscard]] auto operator==( BaseController const* other ) const -> bool;
+        [[nodiscard]] auto operator==( base_controller const& other ) const -> bool;
+        [[nodiscard]] auto operator==( base_controller const* other ) const -> bool;
 
     protected:
         int32_t const id_;
 
-        BaseController( );
+        base_controller( );
 
     private:
         inline static int32_t s_id_counter_{ 0 };
-        GameObject* pawn_ptr_{ nullptr };
+        gameobject* pawn_ptr_{ nullptr };
     };
 
 
-    inline auto BaseController::possess( GameObject* pawn ) -> void
+    inline auto base_controller::possess( gameobject* pawn ) -> void
     {
         // TODO: add error logging system
         assert( pawn && "BaseController::possess: Pawn cannot be nullptr!" );
@@ -60,54 +60,54 @@ namespace rst
             unpossess( );
         }
         pawn_ptr_ = pawn;
-        pawn_ptr_->on_deletion.bind( this, &BaseController::unpossess );
+        pawn_ptr_->on_deletion.bind( this, &base_controller::unpossess );
     }
 
 
-    inline auto BaseController::unpossess( ) -> void
+    inline auto base_controller::unpossess( ) -> void
     {
         pawn_ptr_->on_deletion.unbind( this );
         pawn_ptr_ = nullptr;
     }
 
 
-    inline auto BaseController::get_pawn( ) const -> GameObject const*
+    inline auto base_controller::pawn( ) const -> gameobject const*
     {
         return pawn_ptr_;
     }
 
 
-    inline auto BaseController::get_pawn( ) -> GameObject*
+    inline auto base_controller::pawn( ) -> gameobject*
     {
         return pawn_ptr_;
     }
 
 
-    inline auto BaseController::has_pawn( ) const -> bool
+    inline auto base_controller::has_pawn( ) const -> bool
     {
         return pawn_ptr_ != nullptr;
     }
 
 
-    inline auto BaseController::get_id( ) const -> int32_t
+    inline auto base_controller::id( ) const -> int32_t
     {
         return id_;
     }
 
 
-    inline auto BaseController::operator==( BaseController const& other ) const -> bool
+    inline auto base_controller::operator==( base_controller const& other ) const -> bool
     {
         return id_ == other.id_;
     }
 
 
-    inline auto BaseController::operator==( BaseController const* other ) const -> bool
+    inline auto base_controller::operator==( base_controller const* other ) const -> bool
     {
         return id_ == other->id_;
     }
 
 
-    inline BaseController::BaseController( ) : id_{ s_id_counter_++ } { }
+    inline base_controller::base_controller( ) : id_{ s_id_counter_++ } { }
 }
 
 

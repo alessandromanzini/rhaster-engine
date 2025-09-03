@@ -8,47 +8,44 @@ using namespace rst::input;
 // todo: examine code
 namespace rst
 {
-    PlayerController::~PlayerController( ) noexcept
+    player_controller::~player_controller( ) noexcept
     {
         if ( has_registered_device_.clone( ) )
         {
-            auto& context = INPUT_SYSTEM.get_input_mapping_context( );
+            auto& context = INPUT_SYSTEM.input_mapping_context( );
             context.unregister_device( *this );
             has_registered_device_.set( false );
         }
     }
 
 
-    auto PlayerController::has_registered_device( ) const -> bool
+    auto player_controller::has_registered_device( ) const -> bool
     {
         return has_registered_device_.clone( );
     }
 
 
-    auto PlayerController::try_register_device(
-        DeviceType const device_type, std::chrono::milliseconds const timeout ) -> void
+    auto player_controller::try_register_device( device_type const device_type, std::chrono::milliseconds const timeout ) -> void
     {
-        auto& context = INPUT_SYSTEM.get_input_mapping_context( );
+        auto& context = INPUT_SYSTEM.input_mapping_context( );
         switch ( device_type )
         {
-            case DeviceType::KEYBOARD:
-                try_register_keyboard_impl( context, timeout );
+            case device_type::keyboard: try_register_keyboard_impl( context, timeout );
                 break;
 
-            case DeviceType::GAMEPAD:
-                try_register_gamepad_impl( context, timeout );
+            case device_type::gamepad: try_register_gamepad_impl( context, timeout );
                 break;
         }
     }
 
 
-    auto PlayerController::device_registered( InputMappingContext& /* context */, DeviceInfo /* deviceInfo */ ) -> void { }
+    auto player_controller::device_registered( input_mapping_context& /* context */, device_info /* deviceInfo */ ) -> void { }
 
 
-    auto PlayerController::try_register_keyboard_impl(
-        InputMappingContext& context, std::chrono::milliseconds /* timeout */ ) -> void
+    auto player_controller::try_register_keyboard_impl(
+        input_mapping_context& context, std::chrono::milliseconds /* timeout */ ) -> void
     {
-        constexpr DeviceInfo device_info{ DeviceType::KEYBOARD };
+        constexpr device_info device_info{ device_type::keyboard };
 
         context.register_device( *this, device_info );
         has_registered_device_.set( true );
@@ -57,15 +54,16 @@ namespace rst
     }
 
 
-    auto PlayerController::try_register_gamepad_impl( InputMappingContext& context, std::chrono::milliseconds timeout ) -> void
+    auto player_controller::try_register_gamepad_impl( input_mapping_context& context, std::chrono::milliseconds timeout ) -> void
     {
-        if ( timeout < duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(REGISTER_ATTEMPT_TIME_STEP_ * 2)) )
+        if ( timeout < duration_cast<std::chrono::milliseconds>(
+                 std::chrono::duration<float>( register_attempt_time_step_ * 2 ) ) )
         {
             return;
         }
         try
         {
-            DeviceInfo const device_info{ DeviceType::GAMEPAD, INPUT_SYSTEM.fetch_free_gamepad_id( ) };
+            device_info const device_info{ device_type::gamepad, INPUT_SYSTEM.fetch_free_gamepad_id( ) };
 
             context.register_device( *this, device_info );
 
@@ -76,11 +74,13 @@ namespace rst
         catch ( std::runtime_error& )
         {
             has_registered_device_.set( false );
-            GAME_TIME.set_timeout(REGISTER_ATTEMPT_TIME_STEP_, [&, this] {
-                timeout -= duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(REGISTER_ATTEMPT_TIME_STEP_));
-                try_register_gamepad_impl(context, timeout);
-            });
+            GAME_TIME.set_timeout(
+                register_attempt_time_step_, [&, this]
+                {
+                    timeout -= duration_cast<std::chrono::milliseconds>(
+                        std::chrono::duration<float>( register_attempt_time_step_ ) );
+                    try_register_gamepad_impl( context, timeout );
+                } );
         }
     }
-
 }

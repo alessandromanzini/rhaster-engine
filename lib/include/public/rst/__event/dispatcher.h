@@ -10,22 +10,22 @@ namespace rst
     namespace event
     {
         template <typename... TParams>
-        struct DelegateInfo final
+        struct delegate_info final
         {
-            using delegate_t = std::function<void( TParams... )>;
+            using type = std::function<void( TParams... )>;
             void* binder{ nullptr };
-            delegate_t delegate{};
+            type delegate{};
         };
     }
 
     template <typename... TParams>
-    class Dispatcher final
+    class dispatcher final
     {
     public:
-        using Info = event::DelegateInfo<TParams...>;
+        using info_type = event::delegate_info<TParams...>;
 
 
-        auto set_delegates_pool( std::span<Info> delegates ) -> void
+        auto set_delegates_pool( std::span<info_type> delegates ) -> void
         {
             delegates_view_ = std::move( delegates );
         }
@@ -40,7 +40,7 @@ namespace rst
         }
 
     private:
-        std::span<Info> delegates_view_{};
+        std::span<info_type> delegates_view_{};
     };
 }
 

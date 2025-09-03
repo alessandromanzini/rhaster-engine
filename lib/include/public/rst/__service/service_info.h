@@ -4,16 +4,16 @@
 
 namespace rst
 {
-    enum class ServiceType
+    enum class service_type
     {
         // built-in service
-        INTERNAL = 0U,
+        internal = 0U,
 
         // custom service (user-defined)
-        CUSTOM = 1U,
+        custom = 1U,
 
         // sdl-based service
-        SDL = 2U,
+        sdl = 2U,
     };
 }
 

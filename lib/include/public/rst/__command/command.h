@@ -4,16 +4,16 @@
 
 namespace rst
 {
-    class Command
+    class command
     {
     public:
-        Command( )          = default;
-        virtual ~Command( ) = default;
+        command( )          = default;
+        virtual ~command( ) = default;
 
-        Command( Command const& )                        = delete;
-        Command( Command&& ) noexcept                    = delete;
-        auto operator=( Command const& ) -> Command&     = delete;
-        auto operator=( Command&& ) noexcept -> Command& = delete;
+        command( command const& )                        = delete;
+        command( command&& ) noexcept                    = delete;
+        auto operator=( command const& ) -> command&     = delete;
+        auto operator=( command&& ) noexcept -> command& = delete;
 
         virtual auto execute( ) -> void = 0;
     };

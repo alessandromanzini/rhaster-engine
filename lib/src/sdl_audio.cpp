@@ -1,14 +1,15 @@
-#include <rst/__type/sound_type/sdl_audio.h>
+#include <rst/__type/sound/sdl_audio.h>
 
 
 namespace rst
 {
-    SdlAudio::SdlAudio( std::filesystem::path const& path, sound::SoundType const type, Uid const sound_id, Uid const tag_id )
-        : Audio{ type, sound_id, tag_id }
+    sdl_audio::sdl_audio(
+        std::filesystem::path const& path, sound::sound_type const type, earmark const sound_mark, earmark const tag_mark )
+        : audio{ type, sound_mark, tag_mark }
     {
         assert( std::filesystem::exists( path ) && "Sound file does not exist!" );
 
-        if ( get_type(  ) == sound::SoundType::SOUND_EFFECT )
+        if ( type == sound::sound_type::sound_effect )
         {
             Mix_Chunk* chunk = Mix_LoadWAV( path.string( ).c_str( ) );
             if ( chunk == nullptr )
@@ -19,7 +20,7 @@ namespace rst
             }
             resource_ = chunk;
         }
-        else if ( get_type(  ) == sound::SoundType::SOUND_TRACK )
+        else if ( type == sound::sound_type::sound_track )
         {
             Mix_Music* music = Mix_LoadMUS( path.string( ).c_str( ) );
             if ( music == nullptr )
@@ -37,23 +38,20 @@ namespace rst
     }
 
 
-    SdlAudio::~SdlAudio( )
+    sdl_audio::~sdl_audio( )
     {
-        switch ( get_type(  ) )
+        switch ( type( ) )
         {
-            case sound::SoundType::SOUND_EFFECT:
-                Mix_FreeChunk( std::get<Mix_Chunk*>( resource_ ) );
-            break;
-            case sound::SoundType::SOUND_TRACK:
-                Mix_FreeMusic( std::get<Mix_Music*>( resource_ ) );
-            break;
+            case sound::sound_type::sound_effect: Mix_FreeChunk( std::get<Mix_Chunk*>( resource_ ) );
+                break;
+            case sound::sound_type::sound_track: Mix_FreeMusic( std::get<Mix_Music*>( resource_ ) );
+                break;
         }
     }
 
 
-    auto SdlAudio::get_resource( ) const -> sound::resource_variant_t
+    auto sdl_audio::resource( ) const -> sound::resource_type
     {
         return resource_;
     }
-
 }

@@ -8,7 +8,7 @@
 
 namespace rst
 {
-    class PlayerController;
+    class player_controller;
 }
 
 
@@ -20,30 +20,30 @@ namespace rst::input
      * This class holds the registered commands for every trigger event and is not bound to another specific object.
      * Binding should be achieved via other control structures.
      */
-    class CommandSet final
+    class command_set final
     {
-        using CommandList = std::list<InputCommandVariant>;
+        using list_type = std::list<input_command_type>;
 
     public:
-        auto set( CommandInfo&& info ) -> void;
-        auto execute( InputValueVariant value, TriggerEvent trigger ) const -> void;
+        auto set( command_info&& info ) -> void;
+        auto execute( input_value_type value, trigger trigger ) const -> void;
 
     private:
-        CommandList triggered_commands_{};
-        CommandList pressed_commands_{};
-        CommandList released_commands_{};
+        list_type triggered_commands_{};
+        list_type pressed_commands_{};
+        list_type released_commands_{};
 
-        [[nodiscard]] auto select_command_list( TriggerEvent trigger ) const -> CommandList const&;
+        [[nodiscard]] auto select_command_list( trigger trigger ) const -> list_type const&;
     };
 
 
     /**
      * This class represents the information about a digital device.
      */
-    struct DeviceInfo
+    struct device_info
     {
-        DeviceType type{};
-        DeviceId id{ std::numeric_limits<DeviceId>::max( ) };
+        device_type type{};
+        device_id_type id{ std::numeric_limits<device_id_type>::max( ) };
     };
 
 
@@ -52,46 +52,46 @@ namespace rst::input
      * merging as they get signaled. It also holds the commands bound for the controller, dispatching them in one
      * iteration from the input's queue.
      */
-    class DeviceContext final
+    class device_context final
     {
     public:
-        DeviceContext( PlayerController& controller, DeviceInfo device_info );
+        device_context( player_controller& controller, device_info device_info );
 
-        [[nodiscard]] auto get_controller( ) -> PlayerController&;
-        [[nodiscard]] auto get_controller( ) const -> PlayerController const&;
+        [[nodiscard]] auto controller( ) -> player_controller&;
+        [[nodiscard]] auto controller( ) const -> player_controller const&;
 
-        [[nodiscard]] auto is_device_suitable( DeviceInfo device_info ) const -> bool;
+        [[nodiscard]] auto is_device_suitable( device_info device_info ) const -> bool;
 
         /**
          * Bind a command under a specific UID pool.
-         * @param uid
+         * @param mark
          * @param command_info
          */
-        auto bind_command( Uid uid, CommandInfo&& command_info ) -> void;
+        auto bind_command( earmark mark, command_info&& command_info ) -> void;
 
         /**
          * Signals the input action linked to the command, if previously bound. It will add a new record to the queue or update
          * the value if it already exists.
          * @param input Snapshot of the input action to signal.
          */
-        auto signal_input( InputSnapshot const& input ) -> void;
+        auto signal_input( input_reduction const& input ) -> void;
 
         /**
          * Dispatches all signaled inputs to the corresponding commands.
          */
         auto execute_commands( ) -> void;
 
-        [[nodiscard]] auto get_device_info( ) const -> DeviceInfo const& { return device_info_; }
+        [[nodiscard]] auto device_info( ) const -> device_info const& { return device_info_; }
 
     private:
-        using QueueType = std::deque<InputSnapshot>;
+        using queue_type = std::deque<input_reduction>;
 
-        DeviceInfo const device_info_{};
+        input::device_info const device_info_{};
 
-        PlayerController& controller_ref_;
+        player_controller& controller_ref_;
 
-        QueueType signaled_inputs_queue_;
-        std::unordered_map<Uid, CommandSet> command_sets_;
+        queue_type signaled_inputs_queue_;
+        std::unordered_map<earmark, command_set> command_sets_;
     };
 }
 

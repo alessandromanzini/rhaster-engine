@@ -4,16 +4,16 @@
 
 namespace rst
 {
-    class Deletable
+    class deletable
     {
     public:
-        Deletable( ) = default;
-        virtual ~Deletable( ) = default;
+        deletable( ) = default;
+        virtual ~deletable( ) = default;
 
-        Deletable( Deletable const& )                         = delete;
-        Deletable( Deletable&& ) noexcept                     = delete;
-        auto operator=( Deletable const& ) -> Deletable&      = delete;
-        auto operator=( Deletable&& ) noexcept -> Deletable&  = delete;
+        deletable( deletable const& )                         = delete;
+        deletable( deletable&& ) noexcept                     = delete;
+        auto operator=( deletable const& ) -> deletable&      = delete;
+        auto operator=( deletable&& ) noexcept -> deletable&  = delete;
 
         virtual auto mark_for_deletion( ) -> void = 0;
 

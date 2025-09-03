@@ -8,7 +8,7 @@
 namespace rst
 {
     template <typename TElement>
-    class SparseSet
+    class sparse_set
     {
     public:
         auto insert( TElement&& element ) -> void

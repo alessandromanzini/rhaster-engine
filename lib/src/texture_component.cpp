@@ -7,17 +7,17 @@
 
 namespace rst
 {
-    TextureComponent::TextureComponent( owner_t& owner, std::string const& filename, glm::vec2 const offset )
-        : Component{ owner }
+    texture_component::texture_component( owner_type& owner, std::string const& filename, glm::vec2 const offset )
+        : component{ owner }
         , offset_{ offset }
         , texture_ptr_{ RESOURCE_MANAGER.load_texture( filename ) }
     {
     }
 
 
-    auto TextureComponent::render( ) const -> void
+    auto texture_component::render( ) const -> void
     {
-        auto const pos = get_owner( ).get_world_transform( ).get_position( ) + offset_;
+        auto const pos = owner( ).world_transform( ).position( ) + offset_;
         RENDERER.render_texture( *texture_ptr_, pos );
     }
 

@@ -16,29 +16,29 @@ namespace rst::input
     /**
      * Keyboard input code type
      */
-    using KeyCode = SDL_KeyCode;
+    using key_type = SDL_KeyCode;
 
     /**
      * Gamepad input code type
      */
-    using BtnCode = SDL_GameControllerButton;
+    using btn_type = SDL_GameControllerButton;
 
     /**
      * Fundamental type for device identification
      */
-    using DeviceId = uint8_t;
+    using device_id_type = uint8_t;
 
     namespace internal
     {
-        using UnderlyingTriggerMask  = uint8_t;
-        using UnderlyingModifierMask = uint8_t;
+        using underlying_trigger_mask_type  = uint8_t;
+        using underlying_modifier_mask_type = uint8_t;
     }
-    using TriggerBitset  = std::bitset<sizeof( internal::UnderlyingTriggerMask ) * 8U>;
-    using ModifierBitset = std::bitset<sizeof( internal::UnderlyingModifierMask ) * 8U>;
+    using trigger_bitset_type  = std::bitset<sizeof( internal::underlying_trigger_mask_type ) * 8U>;
+    using modifier_bitset_type = std::bitset<sizeof( internal::underlying_modifier_mask_type ) * 8U>;
 
     // TODO: enclose variants in structure
-    using InputValueVariant   = std::variant<bool, float, glm::vec2>;
-    using InputCommandVariant = std::variant<std::function<void( bool )>, std::function<void( float )>, std::function<void(
+    using input_value_type   = std::variant<bool, float, glm::vec2>;
+    using input_command_type = std::variant<std::function<void( bool )>, std::function<void( float )>, std::function<void(
         glm::vec2 )>>;
 
 
@@ -48,25 +48,25 @@ namespace rst::input
     /**
      * Type of input device
      */
-    enum class DeviceType : uint8_t
+    enum class device_type : uint8_t
     {
-        KEYBOARD, GAMEPAD
+        keyboard, gamepad
     };
 
     /**
      * Trigger event hooks for input actions
      */
-    enum class TriggerEvent : internal::UnderlyingTriggerMask
+    enum class trigger : internal::underlying_trigger_mask_type
     {
-        TRIGGERED = 0U, PRESSED = 1U << 0U, RELEASED = 1U << 1U,
+        triggered = 0U, pressed = 1U << 0U, released = 1U << 1U,
     };
 
     /**
      * Modifiers that alter the input action behavior
      */
-    enum class Modifier : internal::UnderlyingModifierMask
+    enum class modifier : internal::underlying_modifier_mask_type
     {
-        NEGATE = 0U, SWIZZLE = 1U << 0U,
+        negate = 0U, swizzle = 1U << 0U,
     };
 
 
@@ -76,26 +76,26 @@ namespace rst::input
     /**
      * This struct generalizes the key binding values
      */
-    struct UniformBindingCode final
+    struct unicode final
     {
-        UniformBindingCode( ) = default;
+        unicode( ) = default;
 
         // ReSharper disable CppNonExplicitConvertingConstructor
-        constexpr UniformBindingCode( KeyCode const key ) : code{ static_cast<decltype(code)>( key ) } { }
-        constexpr UniformBindingCode( BtnCode const btn ) : code{ static_cast<decltype(code)>( btn ) } { }
+        constexpr unicode( key_type const key ) : code{ static_cast<decltype(code)>( key ) } { }
+        constexpr unicode( btn_type const btn ) : code{ static_cast<decltype(code)>( btn ) } { }
         // ReSharper restore CppNonExplicitConvertingConstructor
 
         constexpr explicit operator uint32_t( ) const { return code; }
 
-        constexpr auto operator<( UniformBindingCode const& other ) const noexcept -> bool { return code < other.code; }
-        constexpr auto operator==( UniformBindingCode const& other ) const noexcept -> bool { return code == other.code; }
+        constexpr auto operator<( unicode const& other ) const noexcept -> bool { return code < other.code; }
+        constexpr auto operator==( unicode const& other ) const noexcept -> bool { return code == other.code; }
 
         uint32_t code{};
     };
 
-    struct UniformBindingCodeHasher final
+    struct unicode_hasher final
     {
-        constexpr auto operator()( UniformBindingCode const& ubc ) const noexcept -> std::size_t
+        constexpr auto operator()( unicode const& ubc ) const noexcept -> std::size_t
         {
             return std::hash<uint32_t>{}( ubc.code );
         }
@@ -106,47 +106,47 @@ namespace rst::input
      * This struct represents an input action identified by an UID and an optional set of modifiers that alter the
      * registered input values.
      */
-    struct InputAction final
+    struct input_action final
     {
-        Uid uid{ 0 };
-        ModifierBitset modifiers{};
+        earmark mark;
+        modifier_bitset_type modifiers;
 
 
-        template <typename... modifiers_t>
-        explicit InputAction( Uid const uid, modifiers_t... modifier_args )
-            : uid{ uid }
+        template <typename... TModifiers>
+        explicit input_action( earmark const identifier, TModifiers... modifier_args )
+            : mark{ identifier }
         {
-            if constexpr ( sizeof...( modifiers_t ) > 0 )
+            if constexpr ( sizeof...( TModifiers ) > 0 )
             {
-                modifiers = bitset_cast<modifiers_t...>( modifier_args... );
+                modifiers = bitset_cast<TModifiers...>( modifier_args... );
             }
         }
 
 
-        explicit InputAction( Uid const uid, ModifierBitset const& modifiers )
-            : uid{ uid }
+        explicit input_action( earmark const identifier, modifier_bitset_type const& modifiers )
+            : mark{ identifier }
             , modifiers{ modifiers } { }
     };
 
 
     /**
-     * This struct holds the accumulated value for the input action to its corresponding uid and trigger.
+     * This struct holds the accumulated value for the input action to its corresponding mark and trigger.
      */
-    struct InputSnapshot final
+    struct input_reduction final
     {
-        Uid uid{ 0 };
-        InputValueVariant value{};
-        TriggerEvent trigger{};
+        earmark mark;
+        input_value_type value{};
+        trigger hook{};
 
-        auto operator==( InputSnapshot const& other ) const -> bool { return uid == other.uid && trigger == other.trigger; }
+        auto operator==( input_reduction const& other ) const -> bool { return mark == other.mark && hook == other.hook; }
     };
 
 
     // TODO: command info should not be needed
-    struct CommandInfo final
+    struct command_info final
     {
-        InputCommandVariant command;
-        TriggerEvent trigger;
+        input_command_type command;
+        trigger trigger;
     };
 
 
@@ -177,7 +177,7 @@ namespace rst::input
      * @param trigger TriggerEvent enum value
      * @return A bit value that represent a mask at the trigger position
      */
-    [[nodiscard]] constexpr auto bit_cast( TriggerEvent trigger ) -> size_t
+    [[nodiscard]] constexpr auto bit_cast( trigger trigger ) -> size_t
     {
         return static_cast<size_t>( trigger );
     }
@@ -188,7 +188,7 @@ namespace rst::input
      * @param modifier Modifier enum value
      * @return A bit value that represent a mask at the modifier position
      */
-    [[nodiscard]] constexpr auto bit_cast( Modifier modifier ) -> size_t
+    [[nodiscard]] constexpr auto bit_cast( modifier modifier ) -> size_t
     {
         return static_cast<size_t>( modifier );
     }
@@ -196,27 +196,27 @@ namespace rst::input
 
     /**
      * Casts the enum to the bitset representation.
-     * @tparam args_t TriggerEvent type
+     * @tparam TArgs TriggerEvent type
      * @param triggers Variadic pack of triggers
      * @return Bitset combination of the arguments
      */
-    template <typename... args_t> requires (std::same_as<args_t, TriggerEvent> && ...)
-    [[nodiscard]] constexpr auto bitset_cast( args_t... triggers ) -> TriggerBitset
+    template <typename... TArgs> requires (std::same_as<TArgs, trigger> && ...)
+    [[nodiscard]] constexpr auto bitset_cast( TArgs... triggers ) -> trigger_bitset_type
     {
-        return TriggerBitset{ ( ( 1ull << bit_cast( triggers ) ) | ... ) };
+        return trigger_bitset_type{ ( ( 1ull << bit_cast( triggers ) ) | ... ) };
     }
 
 
     /**
      * Casts the enum to the bitset representation.
-     * @tparam args_t Modifier type
+     * @tparam TArgs Modifier type
      * @param modifiers Variadic pack of modifiers
      * @return Bitset combination of the arguments
      */
-    template <typename... args_t> requires (std::same_as<args_t, Modifier> && ...)
-    [[nodiscard]] constexpr auto bitset_cast( args_t... modifiers ) -> ModifierBitset
+    template <typename... TArgs> requires (std::same_as<TArgs, modifier> && ...)
+    [[nodiscard]] constexpr auto bitset_cast( TArgs... modifiers ) -> modifier_bitset_type
     {
-        return ModifierBitset{ ( ( 1ull << bit_cast( modifiers ) ) | ... ) };
+        return modifier_bitset_type{ ( ( 1ull << bit_cast( modifiers ) ) | ... ) };
     }
 }
 

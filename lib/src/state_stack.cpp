@@ -8,19 +8,19 @@ namespace rst::fsm
     // +---------------------------+
     // | SINGLE STATE STACK        |
     // +---------------------------+
-    auto SingleStateStack::trigger_on_enter( Blackboard& blackboard ) const -> void
+    auto single_state_stack::trigger_on_enter( blackboard& blackboard ) const -> void
     {
         state->on_enter( blackboard );
     }
 
 
-    auto SingleStateStack::trigger_on_exit( Blackboard& blackboard ) const -> void
+    auto single_state_stack::trigger_on_exit( blackboard& blackboard ) const -> void
     {
         state->on_exit( blackboard );
     }
 
 
-    auto SingleStateStack::trigger_tick( Blackboard& blackboard ) const -> void
+    auto single_state_stack::trigger_tick( blackboard& blackboard ) const -> void
     {
         state->tick( blackboard );
     }
@@ -29,7 +29,7 @@ namespace rst::fsm
     // +---------------------------+
     // | MULTI STATE STACK         |
     // +---------------------------+
-    auto MultiStateStack::trigger_on_enter( Blackboard& blackboard ) const -> void
+    auto multi_state_stack::trigger_on_enter( blackboard& blackboard ) const -> void
     {
         for ( auto& state : states )
         {
@@ -38,7 +38,7 @@ namespace rst::fsm
     }
 
 
-    auto MultiStateStack::trigger_on_exit( Blackboard& blackboard ) const -> void
+    auto multi_state_stack::trigger_on_exit( blackboard& blackboard ) const -> void
     {
         for ( auto& state : states )
         {
@@ -47,7 +47,7 @@ namespace rst::fsm
     }
 
 
-    auto MultiStateStack::trigger_tick( Blackboard& blackboard ) const -> void
+    auto multi_state_stack::trigger_tick( blackboard& blackboard ) const -> void
     {
         for ( auto& state : states )
         {

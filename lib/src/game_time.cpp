@@ -5,7 +5,7 @@ using namespace std::chrono;
 
 namespace rst
 {
-    auto GameTime::tick( ) -> void
+    auto game_time::tick( ) -> void
     {
         auto const current_time = high_resolution_clock::now( );
 
@@ -19,65 +19,65 @@ namespace rst
     }
 
 
-    auto GameTime::fixed_tick( ) -> void
+    auto game_time::fixed_tick( ) -> void
     {
-        lag_ -= FIXED_TIME_STEP_;
+        lag_ -= fixed_time_step_;
     }
 
 
-    auto GameTime::reset( ) -> void
+    auto game_time::reset( ) -> void
     {
         last_time_ = high_resolution_clock::now( );
         lag_       = 0.f;
     }
 
 
-    auto GameTime::set_timing_type( time::TimingType const type ) -> void
+    auto game_time::set_timing_type( time::timing_type const type ) -> void
     {
         switch ( type )
         {
-            case time::TimingType::DELTA_TIME:
+            case time::timing_type::delta_time:
                 current_delta_ptr_ = &delta_time_;
                 break;
-            case time::TimingType::FIXED_DELTA_TIME:
-                current_delta_ptr_ = &FIXED_TIME_STEP_;
+            case time::timing_type::fixed_delta_time:
+                current_delta_ptr_ = &fixed_time_step_;
                 break;
         }
     }
 
 
-    auto GameTime::get_delta_time( ) const -> float
+    auto game_time::delta_time( ) const -> float
     {
         return *current_delta_ptr_;
     }
 
 
-    auto GameTime::get_fps( ) const -> float
+    auto game_time::fps( ) const -> float
     {
         auto const fps{ 1.f / delta_time_ };
         return fps;
     }
 
 
-    auto GameTime::is_fixed_tick_required( ) const -> bool
+    auto game_time::is_fixed_tick_required( ) const -> bool
     {
-        return lag_ >= FIXED_TIME_STEP_;
+        return lag_ >= fixed_time_step_;
     }
 
 
-    auto GameTime::get_sleep_time( ) const -> nanoseconds
+    auto game_time::sleep_time( ) const -> nanoseconds
     {
-        return last_time_ + milliseconds( MS_PER_FRAME_ ) - high_resolution_clock::now( );
+        return last_time_ + milliseconds( ms_per_frame_ ) - high_resolution_clock::now( );
     }
 
 
-    auto GameTime::set_interval( float const seconds, std::function<bool( )>&& delegate ) -> void
+    auto game_time::set_interval( float const seconds, std::function<bool( )>&& delegate ) -> void
     {
-        intervals_.emplace_back( std::make_pair( time::TimeSpan{ seconds, seconds }, std::move( delegate ) ) );
+        intervals_.emplace_back( std::make_pair( time::time_span{ seconds, seconds }, std::move( delegate ) ) );
     }
 
 
-    auto GameTime::set_interval( float const seconds, std::function<void( )> const& delegate ) -> void
+    auto game_time::set_interval( float const seconds, std::function<void( )> const& delegate ) -> void
     {
         set_interval( seconds, std::function{
                           [delegate]( ) -> bool
@@ -89,18 +89,18 @@ namespace rst
     }
 
 
-    auto GameTime::set_timeout( float const seconds, std::function<void( )>&& delegate ) -> void
+    auto game_time::set_timeout( float const seconds, std::function<void( )>&& delegate ) -> void
     {
-        timeouts_.emplace_back( std::make_pair( time::TimeSpan{ seconds, seconds }, std::move( delegate ) ) );
+        timeouts_.emplace_back( std::make_pair( time::time_span{ seconds, seconds }, std::move( delegate ) ) );
     }
 
 
-    auto GameTime::clear_timeouts( ) -> void
+    auto game_time::clear_timeouts( ) -> void
     {
         // TODO> implement timer specific clear
         timeouts_.clear();
     }
 
 
-    GameTime& GAME_TIME = GameTime::get_instance( );
+    game_time& GAME_TIME = game_time::instance( );
 }

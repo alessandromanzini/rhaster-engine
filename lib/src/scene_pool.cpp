@@ -6,74 +6,74 @@
 
 namespace rst
 {
-    auto ScenePool::create_scene( std::string const& name ) -> Scene&
+    auto scene_pool::create_scene( std::string const& name ) -> rst::scene&
     {
         // TODO: use UID
-        auto const& scene = scenes_.emplace_back( std::make_unique<Scene>( name ) );
+        auto const& scene = scenes_.emplace_back( std::make_unique<rst::scene>( name ) );
         return *scene;
     }
 
 
-    auto ScenePool::select_scene( std::string const& name ) -> void
+    auto scene_pool::select_scene( std::string const& name ) -> void
     {
-        active_scene_ptr_ = &get_scene( name );
+        active_scene_ptr_ = &scene( name );
     }
 
 
-    auto ScenePool::select_first_scene( ) -> void
+    auto scene_pool::select_first_scene( ) -> void
     {
         if ( scenes_.empty( ) ) { return; }
         active_scene_ptr_ = scenes_[0].get( );
     }
 
 
-    auto ScenePool::unload_scene( std::string const& name ) -> void
+    auto scene_pool::unload_scene( std::string const& name ) -> void
     {
-        std::erase_if( scenes_, [&name]( auto& s ) { return s->get_name( ) == name; } );
+        std::erase_if( scenes_, [&name]( auto& s ) { return s->name( ) == name; } );
     }
 
 
-    auto ScenePool::unload_all_scenes( ) -> void
+    auto scene_pool::unload_all_scenes( ) -> void
     {
         scenes_.clear( );
     }
 
 
-    auto ScenePool::fixed_tick( ) const -> void
+    auto scene_pool::fixed_tick( ) const -> void
     {
         if ( not active_scene_ptr_ ) { return; }
         active_scene_ptr_->fixed_tick( );
     }
 
 
-    auto ScenePool::tick( ) const -> void
+    auto scene_pool::tick( ) const -> void
     {
         if ( not active_scene_ptr_ ) { return; }
         active_scene_ptr_->tick( );
-        ColliderComponent::late_tick( );
+        collider_component::late_tick( );
     }
 
 
-    auto ScenePool::render( ) const -> void
+    auto scene_pool::render( ) const -> void
     {
         if ( not active_scene_ptr_ ) { return; }
         active_scene_ptr_->render( );
     }
 
 
-    auto ScenePool::does_scene_exist( std::string const& name ) const -> bool
+    auto scene_pool::does_scene_exist( std::string const& name ) const -> bool
     {
-        return std::ranges::any_of( scenes_, [&]( auto& s ) { return s->get_name( ) == name; } );
+        return std::ranges::any_of( scenes_, [&]( auto& s ) { return s->name( ) == name; } );
     }
 
 
-    auto ScenePool::get_active_scene( ) -> Scene&
+    auto scene_pool::active_scene( ) -> rst::scene&
     {
         return *active_scene_ptr_;
     }
 
 
-    auto ScenePool::get_active_scene( ) const -> Scene&
+    auto scene_pool::active_scene( ) const -> rst::scene&
     {
         // active scene is not set until game loop starts.
         // if you need to delete a gameobject, call the method on the scene directly.
@@ -84,33 +84,28 @@ namespace rst
     }
 
 
-    auto ScenePool::get_scene( std::string const& name ) const -> Scene&
+    auto scene_pool::scene( std::string const& name ) const -> rst::scene&
     {
-        auto const scene =
-                std::ranges::find_if( scenes_,
-                                      [&name]( auto const& s ) { return s->get_name( ) == name; } );
+        auto const scene = std::ranges::find_if( scenes_, [&name]( auto const& s ) { return s->name( ) == name; } );
         assert( scene != scenes_.end( ) && "Scene not found." );
         return **scene;
     }
 
 
-    auto ScenePool::get_scene( uint16_t id ) const -> Scene&
+    auto scene_pool::scene( uint16_t id ) const -> rst::scene&
     {
-        auto const scene =
-                std::ranges::find_if( scenes_,
-                                      [&id]( auto const& s ) { return s->get_id( ) == id; } );
+        auto const scene = std::ranges::find_if( scenes_, [&id]( auto const& s ) { return s->id( ) == id; } );
         assert( scene != scenes_.end( ) && "Scene not found." );
         return **scene;
     }
 
 
-    auto ScenePool::cleanup( ) const -> void
+    auto scene_pool::cleanup( ) const -> void
     {
         if ( not active_scene_ptr_ ) { return; }
         active_scene_ptr_->cleanup( );
     }
 
 
-    ScenePool& SCENE_POOL = ScenePool::get_instance( );
-
+    scene_pool& SCENE_POOL = scene_pool::instance( );
 }

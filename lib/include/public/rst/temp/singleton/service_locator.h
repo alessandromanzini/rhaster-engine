@@ -7,25 +7,27 @@
 #include <rst/__service/sound/sound_system.h>
 
 
+// todo: remove singleton
 namespace rst
 {
-    class ServiceLocator final : public Singleton<ServiceLocator>
+    class service_locator final : public singleton<service_locator>
     {
-        friend class Singleton;
+        friend class singleton;
 
     public:
-        auto register_sound_system( std::unique_ptr<SoundSystem>&& ss ) -> SoundSystem&;
-        [[nodiscard]] auto get_sound_system( ) const -> SoundSystem&;
+        auto register_sound_system( std::unique_ptr<sound_system>&& ss ) -> sound_system&;
+
+        [[nodiscard]] auto sound_system( ) const -> sound_system&;
         [[nodiscard]] auto is_sound_system_registered( ) const -> bool;
 
     private:
-        std::unique_ptr<SoundSystem> sound_system_instance_ptr_{};
+        std::unique_ptr<rst::sound_system> sound_system_instance_ptr_{};
 
-        ServiceLocator( ) = default;
+        service_locator( ) = default;
     };
 
 
-    extern ServiceLocator& SERVICE_LOCATOR;
+    extern service_locator& SERVICE_LOCATOR;
 }
 
 

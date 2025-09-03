@@ -9,10 +9,10 @@
 namespace rst::fsm::logic
 {
     template <typename TCondition>
-    struct Not final : Condition
+    struct Not final : condition
     {
         Not( ) : condition_{} { }
-        auto evaluate( Blackboard& blackboard ) const -> bool override { return not condition_.evaluate( blackboard ); }
+        auto evaluate( blackboard& blackboard ) const -> bool override { return not condition_.evaluate( blackboard ); }
 
     private:
         TCondition const condition_;

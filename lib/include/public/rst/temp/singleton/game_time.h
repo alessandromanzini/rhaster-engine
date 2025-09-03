@@ -10,38 +10,38 @@ namespace rst
 {
     namespace time
     {
-        enum class TimingType
+        enum class timing_type
         {
-            DELTA_TIME, FIXED_DELTA_TIME
+            delta_time, fixed_delta_time
         };
 
         template <typename TSpan>
-        struct TimeSpan
+        struct time_span
         {
             TSpan const max;
             TSpan current;
         };
     }
 
-    class GameTime final : public Singleton<GameTime>
+    class game_time final : public singleton<game_time>
     {
-        friend class Singleton;
+        friend class singleton;
 
         template <typename TReturn>
-        using timed_delegate_t = std::pair<time::TimeSpan<float>, std::function<TReturn( )>>;
+        using timed_delegate_type = std::pair<time::time_span<float>, std::function<TReturn( )>>;
 
     public:
         auto tick( ) -> void;
         auto fixed_tick( ) -> void;
         auto reset( ) -> void;
 
-        auto set_timing_type( time::TimingType type ) -> void;
+        auto set_timing_type( time::timing_type type ) -> void;
 
-        [[nodiscard]] auto get_delta_time( ) const -> float;
-        [[nodiscard]] auto get_fps( ) const -> float;
+        [[nodiscard]] auto delta_time( ) const -> float;
+        [[nodiscard]] auto fps( ) const -> float;
 
         [[nodiscard]] auto is_fixed_tick_required( ) const -> bool;
-        [[nodiscard]] auto get_sleep_time( ) const -> std::chrono::nanoseconds;
+        [[nodiscard]] auto sleep_time( ) const -> std::chrono::nanoseconds;
 
         /**
          * Register a delegate to be repeated every amount seconds until the delegate return true.
@@ -66,8 +66,8 @@ namespace rst
         auto clear_timeouts( ) -> void;
 
     private:
-        static constexpr int MS_PER_FRAME_{ 16 };
-        static constexpr float FIXED_TIME_STEP_{ 0.005f };
+        static constexpr int ms_per_frame_{ 16 };
+        static constexpr float fixed_time_step_{ 0.005f };
 
         float delta_time_{ 0.f };
         float const* current_delta_ptr_{ &delta_time_ };
@@ -75,18 +75,18 @@ namespace rst
         std::chrono::high_resolution_clock::time_point last_time_{};
         float lag_{ 0.f };
 
-        std::list<timed_delegate_t<bool>> intervals_{};
-        std::list<timed_delegate_t<void>> timeouts_{};
+        std::list<timed_delegate_type<bool>> intervals_{};
+        std::list<timed_delegate_type<void>> timeouts_{};
 
-        GameTime( ) = default;
+        game_time( ) = default;
 
         template <typename TReturn>
-        auto handle_delegates( std::list<timed_delegate_t<TReturn>>& delegates, bool discard_finished ) const -> void;
+        auto handle_delegates( std::list<timed_delegate_type<TReturn>>& delegates, bool discard_finished ) const -> void;
     };
 
 
     template <typename TReturn>
-    auto GameTime::handle_delegates( std::list<timed_delegate_t<TReturn>>& delegates, bool const discard_finished ) const -> void
+    auto game_time::handle_delegates( std::list<timed_delegate_type<TReturn>>& delegates, bool const discard_finished ) const -> void
     {
         for ( auto& [span, delegate] : delegates )
         {
@@ -121,7 +121,7 @@ namespace rst
     }
 
 
-    extern GameTime& GAME_TIME;
+    extern game_time& GAME_TIME;
 }
 
 

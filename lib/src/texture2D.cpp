@@ -1,4 +1,4 @@
-#include <rst/__type/texture_type/texture2D.h>
+#include <rst/__type/texture/texture2D.h>
 
 #include <rst/temp/singleton/renderer.h>
 
@@ -8,15 +8,15 @@
 
 namespace rst
 {
-    Texture2D::Texture2D( SDL_Texture* texture ) : texture_ptr_{ texture }
+    texture_2d::texture_2d( SDL_Texture* texture ) : texture_ptr_{ texture }
     {
         assert( texture_ptr_ != nullptr );
     }
 
 
-    Texture2D::Texture2D( std::string const& full_path )
+    texture_2d::texture_2d( std::string const& full_path )
     {
-        texture_ptr_ = IMG_LoadTexture( RENDERER.get_sdl_renderer( ), full_path.c_str( ) );
+        texture_ptr_ = IMG_LoadTexture( RENDERER.sdl_renderer( ), full_path.c_str( ) );
         if ( texture_ptr_ == nullptr )
         {
             throw std::runtime_error( std::string( "Failed to load texture: " ) + SDL_GetError( ) );
@@ -24,22 +24,22 @@ namespace rst
     }
 
 
-    Texture2D::~Texture2D( ) noexcept
+    texture_2d::~texture_2d( ) noexcept
     {
         SDL_DestroyTexture( texture_ptr_ );
     }
 
 
-    auto Texture2D::get_sdl_texture( ) const -> SDL_Texture*
+    auto texture_2d::sdl_texture( ) const -> SDL_Texture*
     {
         return texture_ptr_;
     }
 
 
-    auto Texture2D::get_size( ) const -> glm::vec2
+    auto texture_2d::size( ) const -> glm::vec2
     {
         SDL_Rect dst;
-        SDL_QueryTexture( get_sdl_texture( ), nullptr, nullptr, &dst.w, &dst.h );
+        SDL_QueryTexture( sdl_texture( ), nullptr, nullptr, &dst.w, &dst.h );
         return { static_cast<float>( dst.w ), static_cast<float>( dst.h ) };
     }
 

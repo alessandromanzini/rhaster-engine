@@ -23,7 +23,7 @@ namespace rst::meta
         using sig_fn_t = TReturn( TParams... );
         using std_fn_t = std::function<sig_fn_t>;
 
-        static constexpr std::size_t ARITY = sizeof...( TParams );
+        static constexpr std::size_t arity = sizeof...( TParams );
     };
 
 
@@ -95,7 +95,7 @@ namespace rst::meta
     // | BAD CONVERSION            |
     // +---------------------------+
     template <typename TFrom, typename TTo>
-    constexpr bool BAD_CONVERSION = false;
+    constexpr bool bad_conversion = false;
 }
 
 

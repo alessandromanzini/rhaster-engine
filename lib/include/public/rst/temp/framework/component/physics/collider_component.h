@@ -3,56 +3,52 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/data_type.h>
 #include <rst/framework/multicast_delegate.h>
+#include <rst/type/sparse_set.h>
 #include <rst/__core/component.h>
 
 
 namespace rst
 {
     // TODO: cleanup structures and add documentation
-    enum class CollisionStatus
+    enum class collision_status
     {
-        NONE, CACHED, FULL
+        none, cached, full
     };
 
 
-    struct CollisionInfo
+    struct collision_info
     {
-        CollisionStatus status{ CollisionStatus::NONE };
+        collision_status status{ collision_status::none };
         glm::vec2 contact_point{};
         glm::vec2 normal{};
         float depth{};
 
-
-        auto has_collided( ) const -> bool
-        {
-            return status != CollisionStatus::NONE;
-        }
+        auto has_collided( ) const -> bool { return status != collision_status::none; }
     };
 
 
     // TODO: free overlap on object deletion
     // TODO: store collision cache
     // TODO: Add support for different shapes
-    class ColliderComponent : public Component
+    class collider_component : public component
     {
-        Dispatcher<ColliderComponent&, ColliderComponent&, CollisionInfo const&> on_begin_overlap_dispatcher_{};
-        Dispatcher<ColliderComponent&, ColliderComponent&> on_end_overlap_dispatcher_{};
+        dispatcher<collider_component&, collider_component&, collision_info const&> on_begin_overlap_dispatcher_{};
+        dispatcher<collider_component&, collider_component&> on_end_overlap_dispatcher_{};
 
     public:
-        MulticastDelegate<ColliderComponent&, ColliderComponent&, CollisionInfo const&> on_begin_overlap{
+        multicast_delegate<collider_component&, collider_component&, collision_info const&> on_begin_overlap{
             on_begin_overlap_dispatcher_
         };
-        MulticastDelegate<ColliderComponent&, ColliderComponent&> on_end_overlap{ on_end_overlap_dispatcher_ };
+        multicast_delegate<collider_component&, collider_component&> on_end_overlap{ on_end_overlap_dispatcher_ };
 
-        explicit ColliderComponent( owner_t& owner, glm::vec2 position = {} );
-        ~ColliderComponent( ) override;
+        explicit collider_component( owner_type& owner, glm::vec2 position = {} );
+        ~collider_component( ) override;
 
-        ColliderComponent( ColliderComponent const& )                        = delete;
-        ColliderComponent( ColliderComponent&& ) noexcept                    = delete;
-        auto operator=( ColliderComponent const& ) -> ColliderComponent&     = delete;
-        auto operator=( ColliderComponent&& ) noexcept -> ColliderComponent& = delete;
+        collider_component( collider_component const& )                        = delete;
+        collider_component( collider_component&& ) noexcept                    = delete;
+        auto operator=( collider_component const& ) -> collider_component&     = delete;
+        auto operator=( collider_component&& ) noexcept -> collider_component& = delete;
 
         static auto late_tick( ) -> void;
 
@@ -68,7 +64,7 @@ namespace rst
          */
         auto offset_to( glm::vec2 offset ) -> void;
 
-        [[nodiscard]] auto get_offset( ) const -> glm::vec2;
+        [[nodiscard]] auto offset( ) const -> glm::vec2;
 
         auto set_enabled( bool enabled ) -> void;
         [[nodiscard]] auto is_enabled( ) const -> bool;
@@ -77,27 +73,27 @@ namespace rst
          * Returns the position of the collider in world space.
          * @return
          */
-        [[nodiscard]] auto get_position( ) const -> glm::vec2;
+        [[nodiscard]] auto position( ) const -> glm::vec2;
 
-        auto clear_overlap( ColliderComponent& other ) -> void;
+        auto clear_overlap( collider_component& other ) -> void;
 
-        auto hit_test( ColliderComponent& other, bool ignore_cache = false ) -> CollisionInfo;
-        [[nodiscard]] virtual auto get_pivots( ) const -> std::span<glm::vec2 const> = 0;
+        auto hit_test( collider_component& other, bool ignore_cache = false ) -> collision_info;
+        [[nodiscard]] virtual auto pivots( ) const -> std::span<glm::vec2 const> = 0;
 
     protected:
-        [[nodiscard]] virtual auto hit_test_impl( ColliderComponent& other ) const -> CollisionInfo = 0;
+        [[nodiscard]] virtual auto hit_test_impl( collider_component& other ) const -> collision_info = 0;
 
     private:
-        inline static std::vector<ColliderComponent*> s_colliders_{};
+        inline static std::vector<collider_component*> s_colliders_{};
 
-        SparseSet<ColliderComponent*> overlapping_colliders_{};
+        sparse_set<collider_component*> overlapping_colliders_{};
         glm::vec2 offset_{};
 
         bool enabled_{ true };
 
-        auto handle_persist_overlap( ColliderComponent& other ) -> void;
-        auto handle_begin_overlap( ColliderComponent& other, CollisionInfo const& info ) -> void;
-        auto handle_end_overlap( ColliderComponent& other ) -> void;
+        auto handle_persist_overlap( collider_component& other ) -> void;
+        auto handle_begin_overlap( collider_component& other, collision_info const& info ) -> void;
+        auto handle_end_overlap( collider_component& other ) -> void;
     };
 }
 

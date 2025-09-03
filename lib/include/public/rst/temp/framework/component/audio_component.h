@@ -3,27 +3,27 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/resource_type.h>
 #include <rst/__core/component.h>
+#include <rst/__type/sound/audio.h>
 
 
 namespace rst
 {
     // TODO: consider to not use this as a component and remove shared pointers
-    class AudioComponent final : public Component
+    class audio_component final : public component
     {
     public:
-        explicit AudioComponent(
-            owner_t& owner, std::filesystem::path const& path, sound::SoundType type, Uid tag_id = Uid( "default" ) );
-        ~AudioComponent( ) noexcept override;
+        explicit audio_component(
+            owner_type& owner, std::filesystem::path const& path, sound::sound_type type, earmark tag_mark = earmark( "default" ) );
+        ~audio_component( ) noexcept override;
 
-        AudioComponent( AudioComponent const& )                        = delete;
-        AudioComponent( AudioComponent&& ) noexcept                    = delete;
-        auto operator=( AudioComponent const& ) -> AudioComponent&     = delete;
-        auto operator=( AudioComponent&& ) noexcept -> AudioComponent& = delete;
+        audio_component( audio_component const& )                        = delete;
+        audio_component( audio_component&& ) noexcept                    = delete;
+        auto operator=( audio_component const& ) -> audio_component&     = delete;
+        auto operator=( audio_component&& ) noexcept -> audio_component& = delete;
 
         auto set_volume( float volume ) -> void;
-        [[nodiscard]] auto get_volume( ) const -> float;
+        [[nodiscard]] auto volume( ) const -> float;
 
         auto increase_volume( float delta ) -> void;
 
@@ -33,7 +33,7 @@ namespace rst
         auto begin_owner_deletion( ) -> void override;
 
     private:
-        std::shared_ptr<Audio> audio_ptr_{ nullptr };
+        std::shared_ptr<audio> audio_ptr_{ nullptr };
         float volume_{ 1.f };
         bool playback_on_deletion_{ false };
     };

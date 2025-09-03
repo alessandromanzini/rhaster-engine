@@ -8,44 +8,44 @@
 
 namespace rst
 {
-    PhysicsComponent::PhysicsComponent( owner_t& owner )
-        : Component{ owner } { }
+    physics_component::physics_component( owner_type& owner )
+        : component{ owner } { }
 
 
-    auto PhysicsComponent::fixed_tick( ) -> void
+    auto physics_component::fixed_tick( ) -> void
     {
         if ( simulate_physics_ )
         {
-            add_force( { 0.f, GAME_INSTANCE.get_gravity_coefficient( ) }, true );
+            add_force( { 0.f, GAME_INSTANCE.gravity_coefficient( ) }, true );
         }
-        glm::vec2 const displacement = velocity_ * GAME_TIME.get_delta_time( );
-        get_owner( ).get_transform_operator( ).translate( displacement );
+        glm::vec2 const displacement = velocity_ * GAME_TIME.delta_time( );
+        owner( ).transform_operator( ).translate( displacement );
     }
 
 
-    auto PhysicsComponent::set_simulate_physics( bool const simulate ) -> void
+    auto physics_component::set_simulate_physics( bool const simulate ) -> void
     {
         simulate_physics_ = simulate;
     }
 
 
-    auto PhysicsComponent::is_simulating_physics( ) const -> bool
+    auto physics_component::is_simulating_physics( ) const -> bool
     {
         return simulate_physics_;
     }
 
 
-    auto PhysicsComponent::get_velocity( ) const -> glm::vec2
+    auto physics_component::velocity( ) const -> glm::vec2
     {
         return velocity_;
     }
 
 
-    auto PhysicsComponent::add_force( glm::vec2 const force, bool const acceleration ) -> void
+    auto physics_component::add_force( glm::vec2 const force, bool const acceleration ) -> void
     {
         if ( acceleration )
         {
-            velocity_ += force * GAME_TIME.get_delta_time( );
+            velocity_ += force * GAME_TIME.delta_time( );
         }
         else
         {

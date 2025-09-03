@@ -5,13 +5,13 @@
 // TODO: get rid of this class
 namespace rst
 {
-    template <typename value_t>
+    template <typename TValue>
     class OptionalRef
     {
     public:
         // ReSharper disable CppNonExplicitConvertingConstructor
-        OptionalRef( value_t& ref ) : value_ptr_{ &ref } { }
-        OptionalRef( value_t* ptr ) : value_ptr_{ ptr } { }
+        OptionalRef( TValue& ref ) : value_ptr_{ &ref } { }
+        OptionalRef( TValue* ptr ) : value_ptr_{ ptr } { }
         // ReSharper restore CppNonExplicitConvertingConstructor
 
         [[nodiscard]] auto has_value( ) const -> bool { return value_ptr_ != nullptr; }
@@ -19,12 +19,12 @@ namespace rst
         // ReSharper disable once CppNonExplicitConversionOperator
         operator bool( ) const { return has_value( ); }
 
-        [[nodiscard]] auto value( ) const -> value_t& { return *value_ptr_; }
-        [[nodiscard]] auto operator*( ) const -> value_t& { return value( ); }
-        [[nodiscard]] auto operator&( ) const -> value_t* { return value_ptr_; }
+        [[nodiscard]] auto value( ) const -> TValue& { return *value_ptr_; }
+        [[nodiscard]] auto operator*( ) const -> TValue& { return value( ); }
+        [[nodiscard]] auto operator&( ) const -> TValue* { return value_ptr_; }
 
     private:
-        value_t* value_ptr_{ nullptr };
+        TValue* value_ptr_{ nullptr };
     };
 }
 

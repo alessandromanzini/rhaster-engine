@@ -13,31 +13,31 @@ namespace rst
     // +--------------------------------+
     // | PUBLIC SCOPE                   |
     // +--------------------------------+
-    auto InputMappingContext::register_input_action( InputAction const& action, UniformBindingCode const code ) -> void
+    auto input_mapping_context::register_input_action( input_action const& action, unicode const code ) -> void
     {
         // assert( not action_binds_.contains( code ) && "Input action already registered on this code!" );
         action_binds_[code].push_back( action );
     }
 
 
-    auto InputMappingContext::register_device( PlayerController& controller, DeviceInfo const device_info ) -> void
+    auto input_mapping_context::register_device( player_controller& controller, device_info const device_info ) -> void
     {
         device_contexts_.emplace_back( controller, device_info );
     }
 
 
-    auto InputMappingContext::unregister_device( PlayerController const& controller ) -> void
+    auto input_mapping_context::unregister_device( player_controller const& controller ) -> void
     {
         std::erase_if(
-            device_contexts_, [&controller]( DeviceContext const& ctx )
+            device_contexts_, [&controller]( device_context const& ctx )
             {
-                return ctx.get_controller( ) == controller;
+                return ctx.controller( ) == controller;
             } );
     }
 
 
-    auto InputMappingContext::signal(
-        UniformBindingCode const code, TriggerEvent const trigger, DeviceInfo const device_info ) -> void
+    auto input_mapping_context::signal(
+        unicode const code, trigger const trigger, device_info const device_info ) -> void
     {
         if ( not action_binds_.contains( code ) )
         {
@@ -55,15 +55,15 @@ namespace rst
                 continue;
             }
 
-            for ( auto const& [uid, modifiers] : actions )
+            for ( auto const& [mark, modifiers] : actions )
             {
-                device.signal_input( { uid, apply_modifiers_to_value( value, modifiers ), trigger } );
+                device.signal_input( { mark, apply_modifiers_to_value( value, modifiers ), trigger } );
             }
         }
     }
 
 
-    auto InputMappingContext::dispatch( ) -> void
+    auto input_mapping_context::dispatch( ) -> void
     {
         // dispatch all accumulated inputs
         for ( auto& device : device_contexts_ )
@@ -73,7 +73,7 @@ namespace rst
     }
 
 
-    auto InputMappingContext::get_devices( ) const -> std::list<DeviceContext> const&
+    auto input_mapping_context::devices( ) const -> std::list<device_context> const&
     {
         return device_contexts_;
     }
@@ -82,13 +82,13 @@ namespace rst
     // +--------------------------------+
     // | PRIVATE SCOPE                  |
     // +--------------------------------+
-    auto InputMappingContext::bind_to_input_action_impl(
-        PlayerController const& controller, Uid const uid, InputCommandVariant&& command, TriggerEvent const trigger ) -> void
+    auto input_mapping_context::bind_to_input_action_impl(
+        player_controller const& controller, earmark const mark, input_command_type&& command, trigger const trigger ) -> void
     {
-        DeviceContext* const context = meta::find_or_none(
-            device_contexts_, [&]( DeviceContext const& ctx ) { return ctx.get_controller( ) == controller; } );
+        device_context* const context = meta::find_or_none(
+            device_contexts_, [&]( device_context const& ctx ) { return ctx.controller( ) == controller; } );
 
         assert( context != nullptr && "Can't bind IA: Device context has not been registered for this controller!" );
-        context->bind_command( uid, { std::move( command ), trigger } );
+        context->bind_command( mark, { std::move( command ), trigger } );
     }
 }

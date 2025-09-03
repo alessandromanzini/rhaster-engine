@@ -8,91 +8,91 @@ namespace rst
     // +---------------------------+
     // | TRANSFORM                 |
     // +---------------------------+
-    Transform::Transform( glm::mat3x3 const& matrix )
+    transform::transform( glm::mat3x3 const& matrix )
         : matrix_{ matrix } { }
 
 
-    auto Transform::get_position( ) const -> glm::vec2
+    auto transform::position( ) const -> glm::vec2
     {
         return matrix_[2];
     }
 
 
-    auto Transform::get_matrix( ) const -> glm::mat3x3 const&
+    auto transform::matrix( ) const -> glm::mat3x3 const&
     {
         return matrix_;
     }
 
 
-    auto Transform::translate( glm::vec2 const translation ) const -> Transform
+    auto transform::translate( glm::vec2 const translation ) const -> transform
     {
         return glm::translate( matrix_, translation );
     }
 
 
-    auto Transform::rotate( float const rotation ) const -> Transform
+    auto transform::rotate( float const rotation ) const -> transform
     {
         return glm::rotate( matrix_, rotation );
     }
 
 
-    auto Transform::scale( glm::vec2 const scale ) const -> Transform
+    auto transform::scale( glm::vec2 const scale ) const -> transform
     {
         return glm::scale( matrix_, scale );
     }
 
 
-    auto Transform::combine( Transform const& other ) -> void
+    auto transform::combine( transform const& other ) -> void
     {
         matrix_ = matrix_ * other.matrix_;
     }
 
 
-    auto Transform::operator*( Transform const& other ) const -> Transform
+    auto transform::operator*( transform const& other ) const -> transform
     {
-        Transform result{ *this };
+        transform result{ *this };
         result.combine( other );
         return result;
     }
 
 
-    auto Transform::from_translation( glm::vec2 const translation ) -> Transform
+    auto transform::from_translation( glm::vec2 const translation ) -> transform
     {
-        return glm::translate( matrix_t{ 1.0 }, translation );
+        return glm::translate( matrix_type{ 1.0 }, translation );
     }
 
 
-    auto Transform::from_rotation( float const rotation ) -> Transform
+    auto transform::from_rotation( float const rotation ) -> transform
     {
-        return glm::rotate( matrix_t{ 1.0 }, rotation );
+        return glm::rotate( matrix_type{ 1.0 }, rotation );
     }
 
 
-    auto Transform::from_scale( glm::vec2 const scale ) -> Transform
+    auto transform::from_scale( glm::vec2 const scale ) -> transform
     {
-        return glm::scale( matrix_t{ 1.0 }, scale );
+        return glm::scale( matrix_type{ 1.0 }, scale );
     }
 
 
     // +---------------------------+
     // | TRANSFORM OPERATOR        |
     // +---------------------------+
-    TransformOperator::TransformOperator( GameObject& gameobject )
+    transform_operator::transform_operator( gameobject& gameobject )
         : gameobject_ref_{ gameobject }
     {
     }
 
 
-    auto TransformOperator::translate( glm::vec2 const translation ) const -> void
+    auto transform_operator::translate( glm::vec2 const translation ) const -> void
     {
-        auto const translated = gameobject_ref_.get_local_transform( ) * Transform::from_translation( translation );
+        auto const translated = gameobject_ref_.local_transform( ) * transform::from_translation( translation );
         gameobject_ref_.set_local_transform( translated );
     }
 
 
-    auto TransformOperator::rotate( float const rotation ) const -> void
+    auto transform_operator::rotate( float const rotation ) const -> void
     {
-        auto const rotated = gameobject_ref_.get_local_transform( ) * Transform::from_rotation( rotation );
+        auto const rotated = gameobject_ref_.local_transform( ) * transform::from_rotation( rotation );
         gameobject_ref_.set_local_transform( rotated );
     }
 

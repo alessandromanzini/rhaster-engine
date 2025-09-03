@@ -6,17 +6,17 @@
 
 namespace rst
 {
-    class Hare final
+    class hare final
     {
     public:
-        explicit Hare(
+        explicit hare(
             std::string const& window_title, std::filesystem::path const& data_path, glm::vec2 viewport = { 640U, 480U } );
-        ~Hare( ) noexcept;
+        ~hare( ) noexcept;
 
-        Hare( Hare const& )                        = delete;
-        Hare( Hare&& ) noexcept                    = delete;
-        auto operator=( Hare const& ) -> Hare&     = delete;
-        auto operator=( Hare&& ) noexcept -> Hare& = delete;
+        hare( hare const& )                        = delete;
+        hare( hare&& ) noexcept                    = delete;
+        auto operator=( hare const& ) -> hare&     = delete;
+        auto operator=( hare&& ) noexcept -> hare& = delete;
 
         auto run( ) -> void;
 

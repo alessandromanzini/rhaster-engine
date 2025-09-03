@@ -13,34 +13,34 @@ namespace rst::input
     // +---------------------------+
     // | MERGING                   |
     // +---------------------------+
-    auto apply_modifiers_to_value( bool value, ModifierBitset const& modifiers ) -> InputValueVariant;
-    auto apply_modifiers_to_value( float value, ModifierBitset const& modifiers ) -> InputValueVariant;
+    auto apply_modifiers_to_value( bool value, modifier_bitset_type const& modifiers ) -> input_value_type;
+    auto apply_modifiers_to_value( float value, modifier_bitset_type const& modifiers ) -> input_value_type;
 
-    auto merge_value_to_snapshot( InputSnapshot& snapshot, InputValueVariant value ) -> void;
+    auto merge_value_to_snapshot( input_reduction& snapshot, input_value_type value ) -> void;
 
 
-    [[nodiscard]] constexpr auto trigger_to_value( TriggerEvent const trigger ) -> bool
+    [[nodiscard]] constexpr auto trigger_to_value( trigger const trigger ) -> bool
     {
         switch ( trigger )
         {
-            case TriggerEvent::TRIGGERED:
-            case TriggerEvent::PRESSED: return true;
-            case TriggerEvent::RELEASED: return false;
+            case trigger::triggered:
+            case trigger::pressed: return true;
+            case trigger::released: return false;
         }
         throw std::invalid_argument( "Invalid trigger event!" );
     }
 
 
     template <typename TCastTarget>
-    [[nodiscard]] auto convert_input_value( InputValueVariant value ) -> TCastTarget
+    [[nodiscard]] auto convert_input_value( input_value_type value ) -> TCastTarget
     {
         return std::visit(
             []<typename T>( T&& arg ) -> TCastTarget
             {
-                using ArgType = std::decay_t<T>;
+                using arg_type = std::decay_t<T>;
 
                 // default convertible types
-                if constexpr ( std::is_convertible_v<ArgType, TCastTarget> )
+                if constexpr ( std::is_convertible_v<arg_type, TCastTarget> )
                 {
                     return static_cast<TCastTarget>( arg );
                 }
@@ -52,7 +52,7 @@ namespace rst::input
                 }
 
                 // from vec2 to bool/float
-                else if constexpr ( std::is_same_v<ArgType, glm::vec2> )
+                else if constexpr ( std::is_same_v<arg_type, glm::vec2> )
                 {
                     return static_cast<TCastTarget>( static_cast<glm::vec2>( arg ).x );
                 }
@@ -60,7 +60,7 @@ namespace rst::input
                 else
                 {
                     static_assert(
-                        meta::BAD_CONVERSION<ArgType, TCastTarget>, "No valid conversion available for arg_t to cast_target_t." );
+                        meta::bad_conversion<arg_type, TCastTarget>, "No valid conversion available for arg_t to cast_target_t." );
                 }
                 return TCastTarget{};
             }, value );

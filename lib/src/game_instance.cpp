@@ -5,13 +5,13 @@
 
 namespace rst
 {
-    auto GameInstance::destroy( ) -> void
+    auto game_instance::destroy( ) -> void
     {
         controllers_.clear( );
     }
 
 
-    auto GameInstance::remove_controller( PlayerController const& controller ) -> void
+    auto game_instance::remove_controller( player_controller const& controller ) -> void
     {
         std::erase_if( controllers_, [&]( auto const& controller_ptr )
         {
@@ -20,36 +20,36 @@ namespace rst
     }
 
 
-    auto GameInstance::clear_controllers( ) -> void
+    auto game_instance::clear_controllers( ) -> void
     {
         controllers_.clear( );
     }
 
 
-    auto GameInstance::set_gravity_coefficient( float const coefficient ) -> void
+    auto game_instance::set_gravity_coefficient( float const coefficient ) -> void
     {
         gravity_coefficient_ = coefficient;
     }
 
 
-    auto GameInstance::get_gravity_coefficient( ) const -> float
+    auto game_instance::gravity_coefficient( ) const -> float
     {
         return gravity_coefficient_;
     }
 
 
-    auto GameInstance::set_screen_dimensions( glm::vec2 const dimensions ) -> void
+    auto game_instance::set_screen_dimensions( glm::vec2 const dimensions ) -> void
     {
         screen_dimensions_ = dimensions;
     }
 
 
-    auto GameInstance::get_screen_dimensions( ) const -> glm::vec2
+    auto game_instance::screen_dimensions( ) const -> glm::vec2
     {
         return screen_dimensions_;
     }
 
 
-    GameInstance& GAME_INSTANCE = GameInstance::get_instance( );
+    game_instance& GAME_INSTANCE = game_instance::instance( );
 
 }

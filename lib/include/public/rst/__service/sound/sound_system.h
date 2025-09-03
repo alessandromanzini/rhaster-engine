@@ -4,70 +4,70 @@
 #include <rst/pch.h>
 
 #include <rst/__service/service_info.h>
-#include <rst/__type/sound_type/audio.h>
+#include <rst/__type/sound/audio.h>
 
 
 namespace rst
 {
     namespace sound
     {
-        enum class QueuePolicy : uint8_t
+        enum class queue_policy : uint8_t
         {
             // don't play the new sound if the queue is full
-            DISCARD,
+            discard,
 
             // remove the oldest queued sound to play the new one
-            REPLACE_OLDEST,
+            replace_oldest,
 
             // remove the newest queued sound to play the new one
-            REPLACE_NEWEST
+            replace_newest
         };
 
-        enum class ChannelType : uint8_t
+        enum class channel_type : uint8_t
         {
-            MONO = 1U, STEREO = 2U
+            mono = 1U, stereo = 2U
         };
 
-        enum class SampleRate : uint32_t
+        enum class sample_rate : uint32_t
         {
-            HZ_8000   = 8000U,
-            HZ_11025  = 11025U,
-            HZ_16000  = 16000U,
-            HZ_22050  = 22050U,
-            HZ_32000  = 32000U,
-            HZ_44100  = 44100U,
-            HZ_48000  = 48000U,
-            HZ_96000  = 96000U,
-            HZ_192000 = 192000U
+            hz_8000   = 8000U,
+            hz_11025  = 11025U,
+            hz_16000  = 16000U,
+            hz_22050  = 22050U,
+            hz_32000  = 32000U,
+            hz_44100  = 44100U,
+            hz_48000  = 48000U,
+            hz_96000  = 96000U,
+            hz_192000 = 192000U
         };
     }
 
 
-    class SoundSystem
+    class sound_system
     {
     public:
-        SoundSystem( )          = default;
-        virtual ~SoundSystem( ) = default;
+        sound_system( )          = default;
+        virtual ~sound_system( ) = default;
 
-        SoundSystem( SoundSystem const& )                        = delete;
-        SoundSystem( SoundSystem&& ) noexcept                    = delete;
-        auto operator=( SoundSystem const& ) -> SoundSystem&     = delete;
-        auto operator=( SoundSystem&& ) noexcept -> SoundSystem& = delete;
+        sound_system( sound_system const& )                        = delete;
+        sound_system( sound_system&& ) noexcept                    = delete;
+        auto operator=( sound_system const& ) -> sound_system&     = delete;
+        auto operator=( sound_system&& ) noexcept -> sound_system& = delete;
 
         /**
          * Retrieves the underlying service type.
          * @return
          */
-        [[nodiscard]] virtual auto get_service_type( ) -> ServiceType = 0;
+        [[nodiscard]] virtual auto service_type( ) -> service_type = 0;
 
         /**
          * Registers a sound file within the sound system for future use in playback.
          * @param path Storage path to the sound file
          * @param type Type of the sound. SOUND_EFFECT for quick sounds or SOUND_TRACK for longer music tracks.
-         * @param tag_id
+         * @param tag_mark
          */
         [[nodiscard]] virtual auto load_sound(
-            std::filesystem::path const& path, sound::SoundType type, Uid tag_id ) -> std::shared_ptr<Audio> = 0;
+            std::filesystem::path const& path, sound::sound_type type, earmark tag_mark ) -> std::shared_ptr<audio> = 0;
 
         /**
          * Requests the sound system to play a sound.
@@ -76,14 +76,14 @@ namespace rst
          * @param loops Repeats the sound this amount of times, -1 for infinite loop
          * @return Channel id of the sound being played, -1 if the sound is not playing
          */
-        virtual auto play( Audio const& audio, float volume, int loops = 0 ) -> int = 0;
+        virtual auto play( audio const& audio, float volume, int loops = 0 ) -> int = 0;
 
         /**
          * Halts the playback of a sound.
          * @param audio
          * @return true if the sound was playing and has been stopped, false if it was not playing
          */
-        virtual auto stop( Audio const& audio ) -> bool = 0;
+        virtual auto stop( audio const& audio ) -> bool = 0;
 
         /**
          * Halts the playback of all sounds.
@@ -95,34 +95,34 @@ namespace rst
          * @param audio
          * @return true if the sound was playing and has been paused, false if it was not playing
          */
-        virtual auto pause( Audio const& audio ) -> bool = 0;
+        virtual auto pause( audio const& audio ) -> bool = 0;
 
         /**
          * Resumes the playback of a sound. Plays the sound if it was not playing.
          * @param audio
          * @return true if the sound was paused and has been resumed, false if it was not paused
          */
-        virtual auto resume( Audio const& audio ) -> bool = 0;
+        virtual auto resume( audio const& audio ) -> bool = 0;
 
         /**
          * Checks if the sound is currently playing.
          * @param audio
          * @return true if the sound is playing, false otherwise (paused or stopped)
          */
-        [[nodiscard]] virtual auto is_playing( Audio const& audio ) const -> bool = 0;
+        [[nodiscard]] virtual auto is_playing( audio const& audio ) const -> bool = 0;
 
         /**
          * Checks if the sound is currently paused.
          * @param audio
          * @return true if the sound is paused, false otherwise (playing or stopped)
          */
-        [[nodiscard]] virtual auto is_paused( Audio const& audio ) const -> bool = 0;
+        [[nodiscard]] virtual auto is_paused( audio const& audio ) const -> bool = 0;
 
         /**
          * Fetches the current background music track ID.
          * @return
          */
-        [[nodiscard]] virtual auto get_current_track( ) const -> Audio const* = 0;
+        [[nodiscard]] virtual auto current_track( ) const -> audio const* = 0;
 
         /**
          * Sets the volume coefficient that applies to all sounds.
@@ -134,21 +134,21 @@ namespace rst
          * Gets the current master volume.
          * @return [0.0-1.0] as volume modifier
          */
-        [[nodiscard]] virtual auto get_master_volume( ) const -> float = 0;
+        [[nodiscard]] virtual auto master_volume( ) const -> float = 0;
 
         /**
          * Sets the volume coefficient that applies to the tag grouping. It combines with the master volume.
-         * @param tag_id
+         * @param tag_mark
          * @param volume [0.0-1.0] as volume modifier
          */
-        virtual auto set_volume_by_tag( Uid tag_id, float volume ) -> void = 0;
+        virtual auto set_volume_by_tag( earmark tag_mark, float volume ) -> void = 0;
 
         /**
          * Gets the current volume for a tag grouping.
-         * @param tag_id
+         * @param tag_mark
          * @return [0.0-1.0] as volume modifier
          */
-        [[nodiscard]] virtual auto get_volume_by_tag( Uid tag_id ) const -> float = 0;
+        [[nodiscard]] virtual auto volume_by_tag( earmark tag_mark ) const -> float = 0;
     };
 }
 
