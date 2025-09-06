@@ -3,35 +3,47 @@
 
 #include <rst/pch.h>
 
+#include <rst/data_type/token_generator.h>
 #include <rst/meta/function_traits.h>
-#include <rst/__event/dispatcher.h>
+#include <rst/__event/scoped_binding.h>
+#include <rst/__event/token.h>
 
 
 namespace rst
 {
+    // +--------------------------------+
+    // | DELEGATE INFO STRUCT           |
+    // +--------------------------------+
+    namespace event
+    {
+        template <typename... TParams> struct delegate_info
+        {
+            using type = std::function<void( TParams... )>;
+
+            delegate_token_type token{ invalid_token };
+            void* binder{ nullptr };
+            type delegate{};
+        };
+    }
+
+
     // +---------------------------+
-    // | GENERAL TYPE              |
+    // | DELEGATE TYPE             |
     // +---------------------------+
-    // TODO: support all std::function signatures
-    // TODO: improve binding without binder pointer and easier lambda linking
     template <typename... TParams>
     class multicast_delegate final
     {
     public:
-        using dispatcher_type = dispatcher<TParams...>;
+        using delegate_info_type = event::delegate_info<TParams...>;
+        using delegate_type      = delegate_info_type::type;
 
-        using raw_delegate_type = meta::function_traits<void( TParams... )>::raw_fn_t;
-        using delegate_type    = meta::function_traits<void( TParams... )>::std_fn_t;
+        using scoped_binding_type = event::scoped_binding<TParams...>;
 
-
-        explicit multicast_delegate( dispatcher_type& dispatcher )
-            : dispatcher_ref_{ dispatcher }
-        {
-            dispatcher_ref_.set_delegates_pool( delegates_ );
-        }
+        using raw_delegate_sig_type = meta::function_traits<void( TParams... )>::raw_fn_t;
 
 
-        ~multicast_delegate( ) = default;
+        explicit multicast_delegate( ) = default;
+        ~multicast_delegate( )         = default;
 
         multicast_delegate( multicast_delegate const& )                        = delete;
         multicast_delegate( multicast_delegate&& ) noexcept                    = delete;
@@ -39,41 +51,75 @@ namespace rst
         auto operator=( multicast_delegate&& ) noexcept -> multicast_delegate& = delete;
 
 
-        auto bind( raw_delegate_type delegate ) -> void
+        auto bind( raw_delegate_sig_type raw_fn_ptr ) -> void
         {
-            delegates_.emplace_back( nullptr, delegate_type{ delegate } );
+            delegates_.emplace_back( event::invalid_token, nullptr, delegate_type{ raw_fn_ptr } );
         }
 
 
-        template <typename TClass, typename TMethod> requires std::is_same_v<delegate_type, typename meta::function_traits<
-            TMethod>::std_fn_t>
-        auto bind( TClass* binder, TMethod delegate ) -> void
+        template <typename TClass, typename TMethod> requires std::is_member_function_pointer_v<TMethod>
+        auto bind( TClass* binder, TMethod method ) -> void
         {
-            assert( binder && "MulticastDelegate::bind: Binder cannot be nullptr!" );
+            assert( binder && "multicast_delegate::bind: binder cannot be nullptr!" );
             delegates_.emplace_back(
-                binder, delegate_type{
-                    [=]( TParams&&... args ) { std::invoke( delegate, binder, std::forward<TParams>( args )... ); }
+                event::invalid_token, binder, delegate_type{
+                    [=]( TParams&&... args ) { std::invoke( method, binder, std::forward<TParams>( args )... ); }
                 } );
         }
 
 
-        auto unbind( raw_delegate_type delegate ) -> void
+        template <typename TCallable> requires std::is_invocable_v<TCallable, TParams...>
+        auto bind_scoped( TCallable&& callable ) -> scoped_binding_type
         {
-            std::erase_if(
-                delegates_, [delegate]( typename dispatcher_type::Info& info )
+            event::delegate_token_type const token = token_gen_.generate( );
+            delegates_.emplace_back( token, nullptr, delegate_type{ std::forward<TCallable>( callable ) } );
+            return scoped_binding_type{ token, *this };
+        }
+
+
+        auto unbind( raw_delegate_sig_type raw_fn_ptr ) -> size_t
+        {
+            assert( raw_fn_ptr && "multicast_delegate::unbind: raw_fn_ptr cannot be nullptr!" );
+            size_t const erased_count = std::erase_if(
+                delegates_, [raw_fn_ptr]( auto const& info )
                 {
-                    using raw_function_type = auto( ) -> void;
-                    auto** address1       = info.delegate.template target<raw_function_type*>( );
-                    auto** address2       = delegate.template target<raw_function_type*>( );
-                    return reinterpret_cast<size_t>( *address1 ) == reinterpret_cast<size_t>( *address2 );
+                    if ( info.token != event::invalid_token ) { return false; }
+                    auto* const target_ptr = info.delegate.template target<raw_delegate_sig_type>( );
+                    return target_ptr && *target_ptr == raw_fn_ptr;
                 } );
+            return erased_count;
         }
 
 
-        template <typename TCLass>
-        auto unbind( TCLass* binder ) -> void
+        template <typename TClass>
+        auto unbind( TClass* binder ) -> size_t
         {
-            std::erase_if( delegates_, [binder]( typename dispatcher_type::info_type& info ) { return info.binder == binder; } );
+            size_t const erased_count =
+                    std::erase_if( delegates_, [binder]( auto const& info ) { return info.binder == binder; } );
+            return erased_count;
+        }
+
+
+        auto unbind_token( event::delegate_token_type token ) -> bool
+        {
+            if ( token == event::invalid_token ) { return false; }
+
+            auto it = std::ranges::find_if( delegates_, [token]( auto const& info ) { return info.token == token; } );
+            if ( it != delegates_.end( ) )
+            {
+                delegates_.erase( it );
+                return true;
+            }
+            return false;
+        }
+
+
+        auto broadcast( TParams&&... args ) const -> void
+        {
+            for ( auto const& info : delegates_ )
+            {
+                info.delegate( std::forward<TParams>( args )... );
+            }
         }
 
 
@@ -82,9 +128,15 @@ namespace rst
             return delegates_.empty( );
         }
 
-    private :
-        dispatcher_type& dispatcher_ref_;
-        std::vector<typename dispatcher_type::info_type> delegates_{};
+
+        auto size( ) const -> size_t
+        {
+            return delegates_.size( );
+        }
+
+    private:
+        std::vector<delegate_info_type> delegates_{};
+        token_generator<event::delegate_token_type, event::invalid_token> token_gen_{};
     };
 }
 
