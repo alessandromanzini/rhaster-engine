@@ -45,7 +45,10 @@ bld/
 Generated\ Files/
 
 # CLion
-.idea/
+#.idea/
+
+# Claude
+CLAUDE.md
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
