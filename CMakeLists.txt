@@ -5,9 +5,9 @@ cmake_minimum_required( VERSION 3.26 )
 project( "rst" )
 
 # set the C++ standard to C++20 and ensure it is required
-set( CMAKE_CXX_STANDARD 20 )
+set( CMAKE_CXX_STANDARD 23 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
-message( STATUS "c++20 support has been enabled by default." )
+message( STATUS "C++${CMAKE_CXX_STANDARD} support has been enabled by default." )
 # target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 if( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" )

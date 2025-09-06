@@ -6,7 +6,7 @@
 
 #include <rst/__controller/base_controller.h>
 
-#include <rst/type/safe_resource.h>
+#include <rst/data_type/safe_resource.h>
 #include <rst/__input/input_mapping_context.h>
 
 

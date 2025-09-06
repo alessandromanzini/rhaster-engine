@@ -4,7 +4,7 @@
 #include <rst/pch.h>
 
 #include <rst/__service/service_info.h>
-#include <rst/__type/sound/audio.h>
+#include <rst/__resource_type/sound/audio.h>
 
 
 namespace rst

@@ -24,7 +24,7 @@ namespace rst
         }
 
         // broadcast that owner is being deleted
-        on_deletion_dispatcher_.broadcast( );
+        on_deletion.broadcast( );
     }
 
 

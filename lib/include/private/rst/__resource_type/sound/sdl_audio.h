@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/__type/sound/audio.h>
+#include <rst/__resource_type/sound/audio.h>
 
 #include <SDL_mixer.h>
 

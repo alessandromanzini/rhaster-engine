@@ -139,21 +139,21 @@ namespace rst
     auto sound_system_logger::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
     {
         sound_system_ptr_->set_volume_by_tag( tag_mark, volume );
-        log_stream_ << logger_identifier_ << "Set volume for tag " << tag_mark.value << " to " << sound_system_ptr_->
+        log_stream_ << logger_identifier_ << "Set volume for tag " << tag_mark << " to " << sound_system_ptr_->
                 volume_by_tag( tag_mark ) << '\n';
     }
 
 
-    auto sound_system_logger::volume_by_tag( earmark const tag_id ) const -> float
+    auto sound_system_logger::volume_by_tag( earmark const tag_mark ) const -> float
     {
-        return sound_system_ptr_->volume_by_tag( tag_id );
+        return sound_system_ptr_->volume_by_tag( tag_mark );
     }
 
 
     auto sound_system_logger::sound_info( audio const& audio ) -> std::string
     {
         std::stringstream ss{};
-        ss << "[TAG: " << audio.tag_mark( ).value << ", UID: " << audio.sound_mark( ).value << "]";
+        ss << "[TAG: " << audio.tag_mark( ) << ", UID: " << audio.sound_mark( ) << "]";
         return ss.str( );
     }
 }

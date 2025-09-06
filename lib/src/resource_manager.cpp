@@ -2,8 +2,8 @@
 
 #include <rst/framework/observer.h>
 #include <rst/temp/singleton/renderer.h>
-#include <rst/__type/font/font.h>
-#include <rst/__type/texture/texture2D.h>
+#include <rst/__resource_type/font/font.h>
+#include <rst/__resource_type/texture/texture2D.h>
 
 #include <SDL_image.h>
 #include <SDL_ttf.h>

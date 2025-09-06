@@ -4,8 +4,8 @@
 #include <rst/__core/gameobject.h>
 
 #include <SDL_ttf.h>
-#include <rst/__type/font/font.h>
-#include <rst/__type/texture/texture2D.h>
+#include <rst/__resource_type/font/font.h>
+#include <rst/__resource_type/texture/texture2D.h>
 
 
 namespace rst

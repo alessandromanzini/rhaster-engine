@@ -2,7 +2,7 @@
 #ifndef RST_FSM_BASE_TRANSITIONS_H
 #define RST_FSM_BASE_TRANSITIONS_H
 
-#include <rst/type/blackboard.h>
+#include <rst/data_type/blackboard.h>
 
 
 namespace rst::fsm

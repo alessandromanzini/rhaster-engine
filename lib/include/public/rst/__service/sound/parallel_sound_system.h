@@ -4,7 +4,7 @@
 #include <rst/pch.h>
 
 #include <rst/framework/event_queue.h>
-#include <rst/type/safe_resource.h>
+#include <rst/data_type/safe_resource.h>
 #include <rst/__service/sound/sound_system.h>
 
 

@@ -5,7 +5,7 @@
 
 #include <rst/framework/observer.h>
 #include <rst/temp/singleton/Singleton.h>
-#include <rst/type/safe_resource.h>
+#include <rst/data_type/safe_resource.h>
 
 
 namespace rst

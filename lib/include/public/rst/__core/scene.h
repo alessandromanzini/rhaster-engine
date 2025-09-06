@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/type/deleter.h>
+#include <rst/data_type/deleter.h>
 #include <rst/__core/gameobject.h>
 
 

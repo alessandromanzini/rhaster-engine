@@ -1,4 +1,4 @@
-#include <rst/__type/sound/audio.h>
+#include <rst/__resource_type/sound/audio.h>
 
 #include <rst/temp/singleton/resource_manager.h>
 

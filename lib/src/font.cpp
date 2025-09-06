@@ -1,4 +1,4 @@
-#include <rst/__type/font/font.h>
+#include <rst/__resource_type/font/font.h>
 
 #include <SDL_ttf.h>
 

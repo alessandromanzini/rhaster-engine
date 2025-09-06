@@ -50,7 +50,7 @@ namespace rst
     {
         if ( not active_scene_ptr_ ) { return; }
         active_scene_ptr_->tick( );
-        collider_component::late_tick( );
+        // collider_component::late_tick( );
     }
 
 

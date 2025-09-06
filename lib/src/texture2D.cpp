@@ -1,4 +1,4 @@
-#include <rst/__type/texture/texture2D.h>
+#include <rst/__resource_type/texture/texture2D.h>
 
 #include <rst/temp/singleton/renderer.h>
 

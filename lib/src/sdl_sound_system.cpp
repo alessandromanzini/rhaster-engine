@@ -1,7 +1,7 @@
 #include <rst/__service/sound/sdl/sdl_sound_system.h>
 
 #include <rst/temp/singleton/resource_manager.h>
-#include <rst/__type/sound/sdl_audio.h>
+#include <rst/__resource_type/sound/sdl_audio.h>
 
 #include <SDL_audio.h>
 #include <SDL_mixer.h>

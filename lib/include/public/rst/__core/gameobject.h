@@ -4,8 +4,8 @@
 #include <rst/pch.h>
 
 #include <rst/meta/type_hash.h>
-#include <rst/type/deleter.h>
-#include <rst/type/optional_ref.h>
+#include <rst/data_type/deleter.h>
+#include <rst/data_type/optional_ref.h>
 #include <rst/__core/component.h>
 #include <rst/__core/deletable.h>
 #include <rst/__core/gameobject.h>
@@ -26,10 +26,8 @@ namespace rst
 {
     class gameobject final : public deletable
     {
-        dispatcher<> on_deletion_dispatcher_{};
-
     public:
-        multicast_delegate<> on_deletion{ on_deletion_dispatcher_ };
+        multicast_delegate<> on_deletion{};
 
         explicit gameobject( scene& scene );
         ~gameobject( ) noexcept override;
@@ -92,7 +90,7 @@ namespace rst
         transform world_transform_{};
         bool transform_dirty_{ false };
 
-        std::multimap<uint64_t, std::unique_ptr<component>> components_{};
+        std::multimap<meta::hash::hash_type, std::unique_ptr<component>> components_{};
         deleter<component> deleter_{};
 
         std::vector<gameobject*> children_{};

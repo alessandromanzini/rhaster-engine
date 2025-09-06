@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/__type/texture/texture2D.h>
+#include <rst/__resource_type/texture/texture2D.h>
 
 
 // TODO: add documentation

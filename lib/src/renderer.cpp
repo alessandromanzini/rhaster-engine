@@ -1,7 +1,7 @@
 #include <rst/temp/singleton/renderer.h>
 
 #include <rst/temp/singleton/scene_pool.h>
-#include <rst/__type/texture/texture2D.h>
+#include <rst/__resource_type/texture/texture2D.h>
 
 
 namespace rst
