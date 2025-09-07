@@ -6,7 +6,7 @@
 #include <rst/__event/token.h>
 
 
-namespace rst::event
+namespace rst
 {
     template <typename... TParams> class multicast_delegate;
 }

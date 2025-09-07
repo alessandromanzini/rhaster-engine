@@ -6,9 +6,9 @@
 
 namespace rst::meta
 {
-    // +---------------------------+
-    // | FUNCTION TRAITS           |
-    // +---------------------------+
+    // +--------------------------------+
+    // | FUNCTION TRAITS                |
+    // +--------------------------------+
     template <typename T>
     struct function_traits;
 
@@ -27,17 +27,17 @@ namespace rst::meta
     };
 
 
-    // +---------------------------+
-    // | RAW                       |
-    // +---------------------------+
+    // +--------------------------------+
+    // | RAW                            |
+    // +--------------------------------+
     template <typename TReturn, typename... TParams>
     struct function_traits<TReturn ( * )( TParams... )> : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> {
     };
 
 
-    // +---------------------------+
-    // | NON CONST MEMBER          |
-    // +---------------------------+
+    // +--------------------------------+
+    // | NON CONST MEMBER               |
+    // +--------------------------------+
     template <typename TClass, typename TReturn, typename... TParams>
     struct function_traits<TReturn ( TClass::* )( TParams... )>
             : function_traits_info<TReturn ( TClass::* )( TParams... ), TReturn, TParams...>
@@ -46,9 +46,9 @@ namespace rst::meta
     };
 
 
-    // +---------------------------+
-    // | CONST MEMBER              |
-    // +---------------------------+
+    // +--------------------------------+
+    // | CONST MEMBER                   |
+    // +--------------------------------+
     template <typename TClass, typename TReturn, typename... TParams>
     struct function_traits<TReturn ( TClass::* )( TParams... ) const>
             : function_traits_info<TReturn ( TClass::* )( TParams... ) const, TReturn, TParams...>
@@ -57,24 +57,32 @@ namespace rst::meta
     };
 
 
-    // +---------------------------+
-    // | STD FUNCTION              |
-    // +---------------------------+
+    // +--------------------------------+
+    // | STD FUNCTION                   |
+    // +--------------------------------+
     template <typename TReturn, typename... TParams>
     struct function_traits<std::function<TReturn( TParams... )>>
             : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
 
 
-    // +---------------------------+
-    // | FUNCTION SIGNATURE        |
-    // +---------------------------+
+    // +--------------------------------+
+    // | FUNCTION SIGNATURE             |
+    // +--------------------------------+
     template <typename TReturn, typename... TParams>
     struct function_traits<TReturn( TParams... )> : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
 
 
-    // +---------------------------+
-    // | SAFE PARAM                |
-    // +---------------------------+
+    // +--------------------------------+
+    // | MEMBER OF CLASS                |
+    // +--------------------------------+
+    template <typename TClass, typename TMethod>
+    concept member_of_class =
+            std::is_member_function_pointer_v<TMethod> && std::same_as<TClass, typename function_traits<TMethod>::class_type>;
+
+
+    // +--------------------------------+
+    // | SAFE PARAM                     |
+    // +--------------------------------+
     template <std::size_t index, typename TTuple, typename TDefault = void>
     struct safe_tuple_element
     {

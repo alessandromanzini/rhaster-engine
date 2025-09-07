@@ -19,19 +19,17 @@ namespace rst
          */
         static earmark const null;
 
-        constexpr earmark( ) : earmark{ "0" } { }
+        consteval earmark( ) : earmark{ "0" } { }
         explicit constexpr earmark( char const* const cstr ) : earmark{ std::string_view{ cstr } } { }
         explicit constexpr earmark( std::string const& str ) : earmark{ std::string_view{ str } } { }
         explicit constexpr earmark( std::string_view const view ) : value_{ meta::hash::hash_cast( view ) } { }
         template <typename T> explicit constexpr earmark( T value ) : value_{ meta::hash::hash_cast( value ) } { }
 
         // ReSharper disable once CppNonExplicitConversionOperator
-        operator meta::hash::hash_type( ) const { return value_; }
+        constexpr operator meta::hash::hash_type( ) const { return value_; }
 
-        auto operator==( earmark const& other ) const -> bool { return value_ == other.value_; }
-        auto operator<( earmark const& other ) const -> bool { return value_ < other.value_; }
-
-        void test(){ value_ = 0; };
+        constexpr auto operator==( earmark const& other ) const -> bool { return value_ == other.value_; }
+        constexpr auto operator<( earmark const& other ) const -> bool { return value_ < other.value_; }
 
     private:
         meta::hash::hash_type value_{};

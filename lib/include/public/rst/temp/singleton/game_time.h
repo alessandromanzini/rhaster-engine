@@ -96,7 +96,7 @@ namespace rst
             {
                 bool should_reset = false;
 
-                if constexpr ( std::is_void_v<TReturn> )
+                if constexpr ( std::same_as<TReturn, void> )
                 {
                     delegate( );
                     should_reset = !discard_finished;

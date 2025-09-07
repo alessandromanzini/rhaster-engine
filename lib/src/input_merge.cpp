@@ -34,13 +34,13 @@ namespace rst::input
                             using to_add_type = std::decay_t<TToAdd>;
 
                             // we make sure that vec2 remains the relevant type.
-                            if constexpr ( std::is_same_v<to_add_type, glm::vec2> )
+                            if constexpr ( std::same_as<to_add_type, glm::vec2> )
                             {
                                 // please change this it's horrible
                                 snapshot.value = convert_input_value<glm::vec2>( start ) + to_add;
                             }
                             // if dealing with a base boolean, we convert to bool instead
-                            else if constexpr ( std::is_same_v<start_type, bool> )
+                            else if constexpr ( std::same_as<start_type, bool> )
                             {
                                 snapshot.value = static_cast<float>( start ) + convert_input_value<float>( to_add );
                             }
