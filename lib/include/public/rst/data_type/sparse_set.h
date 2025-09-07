@@ -41,8 +41,7 @@ namespace rst
      * @tparam TElement The type of elements stored
      * @tparam TIndex The index type (must be integral)
      */
-    template <typename TElement, typename TIndex = uint32_t> requires
-        std::is_integral_v<TIndex> && std::is_move_assignable_v<TElement>
+    template <typename TElement, typename TIndex = uint32_t> requires std::integral<TIndex> && std::move_constructible<TElement>
     class sparse_set final : public base_sparse_set<TIndex>
     {
     public:

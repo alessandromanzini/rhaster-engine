@@ -62,7 +62,7 @@ namespace rst::meta::hash
     // +--------------------------------+
     // | COMPILE TIME HASH CASTING      |
     // +--------------------------------+
-    template <typename T> requires std::is_integral_v<std::decay_t<T>> || std::is_enum_v<std::decay_t<T>>
+    template <typename T> requires std::integral<std::decay_t<T>> || std::is_enum_v<std::decay_t<T>>
     [[nodiscard]] constexpr auto hash_cast( T&& castee ) -> hash_type
     {
         using hashee_type = uint64_t;

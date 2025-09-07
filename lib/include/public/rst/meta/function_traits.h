@@ -77,7 +77,7 @@ namespace rst::meta
     // +--------------------------------+
     template <typename TClass, typename TMethod>
     concept member_of_class =
-            std::is_member_function_pointer_v<TMethod> && std::is_same_v<TClass, typename function_traits<TMethod>::class_type>;
+            std::is_member_function_pointer_v<TMethod> && std::same_as<TClass, typename function_traits<TMethod>::class_type>;
 
 
     // +--------------------------------+

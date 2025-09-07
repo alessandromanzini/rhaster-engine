@@ -132,14 +132,17 @@ namespace rst
          * @complexity O(1) average, O(log n) worst case (hash table insertion)
          * @tparam TCallable The callable type
          * @param callable The callable object to bind
-         * @return Token for later unbinding via unbind_token()
+         * @return Token for later unbinding via unbind_token(). Returns event::invalid_token on failure.
          * @note Uses hash table storage for token-based management
          */
         template <typename TCallable> requires std::invocable<TCallable, TParams...>
-        auto bind( TCallable&& callable ) -> event::delegate_token_type
+        auto bind( TCallable&& callable ) noexcept -> event::delegate_token_type
         {
-            event::delegate_token_type const token = token_gen_.generate( );
-            token_delegates_.insert( { token, delegate_type{ std::forward<TCallable>( callable ) } } );
+            auto const token = token_gen_.generate( );
+            if ( token != event::invalid_token )
+            {
+                token_delegates_.insert( { token, delegate_type{ std::forward<TCallable>( callable ) } } );
+            }
             return token;
         }
 
@@ -152,8 +155,8 @@ namespace rst
          * @return RAII scoped_binding object for automatic cleanup
          * @note Preferred for temporary bindings and exception safety
          */
-        template <typename TCallable> requires std::is_invocable_v<TCallable, TParams...>
-        [[nodiscard]] auto bind_scoped( TCallable&& callable ) -> scoped_binding_type
+        template <typename TCallable> requires std::invocable<TCallable, TParams...>
+        [[nodiscard]] auto bind_scoped( TCallable&& callable ) noexcept -> scoped_binding_type
         {
             return scoped_binding_type{ this->bind( callable ), *this };
         }
@@ -244,7 +247,7 @@ namespace rst
             {
                 trace.delegate( std::forward<TParams>( args )... );
             }
-            for ( auto const& [_, delegate] : token_delegates_ )
+            for ( auto const& delegate : token_delegates_ | std::views::values )
             {
                 delegate( std::forward<TParams>( args )... );
             }

@@ -40,19 +40,19 @@ namespace rst::input
                 using arg_type = std::decay_t<T>;
 
                 // default convertible types
-                if constexpr ( std::is_convertible_v<arg_type, TCastTarget> )
+                if constexpr ( std::convertible_to<arg_type, TCastTarget> )
                 {
                     return static_cast<TCastTarget>( arg );
                 }
 
                 // from bool/float to vec2
-                else if constexpr ( std::is_same_v<TCastTarget, glm::vec2> )
+                else if constexpr ( std::same_as<TCastTarget, glm::vec2> )
                 {
                     return glm::vec2{ static_cast<float>( arg ), 0.f };
                 }
 
                 // from vec2 to bool/float
-                else if constexpr ( std::is_same_v<arg_type, glm::vec2> )
+                else if constexpr ( std::same_as<arg_type, glm::vec2> )
                 {
                     return static_cast<TCastTarget>( static_cast<glm::vec2>( arg ).x );
                 }

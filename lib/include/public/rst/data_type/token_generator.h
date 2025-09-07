@@ -17,16 +17,29 @@ namespace rst
         auto operator=( token_generator&& ) noexcept -> token_generator& = delete;
 
 
-        [[nodiscard]] auto generate( ) -> TToken
+        /**
+         * @return A sequentially unique token, or std::nullopt if the maximum token value has been reached.
+         * @complexity O(1)
+         */
+        [[nodiscard]] auto generate( ) noexcept -> TToken
         {
-            if ( next_token_ == std::numeric_limits<TToken>::max( ) )
+            if ( is_saturated( ) )
             {
-                throw std::runtime_error{ "token_generator::generate: token overflow!" };
+                return invalid_token;
             }
             return next_token_++;
         }
 
 
+        /**
+         * @return True if the generator has reached the maximum token value and can no longer issue new tokens.
+         */
+        [[nodiscard]] auto is_saturated( ) const noexcept -> bool { return next_token_ == std::numeric_limits<TToken>::max( ); }
+
+
+        /**
+         * @brief Resets the token generator to start issuing tokens from the beginning.
+         */
         auto reset( ) noexcept -> void { next_token_ = first_token; }
 
     private:

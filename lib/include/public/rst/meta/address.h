@@ -17,9 +17,8 @@ namespace rst::meta
         }
         else
         {
-            std::array<unsigned char, sizeof( T )> bytes{};
-            std::memcpy( bytes.data( ), &method, sizeof( T ) );
-            return std::hash<std::string_view>{}( std::string_view{ reinterpret_cast<char*>( bytes.data( ) ), sizeof( T ) } );
+            auto bytes = std::bit_cast<std::array<char, sizeof( T )>>( method );
+            return std::hash<std::string_view>{}( std::string_view{ bytes.data( ), sizeof( T ) } );
         }
     }
 }

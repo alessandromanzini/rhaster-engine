@@ -12,7 +12,7 @@ namespace rst::thread
         using std::mutex;
         template <template<typename> class TLock> concept lockable = requires( )
         {
-            std::is_same_v<TLock<mutex>, std::lock_guard<mutex>> || std::is_same_v<TLock<mutex>, std::unique_lock<mutex>>;
+            std::same_as<TLock<mutex>, std::lock_guard<mutex>> || std::same_as<TLock<mutex>, std::unique_lock<mutex>>;
         };
     }
 
