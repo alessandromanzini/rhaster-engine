@@ -7,6 +7,7 @@
   <component name="CidrRootsConfiguration">
     <sourceRoots>
       <file path="$PROJECT_DIR$/lib" />
+      <file path="$PROJECT_DIR$/lib/include" />
     </sourceRoots>
     <excludeRoots>
       <file path="$PROJECT_DIR$/out" />

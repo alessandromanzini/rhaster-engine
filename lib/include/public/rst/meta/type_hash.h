@@ -3,6 +3,8 @@
 
 #include <rst/pch.h>
 
+#include <rst/meta/type_name.h>
+
 
 // TODO: add documentation
 namespace rst::meta::hash
@@ -14,91 +16,69 @@ namespace rst::meta::hash
 
 
     // +--------------------------------+
+    // | HASH FUNCTIONS                 |
+    // +--------------------------------+
+    namespace internal
+    {
+        class xxhash64 final
+        {
+        public:
+            constexpr explicit xxhash64( size_t const hash_size ) noexcept : hash_{ prime64_5_ + hash_size } { }
+
+
+            template <typename THasher> requires std::integral<THasher>
+            constexpr auto step( THasher hasher ) noexcept -> xxhash64&
+            {
+                hash_ ^= hasher;
+                hash_ = ( hash_ << 27ULL | hash_ >> 37ULL ) * prime64_1_ + prime64_4_;
+                return *this;
+            }
+
+
+            constexpr auto yield( ) const noexcept -> hash_type
+            {
+                hash_type yielded = hash_;
+                yielded ^= yielded >> 33ULL;
+                yielded *= prime64_2_;
+                yielded ^= yielded >> 29ULL;
+                yielded *= prime64_3_;
+                yielded ^= yielded >> 32ULL;
+                return yielded;
+            }
+
+        private:
+            // xxHash64 constants
+            static constexpr hash_type prime64_1_{ 0x9E3779B185EBCA87ULL };
+            static constexpr hash_type prime64_2_{ 0xC2B2AE3D27D4EB4FULL };
+            static constexpr hash_type prime64_3_{ 0x165667B19E3779F9ULL };
+            static constexpr hash_type prime64_4_{ 0x85EBCA77C2B2AE63ULL };
+            static constexpr hash_type prime64_5_{ 0x27D4EB2F165667C5ULL };
+
+            hash_type hash_;
+        };
+    }
+
+
+    // +--------------------------------+
     // | COMPILE TIME HASH CASTING      |
     // +--------------------------------+
     template <typename T> requires std::is_integral_v<std::decay_t<T>> || std::is_enum_v<std::decay_t<T>>
     [[nodiscard]] constexpr auto hash_cast( T&& castee ) -> hash_type
     {
         using hashee_type = uint64_t;
-        auto const hasher = static_cast<hashee_type>( castee );
-
-        // simple 64-bit FNV-1a hash
-        constexpr hash_type fnv_offset_basis_64 = 0xCBF29CE484222325;
-
-        // process the integer per byte
-        hash_type hash = fnv_offset_basis_64;
-        for ( size_t i{ 0U }; i < sizeof( hasher ); ++i )
-        {
-            constexpr hash_type fnv_prime_64 = 0x100000001B3;
-            hash ^= hasher >> ( i * 8U ) & 0xFF; // extract byte
-            hash *= fnv_prime_64;
-        }
-        return hash;
+        return internal::xxhash64( sizeof( hashee_type ) ).step( static_cast<hashee_type>( castee ) ).yield( );
     }
 
 
     [[nodiscard]] constexpr auto hash_cast( std::string_view const& view ) -> hash_type
     {
-        // simple 64-bit FNV-1a hash
-        constexpr hash_type fnv_offset_basis_64 = 0xCBF29CE484222325;
-
-        // process the string per character
-        hash_type hash = fnv_offset_basis_64;
+        using hashee_type = uint64_t;
+        internal::xxhash64 hash_operator{ view.size( ) };
         for ( char const character : view )
         {
-            constexpr hash_type fnv_prime_64 = 0x100000001B3;
-
-            hash ^= static_cast<hash_type>( character );
-            hash *= fnv_prime_64;
+            hash_operator.step( static_cast<hashee_type>( character ) );
         }
-        return hash;
-    }
-
-
-    // +--------------------------------+
-    // | TYPE NAME                      |
-    // +--------------------------------+
-    namespace internal
-    {
-        template <typename T>
-        [[nodiscard]] consteval auto type_name_impl( ) -> std::string_view
-        {
-#if defined(__clang__) || defined(__GNUC__)
-            constexpr std::string_view function = __PRETTY_FUNCTION__;
-            constexpr std::string_view prefix   = "type_name_impl() [T = ";
-            constexpr std::string_view suffix   = "]";
-#elif defined(_MSC_VER)
-            constexpr std::string_view function = __FUNCSIG__;
-            constexpr std::string_view prefix   = "type_name_impl<";
-            //constexpr std::string_view prefix = "std::string_view __cdecl type_name<";
-            constexpr std::string_view suffix = ">";
-#else
-#error "Compiler not supported"
-#endif
-            constexpr std::size_t prefix_pos = function.find( prefix );
-
-            // ReSharper disable once CppStaticAssertFailure
-            static_assert( prefix_pos != std::string_view::npos, "type_name_impl( ): prefix format is incorrect!" );
-
-            // cleanup
-            constexpr std::size_t start = prefix_pos + prefix.size( );
-            constexpr std::size_t end   = function.rfind( suffix );
-            return function.substr( start, end - start );
-        }
-    }
-
-
-    template <typename T>
-    [[nodiscard]] consteval auto type_name( ) -> std::string_view
-    {
-        return internal::type_name_impl<std::decay_t<T>>( );
-    }
-
-
-    template <typename T>
-    [[nodiscard]] consteval auto type_name( T&& ) -> std::string_view
-    {
-        return type_name<T>( );
+        return hash_operator.yield( );
     }
 
 

@@ -136,7 +136,7 @@ namespace rst
          * @note Uses hash table storage for token-based management
          */
         template <typename TCallable> requires std::invocable<TCallable, TParams...>
-        auto bind( TCallable&& callable ) noexcept -> event::delegate_token_type
+        auto bind( TCallable&& callable ) -> event::delegate_token_type
         {
             event::delegate_token_type const token = token_gen_.generate( );
             token_delegates_.insert( { token, delegate_type{ std::forward<TCallable>( callable ) } } );
@@ -153,7 +153,7 @@ namespace rst
          * @note Preferred for temporary bindings and exception safety
          */
         template <typename TCallable> requires std::is_invocable_v<TCallable, TParams...>
-        [[nodiscard]] auto bind_scoped( TCallable&& callable ) noexcept -> scoped_binding_type
+        [[nodiscard]] auto bind_scoped( TCallable&& callable ) -> scoped_binding_type
         {
             return scoped_binding_type{ this->bind( callable ), *this };
         }
