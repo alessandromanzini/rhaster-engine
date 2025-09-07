@@ -12,7 +12,6 @@
 
 // todo: add concepts for components (default constructible, move assignable, etc)
 // todo: add event system for entity/component lifecycle (on_construct, on_destroy, on_update, etc)
-// todo: add linked_entity class that forwards remove emplace and view methods
 namespace rst::ecs
 {
     class registry final
@@ -22,7 +21,13 @@ namespace rst::ecs
         using component_pool_type = sparse_set<TComponent, entity_type>;
 
     public:
-        registry( ) = default;
+        registry( )
+        {
+            entity_alloc_.on_destruction.bind( this, &registry::destroy_entity );
+            entity_alloc_.on_clear.bind( this, &registry::clear_entities );
+        }
+
+
         ~registry( ) noexcept = default;
 
         registry( registry const& )                        = delete;
@@ -68,7 +73,7 @@ namespace rst::ecs
         /**
          * @tparam TComponents
          * @param entity
-         * @return A reference to the component of type TComponent associated with the given entity.
+         * @return A view to the TComponents associated with the given entity.
          */
         template <typename... TComponents>
         [[nodiscard]] auto view( entity_type const entity ) -> view<TComponents...>
@@ -78,17 +83,14 @@ namespace rst::ecs
 
 
         /**
-         * @tparam TComponent
+         * @tparam TComponents
          * @param entity
-         * @return True if the entity has the component, false otherwise.
+         * @return True if the entity has the components, false otherwise.
          */
-        template <typename TComponent>
+        template <typename... TComponents>
         [[nodiscard]] auto has( entity_type const entity ) const -> bool
         {
-            meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
-
-            auto const it = pools_.find( type_hash );
-            return it != pools_.end( ) && it->second->has( entity );
+            return ( has_impl<TComponents>( entity ) && ... );
         }
 
     private:
@@ -102,6 +104,16 @@ namespace rst::ecs
             meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
             auto [it, inserted] = pools_.try_emplace( type_hash, ref::make_unique<component_pool_type<TComponent>>( ) );
             return static_cast<component_pool_type<TComponent>&>( it->second.value( ) );
+        }
+
+
+        template <typename TComponent>
+        [[nodiscard]] auto has_impl( entity_type const entity ) const -> bool
+        {
+            meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
+
+            auto const it = pools_.find( type_hash );
+            return it != pools_.end( ) && it->second->has( entity );
         }
 
 
@@ -122,25 +134,6 @@ namespace rst::ecs
             }
         }
     };
-
-
-    // todo: remove this code
-    // template <typename TComponent> auto registry::get( entity_type const entity ) -> TComponent&
-    // {
-    //     return assure_pool<TComponent>( ).get( entity );
-    // }
-    //
-    //
-    // template <typename TComponent>
-    // auto registry::get( entity_type const entity ) const -> std::expected<TComponent const&, std::runtime_error>
-    // {
-    //     meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
-    //     if ( auto const it = pools_.find( type_hash ); it != pools_.end( ) )
-    //     {
-    //         return static_cast<component_pool_type<TComponent> const&>( *it->second ).get( entity );
-    //     }
-    //     return std::runtime_error{ "registry::get: component type not found" };
-    // }
 }
 
 

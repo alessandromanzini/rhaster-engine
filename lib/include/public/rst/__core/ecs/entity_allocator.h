@@ -1,16 +1,22 @@
-#ifndef RST_ENTITY_ALLOCATOR_H
-#define RST_ENTITY_ALLOCATOR_H
+#ifndef RST_ECS_ENTITY_ALLOCATOR_H
+#define RST_ECS_ENTITY_ALLOCATOR_H
 
 #include <rst/pch.h>
 
+#include <rst/data_type/token_generator.h>
+#include <rst/framework/multicast_delegate.h>
 #include <rst/__core/ecs/entity.h>
 
 
-namespace rst::ecs // todo: add multicast_delegate
+namespace rst::ecs
 {
     class entity_allocator final
     {
     public:
+        multicast_delegate<entity_type> on_creation{};
+        multicast_delegate<entity_type> on_destruction{};
+        multicast_delegate<> on_clear{};
+
         entity_allocator( );
         ~entity_allocator( ) noexcept = default;
 
@@ -20,14 +26,13 @@ namespace rst::ecs // todo: add multicast_delegate
         auto operator=( entity_allocator&& ) noexcept -> entity_allocator& = delete;
 
         auto create( ) -> entity_type;
-        auto destroy( entity_type entity ) -> void;
+        auto destroy( entity_type entity ) const -> void;
         auto clear( ) -> void;
 
     private:
-        static constexpr entity_type first_entity_{ 1U };
-        entity_type next_entity_{ first_entity_ };
+        token_generator<entity_type, null_entity> token_gen_{};
     };
 }
 
 
-#endif //!RST_ENTITY_ALLOCATOR_H
+#endif //!RST_ECS_ENTITY_ALLOCATOR_H

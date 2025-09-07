@@ -3,27 +3,26 @@
 
 namespace rst::ecs
 {
-    entity_allocator::entity_allocator( )
-    {
-    }
+    entity_allocator::entity_allocator( ) { }
 
 
     auto entity_allocator::create( ) -> entity_type
     {
-        return next_entity_++;
+        entity_type const entity = token_gen_.generate( );
+        on_creation.broadcast( entity );
+        return entity;
     }
 
 
-    auto entity_allocator::destroy( entity_type const entity ) -> void
+    auto entity_allocator::destroy( entity_type const entity ) const -> void
     {
-        (void)entity;
-        // call destroy listeners
+        on_destruction.broadcast( entity );
     }
 
 
     auto entity_allocator::clear( ) -> void
     {
-        next_entity_ = first_entity_;
-        // call clear listeners
+        token_gen_.reset( );
+        on_clear.broadcast( );
     }
 }
