@@ -3,6 +3,8 @@
 
 #include <rst/pch.h>
 
+#include <rst/meta/hash.h>
+
 
 namespace rst::meta
 {
@@ -18,7 +20,7 @@ namespace rst::meta
         else
         {
             auto bytes = std::bit_cast<std::array<char, sizeof( T )>>( method );
-            return std::hash<std::string_view>{}( std::string_view{ bytes.data( ), sizeof( T ) } );
+            return hash::hash_cast( std::string_view{ bytes.data( ), sizeof( T ) } );
         }
     }
 }

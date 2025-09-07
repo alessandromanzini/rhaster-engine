@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/type_hash.h>
+#include <rst/meta/hash.h>
 #include <rst/data_type/deleter.h>
 #include <rst/data_type/optional_ref.h>
 #include <rst/__core/component.h>

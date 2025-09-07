@@ -14,6 +14,9 @@
 //  1. Memory optimization - Could benefit from small-buffer optimization
 //  2. Iterator support - No way to iterate over bound delegates
 //  3. Callback prioritization - No ordering/priority system
+//  4. Thread safety - Not safe for concurrent access
+//  5. Exception safety - No guarantees if a callback throws
+//  6. Broadcast - Make broadcast only usable by the instancer
 namespace rst
 {
     // +--------------------------------+

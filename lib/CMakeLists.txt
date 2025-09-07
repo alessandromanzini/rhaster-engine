@@ -86,7 +86,7 @@ add_library(
         # include/public/rst/meta/
         "include/public/rst/meta/algorithm.h"
         "include/public/rst/meta/function_traits.h"
-        "include/public/rst/meta/type_hash.h"
+        "include/public/rst/meta/hash.h"
 
         # include/public/rst/temp/
         "include/public/rst/temp/framework/component/audio_component.h"
@@ -149,7 +149,6 @@ add_library(
         # include/public/rst/__core/ecs/ (cpp files)
         "include/public/rst/__core/ecs/entity_allocator.cpp"
         include/public/rst/meta/address.h
-        include/public/rst/meta/type_name.h
 )
 
 # include directories

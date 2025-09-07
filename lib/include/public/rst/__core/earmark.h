@@ -4,7 +4,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/type_hash.h>
+#include <rst/meta/hash.h>
 
 
 namespace rst
