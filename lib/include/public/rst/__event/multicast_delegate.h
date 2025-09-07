@@ -17,6 +17,7 @@
 //  4. Thread safety - Not safe for concurrent access
 //  5. Exception safety - No guarantees if a callback throws
 //  6. Broadcast - Make broadcast only usable by the instancer
+//  7. Consider adding += and -= operators for binding/unbinding
 namespace rst
 {
     // +--------------------------------+
