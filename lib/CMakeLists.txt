@@ -149,6 +149,9 @@ add_library(
         # include/public/rst/__core/ecs/ (cpp files)
         "include/public/rst/__core/ecs/entity_allocator.cpp"
         include/public/rst/meta/address.h
+        include/public/rst/__core/ecs/component_pool.h
+        include/public/rst/meta/tuple.h
+        include/public/rst/meta/reference.h
 )
 
 # include directories

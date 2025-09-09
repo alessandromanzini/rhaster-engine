@@ -80,30 +80,11 @@ namespace rst::meta
             std::is_member_function_pointer_v<TMethod> && std::same_as<TClass, typename function_traits<TMethod>::class_type>;
 
 
-    // +--------------------------------+
-    // | SAFE PARAM                     |
-    // +--------------------------------+
-    template <std::size_t index, typename TTuple, typename TDefault = void>
-    struct safe_tuple_element
-    {
-        using type = TDefault;
-    };
-
-    template <std::size_t index, typename TTuple, typename TDefault> requires ( index < std::tuple_size_v<TTuple> )
-    struct safe_tuple_element<index, TTuple, TDefault>
-    {
-        using type = std::tuple_element_t<index, TTuple>;
-    };
-
-    template <std::size_t index, typename TTuple, typename TDefault = void>
-    using safe_tuple_element_t = safe_tuple_element<index, TTuple, TDefault>::type;
-
-
     // +---------------------------+
     // | BAD CONVERSION            |
     // +---------------------------+
     template <typename TFrom, typename TTo>
-    constexpr bool bad_conversion = false;
+    inline constexpr bool bad_conversion = false;
 }
 
 

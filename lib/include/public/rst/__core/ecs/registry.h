@@ -5,6 +5,8 @@
 
 #include <rst/data_type/sparse_set.h>
 #include <rst/data_type/unique_ref.h>
+#include <rst/meta/reference.h>
+#include <rst/__core/ecs/component_pool.h>
 #include <rst/__core/ecs/entity.h>
 #include <rst/__core/ecs/entity_allocator.h>
 #include <rst/__core/ecs/view.h>
@@ -16,10 +18,6 @@ namespace rst::ecs
 {
     class registry final
     {
-        // ReSharper disable once CppRedundantTemplateArguments
-        template <typename TComponent>
-        using component_pool_type = sparse_set<TComponent, entity_type>;
-
     public:
         registry( )
         {
@@ -51,7 +49,7 @@ namespace rst::ecs
          * @param args
          * @return A component of type TComponent for the given entity, constructing it with the provided arguments.
          */
-        template <typename TComponent, typename... TArgs> requires std::constructible_from<TComponent, TArgs...>
+        template <meta::non_reference TComponent, typename... TArgs> requires std::constructible_from<TComponent, TArgs...>
         auto emplace( entity_type const entity, TArgs&&... args ) -> TComponent&
         {
             return ensure_pool<TComponent>( ).insert( entity, std::forward<TArgs>( args )... );
@@ -63,7 +61,7 @@ namespace rst::ecs
          * @tparam TComponent
          * @param entity
          */
-        template <typename TComponent>
+        template <meta::non_reference TComponent>
         auto remove( entity_type const entity ) -> void
         {
             ensure_pool<TComponent>( ).remove( entity );
@@ -73,41 +71,40 @@ namespace rst::ecs
         /**
          * @tparam TComponents
          * @param entity
-         * @return A view to the TComponents associated with the given entity.
-         */
-        template <typename... TComponents>
-        [[nodiscard]] auto view( entity_type const entity ) -> view<TComponents...>
-        {
-            return ecs::view<TComponents...>{ *this, entity };
-        }
-
-
-        /**
-         * @tparam TComponents
-         * @param entity
          * @return True if the entity has the components, false otherwise.
          */
-        template <typename... TComponents>
+        template <meta::non_reference... TComponents>
         [[nodiscard]] auto has( entity_type const entity ) const -> bool
         {
             return ( has_impl<TComponents>( entity ) && ... );
         }
 
+
+        /**
+         * @tparam TComponents
+         * @return A view to the TComponents.
+         */
+        template <meta::non_reference... TComponents>
+        [[nodiscard]] auto view( ) -> view<TComponents...>
+        {
+            return ecs::view<TComponents...>{ { ensure_pool<TComponents>( )... } };
+        }
+
     private:
-        std::unordered_map<meta::hash::hash_type, unique_ref<base_sparse_set<entity_type>>> pools_{};
+        std::unordered_map<meta::hash::hash_type, unique_ref<internal::base_component_pool_type>> pools_{};
         entity_allocator entity_alloc_{};
 
 
-        template <typename TComponent>
-        [[nodiscard]] auto ensure_pool( ) -> component_pool_type<TComponent>&
+        template <meta::non_reference TComponent>
+        [[nodiscard]] auto ensure_pool( ) -> internal::component_pool_type<TComponent>&
         {
-            meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
-            auto [it, inserted] = pools_.try_emplace( type_hash, ref::make_unique<component_pool_type<TComponent>>( ) );
-            return static_cast<component_pool_type<TComponent>&>( it->second.value( ) );
+            meta::hash::hash_type const type_hash = meta::hash::type_hash_v<TComponent>;
+            auto [it, inserted] = pools_.try_emplace( type_hash, ref::make_unique<internal::component_pool_type<TComponent>>( ) );
+            return static_cast<internal::component_pool_type<TComponent>&>( it->second.value( ) );
         }
 
 
-        template <typename TComponent>
+        template <meta::non_reference TComponent>
         [[nodiscard]] auto has_impl( entity_type const entity ) const -> bool
         {
             meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );

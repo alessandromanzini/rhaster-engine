@@ -203,7 +203,7 @@ namespace rst::input
     template <typename... TArgs> requires (std::same_as<TArgs, trigger> && ...)
     [[nodiscard]] constexpr auto bitset_cast( TArgs... triggers ) -> trigger_bitset_type
     {
-        return trigger_bitset_type{ ( ( 1ull << bit_cast( triggers ) ) | ... ) };
+        return trigger_bitset_type{ ( ( 1ULL << bit_cast( triggers ) ) | ... ) };
     }
 
 
@@ -216,7 +216,7 @@ namespace rst::input
     template <typename... TArgs> requires (std::same_as<TArgs, modifier> && ...)
     [[nodiscard]] constexpr auto bitset_cast( TArgs... modifiers ) -> modifier_bitset_type
     {
-        return modifier_bitset_type{ ( ( 1ull << bit_cast( modifiers ) ) | ... ) };
+        return modifier_bitset_type{ ( ( 1ULL << bit_cast( modifiers ) ) | ... ) };
     }
 }
 

@@ -28,7 +28,9 @@ namespace rst
         using reference_type       = value_type&;
         using const_reference_type = value_type const&;
 
-#pragma region ctor_dtor
+        // +--------------------------------+
+        // | CTOR/DTOR                      |
+        // +--------------------------------+
         /**
          * @brief Default constructor creating an empty unique_ref.
          */
@@ -93,10 +95,11 @@ namespace rst
         // explicitly deleted copy operations to enforce move-only semantics
         unique_ref( unique_ref const& )                    = delete;
         auto operator=( unique_ref const& ) -> unique_ref& = delete;
-#pragma endregion
 
 
-#pragma region accessors
+        // +--------------------------------+
+        // | ACCESSORS                      |
+        // +--------------------------------+
         /**
          * @brief Gets a mutable reference to the managed object.
          * @complexity O(1)
@@ -153,10 +156,11 @@ namespace rst
          * @return T*'s deleter.
          */
         [[nodiscard]] auto deleter( ) const noexcept -> TDeleter { return deleter_; }
-#pragma endregion
 
 
-#pragma region mutators
+        // +--------------------------------+
+        // | MUTATORS                       |
+        // +--------------------------------+
         /**
          * @brief Releases ownership without destroying the managed object.
          * @complexity O(1)
@@ -194,7 +198,6 @@ namespace rst
                 ptr_ = ptr;
             }
         }
-#pragma endregion
 
     private:
         pointer_type ptr_;
