@@ -26,7 +26,24 @@ namespace rst::ecs
         template <typename... TComponents>
         using view_const_iterator_type = sparse_intersection_iterator<entity_type, TComponents...>;
 
-
+        /**
+         * @brief Iterator for view ranges that yields entity-component tuples.
+         *
+         * This iterator provides forward iteration over entities that possess all required
+         * component types, yielding tuples containing the entity ID and references to
+         * its components.
+         *
+         * @note Iterator stability: This iterator has specific invalidation behavior due to sparse set
+         *       implementation details. Operations that affect iterator validity:
+         *       - insert() - safe during iteration (appends to end, doesn't affect current positions)
+         *       - remove() - may cause iteration anomalies (swap-and-pop can move unvisited elements)
+         *       - clear() - fully invalidates the iterator
+         *       - reserve() - safe (only pre-allocates, doesn't move existing elements)
+         *       - Modifying component data through the yielded references is always safe
+         *
+         * @tparam TView The view type this iterator operates on.
+         * @tparam TComponents The component types being iterated over.
+         */
         template <typename TView, meta::non_reference... TComponents> requires ( sizeof...( TComponents ) > 0U )
         class view_range_iterator
         {
@@ -50,7 +67,7 @@ namespace rst::ecs
             [[nodiscard]] auto operator*( ) const -> value_type
             {
                 entity_type const entity = *it_;
-                return std::tuple_cat( std::make_tuple( entity ), view_ref_.template get<TComponents...>( entity ) );
+                return std::tuple_cat( std::forward_as_tuple( entity ), meta::wrap_unique( view_ref_.template get<TComponents...>( entity ) ) );
             }
 
 
@@ -137,7 +154,9 @@ namespace rst::ecs
          *
          * @complexity O(1)
          */
-        explicit view( component_pools_type const& pools ) noexcept : pools_{ pools } { }
+        explicit view( component_pools_type const& pools ) noexcept
+            : pools_{ pools }
+            , smallest_pool_ref_{ *meta::find_smallest<base_sparse_set<entity_type>>( pools_ ) } { }
 
 
         /**
@@ -170,6 +189,7 @@ namespace rst::ecs
         template <meta::non_reference... UComponents> requires ( meta::contains_type<UComponents, TComponents...> && ... )
         [[nodiscard]] auto get( entity_type const entity ) noexcept -> meta::unwrap_single_t<std::tuple<UComponents&...>>
         {
+            assert( has<UComponents...>( entity ) && "view::get: entity does not own all requested components!" );
             return { std::get<meta::index_of_v<UComponents, TComponents...>>( pools_ ).get( entity )... };
         }
 
@@ -188,6 +208,7 @@ namespace rst::ecs
         [[nodiscard]] auto get(
             entity_type const entity ) const noexcept -> meta::unwrap_single_t<std::tuple<UComponents const&...>>
         {
+            assert( has<UComponents...>( entity ) && "view::get: entity does not own all requested components!" );
             return { std::get<meta::index_of_v<UComponents, TComponents...>>( pools_ ).get( entity )... };
         }
 
@@ -206,7 +227,8 @@ namespace rst::ecs
             for ( entity_type entity : *this )
             {
                 std::apply(
-                    delegate, std::tuple_cat( std::make_tuple( entity ), meta::wrap_unique( get<TComponents...>( entity ) ) ) );
+                    delegate, std::tuple_cat(
+                        std::forward_as_tuple( entity ), meta::wrap_unique( get<TComponents...>( entity ) ) ) );
             }
         }
 
@@ -243,7 +265,8 @@ namespace rst::ecs
             for ( entity_type entity : *this )
             {
                 std::apply(
-                    delegate, std::tuple_cat( std::make_tuple( entity ), meta::wrap_unique( get<TComponents...>( entity ) ) ) );
+                    delegate, std::tuple_cat(
+                        std::forward_as_tuple( entity ), meta::wrap_unique( get<TComponents...>( entity ) ) ) );
             }
         }
 
@@ -285,56 +308,57 @@ namespace rst::ecs
         /**
          * @brief Returns an iterator to the beginning of entities with all required components.
          *
-         * @return Iterator pointing to the first entity in the view
+         * @return Iterator pointing to the first entity in the view.
          *
-         * @complexity O(k) where k is the number of component types (to find the smallest pool)
+         * @complexity O(1)
          */
         [[nodiscard]] auto begin( ) noexcept(std::is_nothrow_constructible_v<iterator_type>) -> iterator_type
         {
-            return std::apply( []( auto&... pools ) { return iterator_type::begin( pools... ); }, pools_ );
+            return iterator_type{ pools_, smallest_pool_ref_, 0U };
         }
 
 
         /**
          * @brief Returns an iterator to the end of entities with all required components.
          *
-         * @return Iterator pointing past the last entity in the view
+         * @return Iterator pointing past the last entity in the view.
          *
-         * @complexity O(k) where k is the number of component types (to find the smallest pool)
+         * @complexity O(1)
          */
         [[nodiscard]] auto end( ) noexcept(std::is_nothrow_constructible_v<iterator_type>) -> iterator_type
         {
-            return std::apply( []( auto&... pools ) { return iterator_type::end( pools... ); }, pools_ );
+            return iterator_type{ pools_, smallest_pool_ref_, static_cast<entity_type>( smallest_pool_ref_.size( ) ) };
         }
 
 
         /**
          * @brief Returns a const iterator to the beginning of entities with all required components.
          *
-         * @return Const iterator pointing to the first entity in the view
+         * @return Const iterator pointing to the first entity in the view.
          *
-         * @complexity O(k) where k is the number of component types (to find the smallest pool)
+         * @complexity O(1)
          */
         [[nodiscard]] auto begin( ) const noexcept(std::is_nothrow_invocable_v<const_iterator_type>) -> const_iterator_type
         {
-            return std::apply( []( auto&... pools ) { return const_iterator_type::begin( pools... ); }, pools_ );
+            return const_iterator_type{ pools_, smallest_pool_ref_, 0U };
         }
 
 
         /**
          * @brief Returns a const iterator to the end of entities with all required components.
          *
-         * @return Const iterator pointing past the last entity in the view
+         * @return Const iterator pointing past the last entity in the view.
          *
-         * @complexity O(k) where k is the number of component types (to find the smallest pool)
+         * @complexity O(1)
          */
         [[nodiscard]] auto end( ) const noexcept(std::is_nothrow_constructible_v<const_iterator_type>) -> const_iterator_type
         {
-            return std::apply( []( auto&... pools ) { return const_iterator_type::end( pools... ); }, pools_ );
+            return const_iterator_type{ pools_, smallest_pool_ref_, static_cast<entity_type>( smallest_pool_ref_.size( ) ) };
         }
 
     private:
-        component_pools_type pools_;
+        component_pools_type const pools_;
+        internal::base_component_pool_type& smallest_pool_ref_;
     };
 }
 

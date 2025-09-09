@@ -86,7 +86,7 @@ namespace rst::meta
     template <typename TTarget, typename... TPack>
     constexpr auto element_of_type( std::tuple<TPack...>& tuple ) -> TTarget&
     {
-        constexpr auto index = meta::index_of<TTarget, TPack...>( );
+        constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
         static_assert( index < sizeof...( TPack ) && "type not found!" );
         return std::get<index>( tuple );
     }
@@ -95,7 +95,7 @@ namespace rst::meta
     template <typename TTarget, typename... TPack>
     constexpr auto element_of_type( std::tuple<TPack...> const& tuple ) -> TTarget const&
     {
-        constexpr auto index = meta::index_of<TTarget, TPack...>( );
+        constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
         static_assert( index < sizeof...( TPack ) && "type not found!" );
         return std::get<index>( tuple );
     }

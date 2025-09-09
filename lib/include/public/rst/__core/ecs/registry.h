@@ -52,7 +52,7 @@ namespace rst::ecs
         template <meta::non_reference TComponent, typename... TArgs> requires std::constructible_from<TComponent, TArgs...>
         auto emplace( entity_type const entity, TArgs&&... args ) -> TComponent&
         {
-            return ensure_pool<TComponent>( ).insert( entity, std::forward<TArgs>( args )... );
+            return ensure_pool<TComponent>( ).insert_or_replace( entity, std::forward<TArgs>( args )... );
         }
 
 
@@ -107,7 +107,7 @@ namespace rst::ecs
         template <meta::non_reference TComponent>
         [[nodiscard]] auto has_impl( entity_type const entity ) const -> bool
         {
-            meta::hash::hash_type const type_hash = meta::hash::type_hash<TComponent>( );
+            meta::hash::hash_type const type_hash = meta::hash::type_hash_v<TComponent>;
 
             auto const it = pools_.find( type_hash );
             return it != pools_.end( ) && it->second->has( entity );

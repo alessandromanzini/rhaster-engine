@@ -52,7 +52,8 @@ namespace rst
      * @tparam TElement The type of elements stored.
      * @tparam TIndex The index type (must be integral).
      */
-    template <std::move_constructible TElement, std::integral TIndex = uint32_t>
+    template <typename TElement, std::integral TIndex = uint32_t>
+        requires( std::is_default_constructible_v<TElement> && std::is_move_assignable_v<TElement> )
     class sparse_set final : public base_sparse_set<TIndex>
     {
     public:
@@ -98,7 +99,8 @@ namespace rst
           * @return
           */
         template <typename... TArgs> requires std::constructible_from<element_type, TArgs...>
-        auto insert( index_type index, TArgs&&... args ) noexcept(std::is_nothrow_constructible_v<element_type>) -> element_type&
+        auto insert_or_replace(
+            index_type index, TArgs&&... args ) noexcept(std::is_nothrow_constructible_v<element_type>) -> element_type&
         {
             // 1. ensure we can accommodate the index
             ensure_size( index );
@@ -280,17 +282,25 @@ namespace rst
     // | INTERSECTION ITERATOR          |
     // +--------------------------------+
     /**
-         * @brief Iterator for traversing entities that have all specified components in their sparse sets.
-         *
-         * This iterator implements sparse set intersection by iterating through the smallest component pool
-         * and checking for entity presence in all other required pools. It provides efficient traversal
-         * for ECS view operations.
-         *
-         * @tparam TIndex The entity index type (typically uint32_t)
-         * @tparam TComponents The component types to intersect
-         *
-         * @complexity Iterator operations are O(k) where k is the number of component types
-         */
+      * @brief Iterator for traversing entities that have all specified components in their sparse sets.
+      *
+      * This iterator implements sparse set intersection by iterating through the smallest component pool
+      * and checking for entity presence in all other required pools. It provides efficient traversal
+      * for ECS view operations.
+      *
+      * @note Iterator invalidation: This iterator has specific invalidation behavior due to sparse set
+      *       implementation details. Operations that affect iterator validity:
+      *       - insert( ) - safe during iteration (appends to end, doesn't affect current positions)
+      *       - remove( ) - may cause iteration anomalies (swap-and-pop can move unvisited elements)
+      *       - clear( ) - fully invalidates the iterator
+      *       - reserve( ) - safe (only pre-allocates, doesn't move existing elements)
+      *       - Modifying element values in-place is always safe
+      *
+      * @tparam TIndex The entity index type (typically uint32_t).
+      * @tparam TComponents The component types to intersect.
+      *
+      * @complexity Iterator operations are O(k) where k is the number of component types.
+      */
     template <std::integral TIndex, typename... TComponents>
     class sparse_intersection_iterator final
     {
@@ -300,6 +310,11 @@ namespace rst
         // +--------------------------------+
         // | FACTORIES                      |
         // +--------------------------------+
+        /**
+         * Find the smallest set and create a begin-iterator for that.
+         * @param sets
+         * @return
+         */
         static auto begin( sparse_set<TComponents, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
         {
             auto& smallest_set = *meta::find_smallest<base_sparse_set<TIndex>>( sets... );
@@ -307,6 +322,11 @@ namespace rst
         }
 
 
+        /**
+         * Find the smallest set and create an end-iterator for that.
+         * @param sets
+         * @return
+         */
         static auto end( sparse_set<TComponents, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
         {
             auto& smallest_set = *meta::find_smallest<base_sparse_set<TIndex>>( sets... );
@@ -315,9 +335,30 @@ namespace rst
             };
         }
 
+
+        /**
+         * Create an iterator that intersects multiple sparse sets.
+         * @param sets
+         * @param pivot_set The set used for iteration. It should be the smallest one.
+         * @param pos
+         */
+        explicit sparse_intersection_iterator(
+            sparse_sets_type const& sets, base_sparse_set<TIndex> const& pivot_set, TIndex const pos ) noexcept
+            : packed_pos_{ pos }
+            , sets_ref_{ sets }
+            , pivot_set_ref_{ pivot_set }
+        {
+            // make sure packed pos is in range
+            packed_pos_ = std::clamp( pos, TIndex{ 0U }, static_cast<TIndex>( pivot_set_ref_.size( ) ) );
+
+            // advance to the first valid intersected entity
+            advance_to_valid( );
+        }
+
+
         auto operator*( ) const noexcept -> TIndex
         {
-            return smallest_set_ref_.packed( )[packed_pos_];
+            return pivot_set_ref_.packed( )[packed_pos_];
         }
 
 
@@ -350,35 +391,21 @@ namespace rst
 
     private:
         TIndex packed_pos_{ 0U };
-        sparse_sets_type sets_{};
-        base_sparse_set<TIndex> const& smallest_set_ref_;
-
-
-        explicit sparse_intersection_iterator(
-            sparse_sets_type const sets, base_sparse_set<TIndex> const& smallest, TIndex const pos ) noexcept
-            : packed_pos_{ pos }
-            , sets_{ sets }
-            , smallest_set_ref_{ smallest }
-        {
-            // make sure packed pos is in range
-            packed_pos_ = std::clamp( pos, TIndex{ 0U }, static_cast<TIndex>( smallest_set_ref_.size( ) ) );
-
-            // advance to the first valid intersected entity
-            advance_to_valid( );
-        }
+        sparse_sets_type const& sets_ref_{};
+        base_sparse_set<TIndex> const& pivot_set_ref_;
 
 
         auto advance_to_valid( ) noexcept -> void
         {
-            while ( packed_pos_ < smallest_set_ref_.size( ) )
+            while ( packed_pos_ < pivot_set_ref_.size( ) )
             {
-                TIndex const current_entity = smallest_set_ref_.packed( )[packed_pos_];
+                TIndex const current_entity = pivot_set_ref_.packed( )[packed_pos_];
 
                 bool const is_valid = std::apply(
                     [current_entity]( sparse_set<TComponents, TIndex>&... sets )
                     {
                         return ( sets.has( current_entity ) && ... );
-                    }, sets_ );
+                    }, sets_ref_ );
 
                 if ( is_valid )
                 {

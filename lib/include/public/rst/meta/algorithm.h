@@ -69,7 +69,7 @@ namespace rst::meta
     // | FIND SMALLEST                  |
     // +--------------------------------+
     template <typename TBase, std::derived_from<TBase>... TRanges>
-    [[nodiscard]] auto find_smallest( TRanges&... ranges ) noexcept -> TBase*
+    [[nodiscard]] constexpr auto find_smallest( TRanges&... ranges ) noexcept -> TBase*
     {
         if constexpr ( sizeof...( TRanges ) == 0U )
         {
@@ -80,6 +80,13 @@ namespace rst::meta
             std::array<TBase*, sizeof...( TRanges )> range_arr{ &ranges... };
             return *std::ranges::min_element( range_arr, []( auto const* a, auto const* b ) { return a->size( ) < b->size( ); } );
         }
+    }
+
+
+    template <typename TBase, std::derived_from<TBase>... TRanges>
+    [[nodiscard]] constexpr auto find_smallest( std::tuple<TRanges&...> ranges ) noexcept -> TBase*
+    {
+        return std::apply( []( TRanges&... unpacked ) { return meta::find_smallest<TBase, TRanges...>( unpacked... ); }, ranges );
     }
 }
 

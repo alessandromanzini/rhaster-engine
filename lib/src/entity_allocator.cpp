@@ -14,7 +14,8 @@ namespace rst::ecs
     }
 
 
-    auto entity_allocator::destroy( entity_type const entity ) const -> void
+    // ReSharper disable once CppMemberFunctionMayBeConst
+    auto entity_allocator::destroy( entity_type const entity ) -> void
     {
         on_destruction.broadcast( entity );
     }

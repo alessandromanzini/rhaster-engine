@@ -26,7 +26,7 @@ namespace rst::ecs
         auto operator=( entity_allocator&& ) noexcept -> entity_allocator& = delete;
 
         auto create( ) -> entity_type;
-        auto destroy( entity_type entity ) const -> void;
+        auto destroy( entity_type entity ) -> void;
         auto clear( ) -> void;
 
     private:
