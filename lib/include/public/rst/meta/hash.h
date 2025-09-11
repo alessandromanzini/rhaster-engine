@@ -85,18 +85,16 @@ namespace rst::meta::hash
     // +--------------------------------+
     // | TYPE HASH                      |
     // +--------------------------------+
-    template <typename T>
-    [[nodiscard]] consteval auto type_hash( ) -> hash_type
+    template <typename T, bool cv_elision>
+    struct type_hash
     {
-        return hash::hash_cast( type_name<T>( ) );
-    }
+        using type = T;
+        static constexpr hash_type value = hash::hash_cast( type_name<T, cv_elision>( ) );
+    };
 
 
-    template <typename T>
-    [[nodiscard]] consteval auto type_hash( T&& ) -> hash_type
-    {
-        return hash::type_hash<T>( );
-    }
+    template <typename T, bool cv_elision = true>
+    inline constexpr hash_type type_hash_v = type_hash<T, cv_elision>::value;
 }
 
 

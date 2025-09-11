@@ -1,0 +1,102 @@
+#ifndef RST_META_TUPLE_TRAITS_H
+#define RST_META_TUPLE_TRAITS_H
+
+#include <rst/pch.h>
+
+#include <rst/data_type/ref_proxy.h>
+#include <rst/meta/__type_traits/parameter_pack_traits.h>
+
+
+namespace rst::meta
+{
+    // +--------------------------------+
+    // | IS TUPLE                       |
+    // +--------------------------------+
+    template <typename T>
+    struct is_tuple : std::false_type { };
+
+    template <typename... Args>
+    struct is_tuple<std::tuple<Args...>> : std::true_type { };
+
+    template <typename T>
+    inline constexpr bool is_tuple_v = is_tuple<T>::value;
+
+
+    // +--------------------------------+
+    // | SAFE PARAM                     |
+    // +--------------------------------+
+    template <std::size_t index, typename TTuple, typename TDefault = void>
+    struct safe_tuple_element
+    {
+        using type = TDefault;
+    };
+
+    template <std::size_t index, typename TTuple, typename TDefault> requires ( index < std::tuple_size_v<TTuple> )
+    struct safe_tuple_element<index, TTuple, TDefault>
+    {
+        using type = std::tuple_element_t<index, TTuple>;
+    };
+
+    template <std::size_t index, typename TTuple, typename TDefault = void>
+    using safe_tuple_element_t = safe_tuple_element<index, TTuple, TDefault>::type;
+
+
+    // +--------------------------------+
+    // | UNWRAP SINGLE                  |
+    // +--------------------------------+
+    template <typename T>
+    struct unwrap_single
+    {
+        using type = T;
+    };
+
+    template <typename T>
+    struct unwrap_single<std::tuple<T>>
+    {
+        using type = std::conditional_t<std::is_reference_v<T>, add_ref_proxy_t<T>, T>;
+    };
+
+    template <typename T>
+    using unwrap_single_t = unwrap_single<T>::type;
+
+
+    // +--------------------------------+
+    // | WRAP UNIQUE                    |
+    // +--------------------------------+
+    template <typename T>
+    constexpr decltype(auto) wrap_unique( T&& item )
+    {
+        if constexpr ( meta::is_tuple_v<T> )
+        {
+            return item;
+        }
+        else
+        {
+            return std::make_tuple( item );
+        }
+    }
+
+
+    // +--------------------------------+
+    // | ELEMENT OF TYPE                |
+    // +--------------------------------+
+    template <typename TTarget, typename... TPack>
+    constexpr auto element_of_type( std::tuple<TPack...>& tuple ) -> TTarget&
+    {
+        constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
+        static_assert( index < sizeof...( TPack ) && "meta::element_of_type: type not found!" );
+        return std::get<index>( tuple );
+    }
+
+
+    template <typename TTarget, typename... TPack>
+    constexpr auto element_of_type( std::tuple<TPack...> const& tuple ) -> TTarget const&
+    {
+        constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
+        static_assert( index < sizeof...( TPack ) && "meta::element_of_type: type not found!" );
+        return std::get<index>( tuple );
+    }
+}
+
+
+#endif //!RST_META_TUPLE_TRAITS_H

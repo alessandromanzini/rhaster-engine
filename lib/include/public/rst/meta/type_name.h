@@ -3,6 +3,8 @@
 
 #include <rst/pch.h>
 
+#include <rst/meta/type_traits.h>
+
 
 namespace rst::meta
 {
@@ -39,10 +41,17 @@ namespace rst::meta
     }
 
 
-    template <typename T>
+    template <typename T, bool cv_elision = true>
     [[nodiscard]] consteval auto type_name( ) -> std::string_view
     {
-        return internal::type_name_impl<std::decay_t<T>>( );
+        if constexpr ( cv_elision )
+        {
+            return internal::type_name_impl<std::decay_t<T>>( );
+        }
+        else
+        {
+            return internal::type_name_impl<decay_no_cv_t<T>>( );
+        }
     }
 
 

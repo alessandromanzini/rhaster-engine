@@ -26,14 +26,14 @@
 //     {
 //         // TODO: This should be done in a better way
 //         // check for overlaps with colliders that are not in the overlapping set or persisting overlaps
-//         if ( s_colliders_.size( ) < 2u )
+//         if ( s_colliders_.size( ) < 2U )
 //         {
 //             return;
 //         }
 //
-//         for ( size_t i{}; i < s_colliders_.size( ) - 1u; ++i )
+//         for ( size_t i{}; i < s_colliders_.size( ) - 1U; ++i )
 //         {
-//             for ( size_t j{ i + 1u }; j < s_colliders_.size( ); ++j )
+//             for ( size_t j{ i + 1U }; j < s_colliders_.size( ); ++j )
 //             {
 //                 auto& collider_a{ *s_colliders_[i] };
 //                 auto& collider_b{ *s_colliders_[j] };

@@ -30,6 +30,8 @@ add_library(
         "include/public/rst/__core/component.h"
         "include/public/rst/__core/deletable.h"
         "include/public/rst/__core/earmark.h"
+        "include/public/rst/__core/ecs/component_pool.h"
+        "include/public/rst/__core/ecs/ecs_error.h"
         "include/public/rst/__core/ecs/entity.h"
         "include/public/rst/__core/ecs/entity_allocator.h"
         "include/public/rst/__core/ecs/entity_handle.h"
@@ -71,8 +73,10 @@ add_library(
 
         # include/public/rst/data_type/
         "include/public/rst/data_type/blackboard.h"
+        "include/public/rst/data_type/data_structure_error.h"
         "include/public/rst/data_type/deleter.h"
         "include/public/rst/data_type/optional_ref.h"
+        "include/public/rst/data_type/ref_proxy.h"
         "include/public/rst/data_type/safe_resource.h"
         "include/public/rst/data_type/sparse_set.h"
         "include/public/rst/data_type/token_generator.h"
@@ -84,9 +88,15 @@ add_library(
         "include/public/rst/framework/observer.h"
 
         # include/public/rst/meta/
+        "include/public/rst/meta/__type_traits/concepts.h"
+        "include/public/rst/meta/__type_traits/constant_traits.h"
+        "include/public/rst/meta/__type_traits/function_traits.h"
+        "include/public/rst/meta/__type_traits/parameter_pack_traits.h"
+        "include/public/rst/meta/__type_traits/tuple_traits.h"
+        "include/public/rst/meta/address.h"
         "include/public/rst/meta/algorithm.h"
-        "include/public/rst/meta/function_traits.h"
         "include/public/rst/meta/hash.h"
+        "include/public/rst/meta/type_traits.h"
 
         # include/public/rst/temp/
         "include/public/rst/temp/framework/component/audio_component.h"
@@ -116,6 +126,7 @@ add_library(
         "src/collider_component.cpp"
         "src/component.cpp"
         "src/earmark.cpp"
+        "src/entity_allocator.cpp"
         "src/finite_multi_state_machine.cpp"
         "src/finite_state_machine.cpp"
         "src/font.cpp"
@@ -145,10 +156,6 @@ add_library(
         "src/texture2D.cpp"
         "src/texture_component.cpp"
         "src/transform.cpp"
-
-        # include/public/rst/__core/ecs/ (cpp files)
-        "include/public/rst/__core/ecs/entity_allocator.cpp"
-        include/public/rst/meta/address.h
 )
 
 # include directories

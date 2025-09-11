@@ -5,7 +5,7 @@
 
 #include <rst/data_type/token_generator.h>
 #include <rst/meta/address.h>
-#include <rst/meta/function_traits.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__event/scoped_binding.h>
 #include <rst/__event/token.h>
 
@@ -17,6 +17,7 @@
 //  4. Thread safety - Not safe for concurrent access
 //  5. Exception safety - No guarantees if a callback throws
 //  6. Broadcast - Make broadcast only usable by the instancer
+//  7. Consider adding += and -= operators for binding/unbinding
 namespace rst
 {
     // +--------------------------------+
@@ -115,7 +116,7 @@ namespace rst
          * @param method Member function pointer to bind
          * @note Uses optimized vector storage and tracks owner for cleanup
          */
-        template <typename TClass, typename TMethod> requires meta::member_of_class<TClass, TMethod>
+        template <typename TClass, meta::method_of_class<TClass> TMethod>
         auto bind( TClass* owner, TMethod method ) noexcept -> void
         {
             assert( owner && "multicast_delegate::bind: owner cannot be nullptr!" );
@@ -138,7 +139,7 @@ namespace rst
          * @return Token for later unbinding via unbind_token(). Returns event::invalid_token on failure.
          * @note Uses hash table storage for token-based management
          */
-        template <typename TCallable> requires std::invocable<TCallable, TParams...>
+        template <std::invocable<TParams...> TCallable>
         auto bind( TCallable&& callable ) noexcept -> event::delegate_token_type
         {
             auto const token = token_gen_.generate( );
@@ -158,7 +159,7 @@ namespace rst
          * @return RAII scoped_binding object for automatic cleanup
          * @note Preferred for temporary bindings and exception safety
          */
-        template <typename TCallable> requires std::invocable<TCallable, TParams...>
+        template <std::invocable<TParams...> TCallable>
         [[nodiscard]] auto bind_scoped( TCallable&& callable ) noexcept -> scoped_binding_type
         {
             return scoped_binding_type{ this->bind( callable ), *this };
@@ -194,7 +195,7 @@ namespace rst
          * @param method Member function pointer to unbind
          * @return Number of delegates that were unbound
          */
-        template <typename TClass, typename TMethod> requires meta::member_of_class<TClass, TMethod>
+        template <typename TClass, meta::method_of_class<TClass> TMethod>
         auto unbind( TClass* owner, TMethod method ) noexcept -> size_t
         {
             size_t const erased_count = std::erase_if(
@@ -244,15 +245,15 @@ namespace rst
          * @param args Arguments to forward to each bound delegate
          * @note Calls direct bindings first, then token-based bindings
          */
-        auto broadcast( TParams&&... args ) const -> void
+        auto broadcast( TParams... args ) const -> void
         {
             for ( auto const& trace : delegate_traces_ )
             {
-                trace.delegate( std::forward<TParams>( args )... );
+                trace.delegate( args... );
             }
             for ( auto const& delegate : token_delegates_ | std::views::values )
             {
-                delegate( std::forward<TParams>( args )... );
+                delegate( args... );
             }
         }
 

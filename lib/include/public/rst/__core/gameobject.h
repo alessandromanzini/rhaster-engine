@@ -112,7 +112,7 @@ namespace rst
         // initializing component with GameObjectView and arguments' perfect forwarding.
         // we insert the element in the multimap with its compile-time type hash as the key.
         auto component = std::make_unique<TComponent>( *this, std::forward<TArgs>( args )... );
-        auto it        = components_.insert( std::make_pair( meta::hash::type_hash<TComponent>( ), std::move( component ) ) );
+        auto it        = components_.insert( std::make_pair( meta::hash::type_hash_v<TComponent>, std::move( component ) ) );
         return static_cast<TComponent&>( *it->second );
     }
 
@@ -120,7 +120,7 @@ namespace rst
     template <typename TComponent>
     [[nodiscard]] auto gameobject::find_component( ) const -> OptionalRef<TComponent>
     {
-        auto it = components_.find( meta::hash::type_hash<TComponent>( ) );
+        auto it = components_.find( meta::hash::type_hash_v<TComponent> );
         if ( it == components_.end( ) )
         {
             return nullptr;

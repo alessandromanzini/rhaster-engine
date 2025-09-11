@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/function_traits.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__input/input_type.h>
 
 
@@ -59,8 +59,7 @@ namespace rst::input
 
                 else
                 {
-                    static_assert(
-                        meta::bad_conversion<arg_type, TCastTarget>, "No valid conversion available for arg_t to cast_target_t." );
+                    static_assert( meta::bad_conversion_v<arg_type, TCastTarget>, "no conversion available!" );
                 }
                 return TCastTarget{};
             }, value );

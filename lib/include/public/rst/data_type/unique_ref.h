@@ -13,8 +13,48 @@ namespace rst
      * Similar to std::unique_ptr but designed with const-correctness in mind for the engine's
      * component system. Provides exclusive ownership semantics with move-only behavior.
      * 
-     * @tparam T The type of object to manage
-     * @tparam TDeleter Deleter type for resource cleanup, defaults to std::default_delete<T>
+     * Key features:
+     * - Automatic memory management with RAII principles.
+     * - Move-only semantics to prevent accidental copying.
+     * - Const-correct accessors that preserve const-ness.
+     * - Custom deleter support for specialized cleanup.
+     * - Safe null pointer handling.
+     * - Exception-safe operations.
+     * 
+     * @code
+     * // basic usage example
+     * unique_ref<int> ptr = ref::make_unique<int>(42);
+     * 
+     * // access the value
+     * if (ptr.has_value()) {
+     *     int& value = ptr.value(); // mutable access
+     *     value = 100;
+     *     
+     *     // alternative access methods
+     *     int& ref = *ptr;    // dereference operator
+     *     // ptr->method();   // member access (if T has methods)
+     * }
+     * 
+     * // move semantics (transfer ownership)
+     * unique_ref<int> ptr2 = std::move(ptr); // ptr is now empty
+     * assert(!ptr.has_value());
+     * assert(ptr2.has_value());
+     * 
+     * // release ownership (manual memory management)
+     * int* raw_ptr = ptr2.release(); // caller owns the pointer
+     * delete raw_ptr; // manual cleanup required
+     * 
+     * // reset with new value
+     * ptr2.reset(new int{200}); // old value auto-deleted
+     * 
+     * // const correctness example
+     * unique_ref<int> const const_ptr = ref::make_unique<int>(50);
+     * int const& const_ref = const_ptr.value(); // const access only
+     * // const_ptr.value() = 60; // compilation error - const correctness preserved
+     * @endcode
+     * 
+     * @tparam T The type of object to manage (must be a complete type).
+     * @tparam TDeleter Deleter type for resource cleanup, defaults to std::default_delete<T>.
      */
     template <typename T, typename TDeleter = std::default_delete<T>>
     class unique_ref final
@@ -28,7 +68,9 @@ namespace rst
         using reference_type       = value_type&;
         using const_reference_type = value_type const&;
 
-#pragma region ctor_dtor
+        // +--------------------------------+
+        // | CTOR/DTOR                      |
+        // +--------------------------------+
         /**
          * @brief Default constructor creating an empty unique_ref.
          */
@@ -78,7 +120,7 @@ namespace rst
         /**
          * @brief Move assignment operator that transfers ownership.
          * @param other The unique_ref to move from
-         * @return Reference to this unique_ref
+         * @return Reference to this unique_ref.
          */
         auto operator=( unique_ref&& other ) noexcept -> unique_ref&
         {
@@ -93,14 +135,15 @@ namespace rst
         // explicitly deleted copy operations to enforce move-only semantics
         unique_ref( unique_ref const& )                    = delete;
         auto operator=( unique_ref const& ) -> unique_ref& = delete;
-#pragma endregion
 
 
-#pragma region accessors
+        // +--------------------------------+
+        // | ACCESSORS                      |
+        // +--------------------------------+
         /**
          * @brief Gets a mutable reference to the managed object.
          * @complexity O(1)
-         * @return Mutable reference to the managed object
+         * @return Mutable reference to the managed object.
          * @note Asserts if the unique_ref doesn't hold a value
          */
         [[nodiscard]] auto value( ) noexcept -> reference_type { return *assert_get( ); }
@@ -108,7 +151,7 @@ namespace rst
         /**
          * @brief Gets a const reference to the managed object.
          * @complexity O(1)
-         * @return Const reference to the managed object
+         * @return Const reference to the managed object.
          * @note Asserts if the unique_ref doesn't hold a value
          */
         [[nodiscard]] auto value( ) const noexcept -> const_reference_type { return *assert_get( ); }
@@ -116,35 +159,35 @@ namespace rst
         /**
          * @brief Dereference operator for mutable access.
          * @complexity O(1)
-         * @return Mutable reference to the managed object
+         * @return Mutable reference to the managed object.
          */
         [[nodiscard]] auto operator*( ) noexcept -> reference_type { return *assert_get( ); }
 
         /**
          * @brief Dereference operator for const access.
          * @complexity O(1)
-         * @return Const reference to the managed object
+         * @return Const reference to the managed object.
          */
         [[nodiscard]] auto operator*( ) const noexcept -> const_reference_type { return *assert_get( ); }
 
         /**
          * @brief Member access operator for mutable access.
          * @complexity O(1)
-         * @return Mutable pointer to the managed object
+         * @return Mutable pointer to the managed object.
          */
         [[nodiscard]] auto operator->( ) noexcept -> pointer_type { return assert_get( ); }
 
         /**
          * @brief Member access operator for const access.
          * @complexity O(1)
-         * @return Const pointer to the managed object
+         * @return Const pointer to the managed object.
          */
         [[nodiscard]] auto operator->( ) const noexcept -> const_pointer_type { return assert_get( ); }
 
         /**
          * @brief Checks if the unique_ref holds a valid object.
          * @complexity O(1)
-         * @return True if it holds a value, false otherwise
+         * @return True if it holds a value, false otherwise.
          */
         [[nodiscard]] auto has_value( ) const noexcept -> bool { return ptr_ != nullptr; }
 
@@ -153,14 +196,15 @@ namespace rst
          * @return T*'s deleter.
          */
         [[nodiscard]] auto deleter( ) const noexcept -> TDeleter { return deleter_; }
-#pragma endregion
 
 
-#pragma region mutators
+        // +--------------------------------+
+        // | MUTATORS                       |
+        // +--------------------------------+
         /**
          * @brief Releases ownership without destroying the managed object.
          * @complexity O(1)
-         * @return Raw pointer to the previously managed object
+         * @return Raw pointer to the previously managed object.
          */
         [[nodiscard]] auto release( ) noexcept -> pointer_type { return std::exchange( ptr_, nullptr ); }
 
@@ -194,7 +238,6 @@ namespace rst
                 ptr_ = ptr;
             }
         }
-#pragma endregion
 
     private:
         pointer_type ptr_;
@@ -203,7 +246,7 @@ namespace rst
         /**
          * @brief Internal helper that asserts validity before returning pointer.
          * @complexity O(1)
-         * @return Raw pointer to managed object
+         * @return Raw pointer to managed object.
          * @note Asserts if ptr_ is null
          */
         [[nodiscard]] auto assert_get( ) const -> pointer_type
@@ -218,11 +261,29 @@ namespace rst
     {
         /**
          * @brief Creates a unique_ref managing a new object of type T.
+         * 
+         * Factory function that constructs an object of type T with the provided arguments
+         * and returns a unique_ref managing it. This is the preferred way to create unique_ref
+         * instances as it provides exception safety and clear ownership semantics.
+         * 
+         * @code
+         * // create simple types
+         * auto int_ptr = ref::make_unique<int>(42);
+         * auto string_ptr = ref::make_unique<std::string>("Hello");
+         * 
+         * // create complex objects with multiple constructor arguments
+         * struct point { float x, y; point(float x, float y) : x{x}, y{y} {} };
+         * auto point_ptr = ref::make_unique<point>(10.5f, 20.3f);
+         * 
+         * // create containers
+         * auto vector_ptr = ref::make_unique<std::vector<int>>(5, 100); // 5 elements of value 100
+         * @endcode
+         * 
          * @complexity O(1) + T's construction time
-         * @tparam T The type of object to construct
-         * @tparam TArgs Constructor parameter types
-         * @param args Constructor arguments to forward
-         * @return A unique_ref managing the newly created object
+         * @tparam T The type of object to construct (must be constructible from TArgs)
+         * @tparam TArgs Constructor parameter types (automatically deduced)
+         * @param args Constructor arguments to forward to T's constructor
+         * @return A unique_ref managing the newly created object.
          */
         template <typename T, typename... TArgs> requires std::constructible_from<T, TArgs...>
         auto make_unique( TArgs&&... args ) -> unique_ref<T>

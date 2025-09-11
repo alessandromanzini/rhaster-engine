@@ -1,5 +1,5 @@
-#ifndef RST_LINKED_ENTITY_H
-#define RST_LINKED_ENTITY_H
+#ifndef RST_ECS_ENTITY_HANDLE_H
+#define RST_ECS_ENTITY_HANDLE_H
 
 #include <rst/pch.h>
 
@@ -56,11 +56,11 @@ namespace rst::ecs
 
 
         /**
-        * @tparam TComponent
-        * @return True if the entity has the component, false otherwise.
+        * @tparam TComponents
+        * @return True if the entity has the components, false otherwise.
         */
-        template <typename TComponent>
-        [[nodiscard]] auto has( ) const -> bool { return registry_ref_.has<TComponent>( entity_ ); }
+        template <typename... TComponents>
+        [[nodiscard]] auto has( ) const -> bool { return registry_ref_.has<TComponents...>( entity_ ); }
 
 
         /**
@@ -75,4 +75,4 @@ namespace rst::ecs
 }
 
 
-#endif //!RST_LINKED_ENTITY_H
+#endif //!RST_ECS_ENTITY_HANDLE_H
