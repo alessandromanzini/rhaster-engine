@@ -5,6 +5,7 @@
 
 #include <rst/meta/type_traits.h>
 #include <rst/__core/ecs/ecs_error.h>
+#include <rst/__core/ecs/entity.h>
 
 
 namespace rst::ecs
@@ -70,7 +71,6 @@ namespace rst::ecs
 
             [[nodiscard]] auto operator*( ) const -> value_type
             {
-                // todo: make this direct access
                 entity_type const entity = *it_;
                 return std::tuple_cat(
                     std::forward_as_tuple( entity ),

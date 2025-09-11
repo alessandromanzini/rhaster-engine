@@ -4,7 +4,6 @@
 #include <rst/pch.h>
 
 
-// todo: make this class concept pool
 namespace rst::meta
 {
     template <typename T>
