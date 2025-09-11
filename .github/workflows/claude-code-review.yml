@@ -44,6 +44,10 @@ jobs:
             - Security concerns
             - Test coverage
             
+            Try not to repeat yourself if you have already mentioned something earlier in the review. For example, don't 
+            repeat how the structure is good if you have already mentioned it once, but rather focus on the changes in 
+            the PR and what still needs to be improved.
+            
             Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
