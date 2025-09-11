@@ -88,11 +88,14 @@ add_library(
         "include/public/rst/framework/observer.h"
 
         # include/public/rst/meta/
+        "include/public/rst/meta/__type_traits/concepts.h"
+        "include/public/rst/meta/__type_traits/constant_traits.h"
+        "include/public/rst/meta/__type_traits/function_traits.h"
+        "include/public/rst/meta/__type_traits/parameter_pack_traits.h"
+        "include/public/rst/meta/__type_traits/tuple_traits.h"
         "include/public/rst/meta/address.h"
         "include/public/rst/meta/algorithm.h"
         "include/public/rst/meta/hash.h"
-        "include/public/rst/meta/reference.h"
-        "include/public/rst/meta/tuple.h"
         "include/public/rst/meta/type_traits.h"
 
         # include/public/rst/temp/

@@ -5,7 +5,7 @@
 
 #include <rst/data_type/sparse_set.h>
 #include <rst/data_type/unique_ref.h>
-#include <rst/meta/reference.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__core/ecs/component_pool.h>
 #include <rst/__core/ecs/entity.h>
 #include <rst/__core/ecs/entity_allocator.h>

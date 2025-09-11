@@ -1,10 +1,10 @@
-#ifndef RST_META_TUPLE_H
-#define RST_META_TUPLE_H
+#ifndef RST_META_TUPLE_TRAITS_H
+#define RST_META_TUPLE_TRAITS_H
 
 #include <rst/pch.h>
 
 #include <rst/data_type/ref_proxy.h>
-#include <rst/meta/algorithm.h>
+#include <rst/meta/__type_traits/parameter_pack_traits.h>
 
 
 namespace rst::meta
@@ -96,26 +96,7 @@ namespace rst::meta
         static_assert( index < sizeof...( TPack ) && "meta::element_of_type: type not found!" );
         return std::get<index>( tuple );
     }
-
-
-    // +--------------------------------+
-    // | FIRST ELEMENT                  |
-    // +--------------------------------+
-    template <typename... Ts>
-    struct first_element
-    {
-        static_assert( sizeof...( Ts ) > 0U, "meta::element_of_type: parameter pack cannot be empty!" );
-    };
-
-    template <typename TFirst, typename... TRest>
-    struct first_element<TFirst, TRest...>
-    {
-        using type = TFirst;
-    };
-
-    template <typename... Ts>
-    using first_element_t = first_element<Ts...>::type;
 }
 
 
-#endif //!RST_META_TUPLE_H
+#endif //!RST_META_TUPLE_TRAITS_H

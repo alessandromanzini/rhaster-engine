@@ -3,8 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/reference.h>
-#include <rst/meta/tuple.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__core/ecs/ecs_error.h>
 
 
@@ -177,10 +176,9 @@ namespace rst::ecs
         using iterator_type       = sparse_intersection_iterator<entity_type, TComponents...>;
         using const_iterator_type = sparse_intersection_iterator<entity_type, TComponents...>;
 
-        // todo: cleaner version
         template <typename... UComponents>
-        using underlying_view_get_type = std::conditional_t<sizeof...( UComponents ) == 0U,
-            meta::unwrap_single_t<std::tuple<TComponents&...>>, meta::unwrap_single_t<std::tuple<UComponents&...>>>;
+        using underlying_view_get_type =
+        meta::unwrap_single_t<typename meta::fallback<std::tuple, UComponents&...>::template if_empty<TComponents&...>::type>;
 
         /**
          * The return type of get() based on requested component types.
