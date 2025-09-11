@@ -3,6 +3,7 @@
 
 #include <rst/pch.h>
 
+#include <rst/data_type/sparse_set.h>
 #include <rst/meta/type_traits.h>
 #include <rst/__core/ecs/ecs_error.h>
 #include <rst/__core/ecs/entity.h>
