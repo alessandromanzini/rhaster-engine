@@ -3,8 +3,8 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/function_traits.h>
 #include <rst/meta/tuple.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__input/binding_device.h>
 #include <rst/__input/input_type.h>
 

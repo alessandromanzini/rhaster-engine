@@ -1,9 +1,10 @@
-#ifndef RST_FUNCTION_TRAITS_H
-#define RST_FUNCTION_TRAITS_H
+#ifndef RST_TYPE_TRAITS_H
+#define RST_TYPE_TRAITS_H
 
 #include <functional>
 
 
+// todo: move all traits in here
 namespace rst::meta
 {
     // +--------------------------------+
@@ -12,27 +13,30 @@ namespace rst::meta
     template <typename T>
     struct function_traits;
 
-    template <typename TRawFn, typename TReturn, typename... TParams>
-    struct function_traits_info
+    namespace internal
     {
-        using return_t = TReturn;
-        using params_t = std::tuple<TParams...>;
+        template <typename TRawFn, typename TReturn, typename... TParams>
+        struct function_traits_info
+        {
+            using return_t = TReturn;
+            using params_t = std::tuple<TParams...>;
 
-        using raw_fn_t = TRawFn;
+            using raw_fn_t = TRawFn;
 
-        using sig_fn_t = TReturn( TParams... );
-        using std_fn_t = std::function<sig_fn_t>;
+            using sig_fn_t = TReturn( TParams... );
+            using std_fn_t = std::function<sig_fn_t>;
 
-        static constexpr std::size_t arity = sizeof...( TParams );
-    };
+            static constexpr std::size_t arity = sizeof...( TParams );
+        };
+    }
 
 
     // +--------------------------------+
     // | RAW                            |
     // +--------------------------------+
     template <typename TReturn, typename... TParams>
-    struct function_traits<TReturn ( * )( TParams... )> : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> {
-    };
+    struct function_traits<TReturn ( * )( TParams... )>
+            : internal::function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
 
 
     // +--------------------------------+
@@ -40,7 +44,7 @@ namespace rst::meta
     // +--------------------------------+
     template <typename TClass, typename TReturn, typename... TParams>
     struct function_traits<TReturn ( TClass::* )( TParams... )>
-            : function_traits_info<TReturn ( TClass::* )( TParams... ), TReturn, TParams...>
+            : internal::function_traits_info<TReturn ( TClass::* )( TParams... ), TReturn, TParams...>
     {
         using class_type = TClass;
     };
@@ -51,7 +55,7 @@ namespace rst::meta
     // +--------------------------------+
     template <typename TClass, typename TReturn, typename... TParams>
     struct function_traits<TReturn ( TClass::* )( TParams... ) const>
-            : function_traits_info<TReturn ( TClass::* )( TParams... ) const, TReturn, TParams...>
+            : internal::function_traits_info<TReturn ( TClass::* )( TParams... ) const, TReturn, TParams...>
     {
         using class_type = TClass;
     };
@@ -62,14 +66,15 @@ namespace rst::meta
     // +--------------------------------+
     template <typename TReturn, typename... TParams>
     struct function_traits<std::function<TReturn( TParams... )>>
-            : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
+            : internal::function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
 
 
     // +--------------------------------+
     // | FUNCTION SIGNATURE             |
     // +--------------------------------+
     template <typename TReturn, typename... TParams>
-    struct function_traits<TReturn( TParams... )> : function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
+    struct function_traits<TReturn( TParams... )>
+            : internal::function_traits_info<TReturn ( * )( TParams... ), TReturn, TParams...> { };
 
 
     // +--------------------------------+
@@ -80,6 +85,26 @@ namespace rst::meta
             std::is_member_function_pointer_v<TMethod> && std::same_as<TClass, typename function_traits<TMethod>::class_type>;
 
 
+    // +--------------------------------+
+    // | DECAY NO CV                    |
+    // +--------------------------------+
+    template <typename T>
+    struct decay_no_cv
+    {
+        using type = std::conditional_t<
+            std::is_array_v<std::remove_reference_t<T>>,
+            std::add_pointer_t<std::remove_extent_t<std::remove_reference_t<T>>>,
+
+            std::conditional_t<
+                std::is_function_v<std::remove_reference_t<T>>,
+                std::add_pointer_t<std::remove_reference_t<T>>,
+                std::remove_reference_t<T>>>;
+    };
+
+    template <typename T>
+    using decay_no_cv_t = decay_no_cv<T>::type;
+
+
     // +---------------------------+
     // | BAD CONVERSION            |
     // +---------------------------+
@@ -88,4 +113,4 @@ namespace rst::meta
 }
 
 
-#endif //!RST_FUNCTION_TRAITS_H
+#endif //!RST_TYPE_TRAITS_H

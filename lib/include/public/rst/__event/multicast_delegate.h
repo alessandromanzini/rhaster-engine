@@ -5,7 +5,7 @@
 
 #include <rst/data_type/token_generator.h>
 #include <rst/meta/address.h>
-#include <rst/meta/function_traits.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__event/scoped_binding.h>
 #include <rst/__event/token.h>
 

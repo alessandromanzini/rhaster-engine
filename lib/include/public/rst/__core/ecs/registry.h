@@ -16,6 +16,58 @@
 // todo: add event system for entity/component lifecycle (on_construct, on_destroy, on_update, etc)
 namespace rst::ecs
 {
+    /**
+     * @brief Central coordinator for the Entity Component System (ECS) managing entities, components, and their relationships.
+     *
+     * The registry is the main interface for ECS operations, providing entity management, component storage,
+     * and efficient querying capabilities. It automatically manages component pools using sparse sets for
+     * optimal performance in entity-component systems.
+     *
+     * Key features:
+     * - Entity lifecycle management with automatic cleanup
+     * - Type-safe component operations with compile-time checks
+     * - Efficient component storage using sparse sets
+     * - Automatic memory management with RAII principles
+     * - Event-driven entity destruction for consistency
+     * - Template-based API for zero-cost abstractions
+     *
+     * @code
+     * // basic registry usage
+     * rst::ecs::registry registry{};
+     * 
+     * // create entities using the entity allocator
+     * auto entity1 = registry.entity_alloc().create();
+     * auto entity2 = registry.entity_alloc().create();
+     * 
+     * // add components to entities
+     * struct position{ float x, y; };
+     * struct velocity{ float dx, dy; };
+     * 
+     * auto& pos1 = registry.emplace<position>(entity1, 10.0f, 20.0f);
+     * auto& vel1 = registry.emplace<velocity>(entity1, 1.0f, 0.5f);
+     * 
+     * auto& pos2 = registry.emplace<position>(entity2, 5.0f, 15.0f);
+     * // entity2 doesn't have velocity component
+     * 
+     * // check for component existence
+     * if (registry.has<position>(entity1)) {
+     *     // entity1 has position component
+     * }
+     * 
+     * if (registry.has<position, velocity>(entity1)) {
+     *     // entity1 has both position and velocity
+     * }
+     * 
+     * // create views for system processing
+     * auto movement_view = registry.view<position, velocity>();
+     * 
+     * // remove components
+     * registry.remove<velocity>(entity1);
+     * 
+     * // entity destruction automatically removes all components
+     * registry.entity_alloc().destroy(entity1);
+     * @endcode
+     */
     class registry final
     {
     public:
@@ -34,7 +86,10 @@ namespace rst::ecs
         auto operator=( registry&& ) noexcept -> registry& = delete;
 
         /**
-         * @return A reference to the entity allocator.
+         * @brief Gets a reference to the entity allocator for entity lifecycle management.
+         * 
+         * @complexity O(1)
+         * @return Reference to the internal entity allocator.
          */
         [[nodiscard]] auto entity_alloc( ) -> entity_allocator&
         {
@@ -43,13 +98,19 @@ namespace rst::ecs
 
 
         /**
-         * @tparam TComponent
-         * @tparam TArgs
-         * @param entity
-         * @param args
-         * @return A component of type TComponent for the given entity, constructing it with the provided arguments.
+         * @brief Constructs a component of type TComponent for the given entity in-place.
+         * 
+         * If the entity already has a component of this type, it will be replaced.
+         * The component is constructed using perfect forwarding to avoid unnecessary copies.
+         *
+         * @complexity O(1) amortized (may trigger pool resize)
+         * @tparam TComponent Non-const, non-reference type of the component to emplace.
+         * @tparam TArgs Constructor argument types (automatically deduced).
+         * @param entity The entity to attach the component to.
+         * @param args Constructor arguments forwarded to TComponent's constructor.
+         * @return Reference to the newly created component.
          */
-        template <meta::non_reference TComponent, typename... TArgs> requires std::constructible_from<TComponent, TArgs...>
+        template <meta::decayed TComponent, typename... TArgs> requires std::constructible_from<TComponent, TArgs...>
         auto emplace( entity_type const entity, TArgs&&... args ) -> TComponent&
         {
             return ensure_pool<TComponent>( ).insert_or_replace( entity, std::forward<TArgs>( args )... );
@@ -57,11 +118,16 @@ namespace rst::ecs
 
 
         /**
-         * Removes the component of type TComponent from the given entity.
-         * @tparam TComponent
-         * @param entity
+         * @brief Removes the component of type TComponent from the given entity.
+         * 
+         * If the entity doesn't have the specified component, this operation has no effect.
+         * Uses swap-and-pop removal for O(1) performance.
+         *
+         * @complexity O(1)
+         * @tparam TComponent The component type to remove.
+         * @param entity The entity to remove the component from.
          */
-        template <meta::non_reference TComponent>
+        template <meta::decayed TComponent>
         auto remove( entity_type const entity ) -> void
         {
             ensure_pool<TComponent>( ).remove( entity );
@@ -69,11 +135,17 @@ namespace rst::ecs
 
 
         /**
-         * @tparam TComponents
-         * @param entity
-         * @return True if the entity has the components, false otherwise.
+         * @brief Checks if an entity has all specified component types.
+         * 
+         * Uses logical AND to check multiple components - returns true only if
+         * the entity has ALL the specified components.
+         *
+         * @complexity O(k) where k is the number of component types
+         * @tparam TComponents The component types to check for.
+         * @param entity The entity to check.
+         * @return True if the entity has all specified components, false otherwise.
          */
-        template <meta::non_reference... TComponents>
+        template <meta::decayed... TComponents>
         [[nodiscard]] auto has( entity_type const entity ) const -> bool
         {
             return ( has_impl<TComponents>( entity ) && ... );
@@ -81,13 +153,19 @@ namespace rst::ecs
 
 
         /**
-         * @tparam TComponents
-         * @return A view to the TComponents.
+         * @brief Creates a view for iterating over entities with all specified components.
+         * 
+         * Views provide efficient iteration over entities that possess all the required
+         * component types. The view uses sparse set intersection for optimal performance.
+         *
+         * @complexity O(1) - view creation is lightweight, iteration cost depends on entity count.
+         * @tparam TComponents The component types that entities must have.
+         * @return A view object for iterating over matching entities.
          */
-        template <meta::non_reference... TComponents>
+        template <meta::non_ref... TComponents>
         [[nodiscard]] auto view( ) -> view<TComponents...>
         {
-            return ecs::view<TComponents...>{ { ensure_pool<TComponents>( )... } };
+            return ecs::view<TComponents...>{ ensure_pool<TComponents>( )... };
         }
 
     private:
@@ -95,7 +173,16 @@ namespace rst::ecs
         entity_allocator entity_alloc_{};
 
 
-        template <meta::non_reference TComponent>
+        /**
+         * @brief Ensures that a component pool for TComponent exists, creating it if necessary. Pool creation is always non-const, to
+         * allow "replace" operations.
+         *
+         * @note Const correctness is enforced at template constraint level, as the methods can only be called using the correct
+         *
+         * @tparam TComponent
+         * @return The component pool for TComponent.
+         */
+        template <meta::non_ref TComponent>
         [[nodiscard]] auto ensure_pool( ) -> internal::component_pool_type<TComponent>&
         {
             meta::hash::hash_type const type_hash = meta::hash::type_hash_v<TComponent>;
@@ -104,7 +191,7 @@ namespace rst::ecs
         }
 
 
-        template <meta::non_reference TComponent>
+        template <meta::decayed TComponent>
         [[nodiscard]] auto has_impl( entity_type const entity ) const -> bool
         {
             meta::hash::hash_type const type_hash = meta::hash::type_hash_v<TComponent>;

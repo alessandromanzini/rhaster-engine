@@ -3,6 +3,7 @@
 
 #include <rst/pch.h>
 
+#include <rst/data_type/ref_proxy.h>
 #include <rst/meta/algorithm.h>
 
 
@@ -49,14 +50,10 @@ namespace rst::meta
         using type = T;
     };
 
-    /**
-     * Single element tuple is unwrapped to the element type.
-     * @tparam T
-     */
     template <typename T>
     struct unwrap_single<std::tuple<T>>
     {
-        using type = T;
+        using type = std::conditional_t<std::is_reference_v<T>, add_ref_proxy_t<T>, T>;
     };
 
     template <typename T>
@@ -87,7 +84,7 @@ namespace rst::meta
     constexpr auto element_of_type( std::tuple<TPack...>& tuple ) -> TTarget&
     {
         constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
-        static_assert( index < sizeof...( TPack ) && "type not found!" );
+        static_assert( index < sizeof...( TPack ) && "meta::element_of_type: type not found!" );
         return std::get<index>( tuple );
     }
 
@@ -96,7 +93,7 @@ namespace rst::meta
     constexpr auto element_of_type( std::tuple<TPack...> const& tuple ) -> TTarget const&
     {
         constexpr size_t index = meta::index_of_v<TTarget, TPack...>;
-        static_assert( index < sizeof...( TPack ) && "type not found!" );
+        static_assert( index < sizeof...( TPack ) && "meta::element_of_type: type not found!" );
         return std::get<index>( tuple );
     }
 
@@ -107,7 +104,7 @@ namespace rst::meta
     template <typename... Ts>
     struct first_element
     {
-        static_assert( sizeof...( Ts ) > 0ULL, "parameter pack cannot be empty!" );
+        static_assert( sizeof...( Ts ) > 0U, "meta::element_of_type: parameter pack cannot be empty!" );
     };
 
     template <typename TFirst, typename... TRest>

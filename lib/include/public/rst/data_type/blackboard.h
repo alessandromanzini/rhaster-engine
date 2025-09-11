@@ -37,7 +37,7 @@ namespace rst
         {
         public:
             explicit blackboard_field( TField data )
-                : base_blackboard_field{ meta::hash::type_hash<TField>( ) }
+                : base_blackboard_field{ meta::hash::type_hash_v<TField> }
                 , data_{ data } { }
 
 
@@ -123,7 +123,7 @@ namespace rst
 
         // mismatch check
         auto const field = static_cast<internal::blackboard_field<TData>*>( it->second.get( ) );
-        if ( field->type_hash( ) != meta::hash::type_hash<TData>( ) )
+        if ( field->type_hash( ) != meta::hash::type_hash_v<TData> )
         {
             return false;
         }
@@ -145,7 +145,7 @@ namespace rst
 
         // mismatch check
         auto const field = static_cast<internal::blackboard_field<TData>*>( it->second.get( ) );
-        if ( field->type_hash( ) != meta::hash::type_hash<TData>( ) )
+        if ( field->type_hash( ) != meta::hash::type_hash_v<TData> )
         {
             return false;
         }

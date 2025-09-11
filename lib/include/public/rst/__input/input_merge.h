@@ -3,7 +3,7 @@
 
 #include <rst/pch.h>
 
-#include <rst/meta/function_traits.h>
+#include <rst/meta/type_traits.h>
 #include <rst/__input/input_type.h>
 
 

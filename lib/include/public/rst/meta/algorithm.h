@@ -65,6 +65,10 @@ namespace rst::meta
     concept contains_type = ( std::is_same_v<TTarget, TPack> || ... );
 
 
+    template <typename TTarget, typename... TPack>
+    concept contains_decay_type = ( std::is_same_v<std::remove_cv_t<TTarget>, std::remove_cv_t<TPack>> || ... );
+
+
     // +--------------------------------+
     // | FIND SMALLEST                  |
     // +--------------------------------+

@@ -120,7 +120,7 @@ namespace rst
     template <typename TComponent>
     [[nodiscard]] auto gameobject::find_component( ) const -> OptionalRef<TComponent>
     {
-        auto it = components_.find( meta::hash::type_hash<TComponent>( ) );
+        auto it = components_.find( meta::hash::type_hash_v<TComponent> );
         if ( it == components_.end( ) )
         {
             return nullptr;

@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <cstring>
 #include <deque>
+#include <expected>
 #include <filesystem>
 #include <functional>
 #include <list>
