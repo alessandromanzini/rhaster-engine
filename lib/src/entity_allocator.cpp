@@ -1,4 +1,4 @@
-#include <rst/__core/ecs/entity_allocator.h>
+#include <rst/__core/__ecs/entity_allocator.h>
 
 
 namespace rst::ecs

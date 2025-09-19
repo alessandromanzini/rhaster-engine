@@ -1,17 +1,17 @@
-#include <rst/__service/sound/sdl/sdl_sound_system.h>
+#include <rst/__core/__service/sound/sdl_sound_service.h>
 
 #include <rst/temp/singleton/resource_manager.h>
-#include <rst/__resource_type/sound/sdl_audio.h>
+#include <rst/__internal/resource/sdl_audio.h>
 
 #include <SDL_audio.h>
 #include <SDL_mixer.h>
 
 
-namespace rst
+namespace rst::service
 {
     // TODO: make assertion engine configurable
     // TODO: assess code
-    sdl_sound_system::sdl_sound_system( uint8_t const channels, sound::sdl_init_info info, sound::queue_policy const policy )
+    sdl_sound_service::sdl_sound_service( uint8_t const channels, sound::sdl_init_info info, sound::queue_policy const policy )
         : channels_{ channels }
         , policy_{ policy }
     {
@@ -24,20 +24,20 @@ namespace rst
     }
 
 
-    sdl_sound_system::~sdl_sound_system( )
+    sdl_sound_service::~sdl_sound_service( )
     {
         Mix_CloseAudio( );
         Mix_Quit( );
     }
 
 
-    auto sdl_sound_system::service_type( ) -> rst::service_type
+    auto sdl_sound_service::service_type( ) -> service::service_type
     {
         return service_type::sdl;
     }
 
 
-    auto sdl_sound_system::load_sound(
+    auto sdl_sound_service::load_sound(
         std::filesystem::path const& path, sound::sound_type const type, earmark const tag_mark ) -> std::shared_ptr<audio>
     {
         earmark const sound_mark{ path.string( ) };
@@ -66,7 +66,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::play( audio const& audio, float const volume, int const loops ) -> int
+    auto sdl_sound_service::play( audio const& audio, float const volume, int const loops ) -> int
     {
         assert_on_missing_sound( audio );
 
@@ -105,7 +105,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::stop( audio const& audio ) -> bool
+    auto sdl_sound_service::stop( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
@@ -132,7 +132,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::stop_all( ) -> void
+    auto sdl_sound_service::stop_all( ) -> void
     {
         current_track_ptr_ = nullptr;
         Mix_HaltMusic( );
@@ -141,7 +141,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::pause( audio const& audio ) -> bool
+    auto sdl_sound_service::pause( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
@@ -164,7 +164,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::resume( audio const& audio ) -> bool
+    auto sdl_sound_service::resume( audio const& audio ) -> bool
     {
         assert_on_missing_sound( audio );
 
@@ -187,7 +187,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::is_playing( audio const& audio ) const -> bool
+    auto sdl_sound_service::is_playing( audio const& audio ) const -> bool
     {
         assert_on_missing_sound( audio );
 
@@ -206,7 +206,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::is_paused( audio const& audio ) const -> bool
+    auto sdl_sound_service::is_paused( audio const& audio ) const -> bool
     {
         assert_on_missing_sound( audio );
 
@@ -225,13 +225,13 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::current_track( ) const -> audio const*
+    auto sdl_sound_service::current_track( ) const -> audio const*
     {
         return current_track_ptr_ ? current_track_ptr_->instance.get( ) : nullptr;
     }
 
 
-    auto sdl_sound_system::set_master_volume( float const volume ) -> void
+    auto sdl_sound_service::set_master_volume( float const volume ) -> void
     {
         master_volume_ = std::clamp( volume, 0.f, 1.f );
         Mix_Volume( -1, static_cast<int>( master_volume_ * MIX_MAX_VOLUME ) );
@@ -239,38 +239,38 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::master_volume( ) const -> float
+    auto sdl_sound_service::master_volume( ) const -> float
     {
         return master_volume_;
     }
 
 
-    auto sdl_sound_system::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
+    auto sdl_sound_service::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
     {
         tag_volumes_.at( tag_mark ) = std::clamp( volume, 0.f, 1.f );
     }
 
 
-    auto sdl_sound_system::volume_by_tag( earmark const tag_mark ) const -> float
+    auto sdl_sound_service::volume_by_tag( earmark const tag_mark ) const -> float
     {
         assert_on_missing_tag( tag_mark );
         return tag_volumes_.at( tag_mark );
     }
 
 
-    auto sdl_sound_system::assert_on_missing_sound( [[maybe_unused]] audio const& audio ) const -> void
+    auto sdl_sound_service::assert_on_missing_sound( [[maybe_unused]] audio const& audio ) const -> void
     {
         assert( sound_resources_.contains( audio.sound_mark( ) ) && "Sound not registered!" );
     }
 
 
-    auto sdl_sound_system::assert_on_missing_tag( [[maybe_unused]] earmark const tag_mark ) const -> void
+    auto sdl_sound_service::assert_on_missing_tag( [[maybe_unused]] earmark const tag_mark ) const -> void
     {
         assert( tag_volumes_.contains( tag_mark ) && "Tag not registered!" );
     }
 
 
-    auto sdl_sound_system::unload_unused_resources( ) -> void
+    auto sdl_sound_service::unload_unused_resources( ) -> void
     {
         // for ( auto it = sound_resources_.begin( ); it != sound_resources_.end( ); )
         // {
@@ -302,7 +302,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::find_channel( ) const -> int
+    auto sdl_sound_service::find_channel( ) const -> int
     {
         // TODO: Correctly implement channel replacement policies
         switch ( policy_ )
@@ -316,7 +316,7 @@ namespace rst
     }
 
 
-    auto sdl_sound_system::handle_mixer_result( int const result ) -> void
+    auto sdl_sound_service::handle_mixer_result( int const result ) -> void
     {
         if ( result == -1 )
         {

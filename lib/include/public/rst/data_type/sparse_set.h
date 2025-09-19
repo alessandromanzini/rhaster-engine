@@ -11,6 +11,14 @@
 // TODO: add documentation and move to appropriate folder
 namespace rst
 {
+    namespace internal
+    {
+        template <typename T>
+        concept sparse_set_element = std::is_default_constructible_v<T> && not std::is_reference_v<T> &&
+            std::is_move_assignable_v<std::remove_cv_t<T>>;
+    }
+
+
     // +--------------------------------+
     // | BASE SPARSE SET CLASS          |
     // +--------------------------------+
@@ -91,9 +99,7 @@ namespace rst
      * @tparam TElement The type of elements stored (must be default constructible and move assignable).
      * @tparam TIndex The index type (must be unsigned integral, defaults to uint32_t).
      */
-    template <typename TElement, std::unsigned_integral TIndex = uint32_t>
-        requires ( std::is_default_constructible_v<TElement> && not std::is_reference_v<TElement> &&
-                   std::is_move_assignable_v<std::remove_cv_t<TElement>> )
+    template <internal::sparse_set_element TElement, std::unsigned_integral TIndex = uint32_t>
     class sparse_set final : public base_sparse_set<TIndex>
     {
     public:
@@ -439,59 +445,77 @@ namespace rst
     template <std::integral TIndex, typename... TElements>
     class sparse_intersection_iterator final
     {
-    public:
         using set_array_type = std::array<base_sparse_set<TIndex> const*, sizeof...( TElements )>;
 
-
+    public:
         // +--------------------------------+
         // | FACTORIES                      |
         // +--------------------------------+
         /**
-         * Find the smallest set and create a begin-iterator for that.
+         * Find the smallest set and create a begin-iterator using that as pivot set.
          * @param sets
          * @return
          */
         static auto begin( sparse_set<TElements, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
         {
             auto& smallest_set = *meta::find_smallest<base_sparse_set<TIndex>>( sets... );
-            return sparse_intersection_iterator{ set_array_type{ &sets... }, smallest_set, 0U };
+            return sparse_intersection_iterator{ 0U, smallest_set, sets... };
         }
 
 
         /**
-         * Find the smallest set and create an end-iterator for that.
+         * Create a begin-iterator using the provided pivot set.
+         * @param pivot
+         * @param sets
+         * @return
+         */
+        static auto begin(
+            base_sparse_set<TIndex> const& pivot,
+            sparse_set<TElements, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
+        {
+            return sparse_intersection_iterator{ 0U, pivot, sets... };
+        }
+
+
+        /**
+         * Find the smallest set and create an end-iterator using that as pivot set.
          * @param sets
          * @return
          */
         static auto end( sparse_set<TElements, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
         {
             auto& smallest_set = *meta::find_smallest<base_sparse_set<TIndex>>( sets... );
-            return sparse_intersection_iterator{
-                set_array_type{ &sets... }, smallest_set, static_cast<TIndex>( smallest_set.size( ) )
-            };
+            return sparse_intersection_iterator{ static_cast<TIndex>( smallest_set.size( ) ), smallest_set, sets... };
         }
 
 
         /**
-         * Create an iterator that intersects multiple sparse sets.
+         * Create an end-iterator using the provided pivot set.
+         * @param pivot
          * @param sets
-         * @param pivot_set The set used for iteration. It should be the smallest one.
-         * @param pos
+         * @return
          */
-        explicit sparse_intersection_iterator(
-            set_array_type const& sets, base_sparse_set<TIndex> const& pivot_set, TIndex const pos ) noexcept
-            : packed_pos_{ pos }
-            , sets_{ sets }
-            , pivot_set_ref_{ pivot_set }
+        static auto end(
+            base_sparse_set<TIndex> const& pivot,
+            sparse_set<TElements, TIndex>&... sets ) noexcept -> sparse_intersection_iterator
         {
-            // make sure packed pos is in range
-            packed_pos_ = std::clamp( pos, TIndex{ 0U }, static_cast<TIndex>( pivot_set_ref_.size( ) ) );
-
-            // advance to the first valid intersected entity
-            advance_to_valid( );
+            return sparse_intersection_iterator{ static_cast<TIndex>( pivot.size( ) ), pivot, sets... };
         }
 
 
+        // +--------------------------------+
+        // | CTOR/DTOR                      |
+        // +--------------------------------+
+        ~sparse_intersection_iterator( ) noexcept = default;
+
+        sparse_intersection_iterator( sparse_intersection_iterator const& )                        = default;
+        sparse_intersection_iterator( sparse_intersection_iterator&& ) noexcept                    = default;
+        auto operator=( sparse_intersection_iterator const& ) -> sparse_intersection_iterator&     = delete;
+        auto operator=( sparse_intersection_iterator&& ) noexcept -> sparse_intersection_iterator& = delete;
+
+        // +--------------------------------+
+        // | OPERATORS                      |
+        // +--------------------------------+
         auto operator*( ) const noexcept -> TIndex
         {
             return pivot_set_ref_.packed( )[packed_pos_];
@@ -526,9 +550,26 @@ namespace rst
         }
 
     private:
-        TIndex packed_pos_{ 0U };
-        set_array_type const& sets_{};
         base_sparse_set<TIndex> const& pivot_set_ref_;
+        set_array_type const sets_;
+        TIndex packed_pos_{ 0U };
+
+
+        /**
+         * Create an iterator that intersects multiple sparse sets.
+         * @param sets
+         * @param pivot The set used for iteration. Usually be the smallest one.
+         * @param pos
+         */
+        explicit sparse_intersection_iterator(
+            TIndex const pos, base_sparse_set<TIndex> const& pivot, sparse_set<TElements, TIndex>&... sets ) noexcept
+            : pivot_set_ref_{ pivot }
+            , sets_{ &sets... }
+            , packed_pos_{ std::clamp( pos, TIndex{ 0U }, static_cast<TIndex>( pivot_set_ref_.size( ) ) ) }
+        {
+            // advance to the first valid intersected entity
+            advance_to_valid( );
+        }
 
 
         auto advance_to_valid( ) noexcept -> void

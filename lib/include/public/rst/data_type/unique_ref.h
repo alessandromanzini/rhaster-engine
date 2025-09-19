@@ -137,9 +137,6 @@ namespace rst
         auto operator=( unique_ref const& ) -> unique_ref& = delete;
 
 
-        // +--------------------------------+
-        // | ACCESSORS                      |
-        // +--------------------------------+
         /**
          * @brief Gets a mutable reference to the managed object.
          * @complexity O(1)
@@ -192,15 +189,16 @@ namespace rst
         [[nodiscard]] auto has_value( ) const noexcept -> bool { return ptr_ != nullptr; }
 
 
+        [[nodiscard]] auto operator==( std::nullptr_t ) const noexcept -> bool { return !has_value( ); }
+        [[nodiscard]] auto operator!=( std::nullptr_t ) const noexcept -> bool { return has_value( ); }
+
+
         /**
          * @return T*'s deleter.
          */
         [[nodiscard]] auto deleter( ) const noexcept -> TDeleter { return deleter_; }
 
 
-        // +--------------------------------+
-        // | MUTATORS                       |
-        // +--------------------------------+
         /**
          * @brief Releases ownership without destroying the managed object.
          * @complexity O(1)

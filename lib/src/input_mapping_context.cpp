@@ -1,8 +1,8 @@
 #include <rst/__input/input_mapping_context.h>
 
 #include <rst/meta/algorithm.h>
-#include <rst/__controller/player_controller.h>
 #include <rst/__input/input_merge.h>
+#include <rst/__input/controller/player_controller.h>
 
 
 using namespace rst::input;

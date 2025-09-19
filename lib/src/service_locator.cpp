@@ -1,28 +1,30 @@
-#include <rst/temp/singleton/service_locator.h>
+#include <rst/__core/__service/service_locator.h>
 
 
 namespace rst
 {
-    auto service_locator::register_sound_system( std::unique_ptr<rst::sound_system>&& ss ) -> rst::sound_system&
+    auto service_locator::sound_service( ) const noexcept -> rst::sound_service&
     {
-        sound_system_instance_ptr_ = std::move( ss );
-        return sound_system( );
+        assert( is_sound_service_registered( ) && "service_locator::sound_service: instance not registered!" );
+        return *sound_service_ptr_;
     }
 
 
-    auto service_locator::sound_system( ) const -> rst::sound_system&
+    auto service_locator::is_sound_service_registered( ) const noexcept -> bool
     {
-        assert( is_sound_system_registered( ) && "SoundSystem instance not registered" );
-        return *sound_system_instance_ptr_;
+        return sound_service_ptr_ != nullptr;
     }
 
 
-    auto service_locator::is_sound_system_registered( ) const -> bool
+    auto service_locator::renderer_service( ) const noexcept -> rst::renderer_service&
     {
-        return sound_system_instance_ptr_ != nullptr;
+        assert( is_renderer_service_registered( ) && "service_locator::renderer_service: instance not registered!" );
+        return *renderer_service_ptr_;
     }
 
 
-    service_locator& SERVICE_LOCATOR = service_locator::instance( );
-
+    auto service_locator::is_renderer_service_registered( ) const noexcept -> bool
+    {
+        return renderer_service_ptr_ != nullptr;
+    }
 }

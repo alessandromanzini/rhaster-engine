@@ -1,99 +1,163 @@
-#include <rst/__core/transform.h>
-
-#include <rst/__core/gameobject.h>
+#include <rst/__core/component/transform.h>
 
 
 namespace rst
 {
-    // +---------------------------+
-    // | TRANSFORM                 |
-    // +---------------------------+
-    transform::transform( glm::mat3x3 const& matrix )
-        : matrix_{ matrix } { }
+    transform::transform( glm::vec2 const location ) noexcept : local_matrix_{ from_translation( location ) } { }
 
 
-    auto transform::position( ) const -> glm::vec2
+    transform::transform( glm::vec2 const location, float const rotation, glm::vec2 const scale ) noexcept
+        : local_matrix_{ from_trs( location, rotation, scale ) } { }
+
+
+    auto transform::set_parent( transform* const parent, bool const keep_world_position ) noexcept -> void
     {
-        return matrix_[2];
+        // parent validation
+        if ( is_child( parent ) || parent == this || parent == parent_ptr_ )
+        {
+            return;
+        }
+
+        if ( parent == nullptr )
+        {
+            // if becoming root object, local transform becomes world space transform
+            set_local_matrix( world_matrix_ );
+        }
+        else
+        {
+            // if parent is provided, we need to adjust the local transform to keep the world position and set it dirty to
+            // recalculate the world transform.
+            if ( keep_world_position )
+            {
+                // TODO: test if rotation is canceled
+                glm::vec2 const translation = world( ).location( ) - parent->world( ).location( );
+                set_local_matrix( from_translation( translation ) );
+            }
+            mark_dirty( );
+        }
+
+        // parenting logic
+        // if ( parent_ptr_ != nullptr ) { parent_ptr_->remove_child( this ); }
+        // if ( parent != nullptr ) { parent->add_child( this ); }
+        parent_ptr_ = parent;
     }
 
 
-    auto transform::matrix( ) const -> glm::mat3x3 const&
+    auto transform::parent( ) const noexcept -> transform*
     {
-        return matrix_;
+        return parent_ptr_;
     }
 
 
-    auto transform::translate( glm::vec2 const translation ) const -> transform
+    auto transform::local( ) const noexcept -> detail::transform_operator<transform const, detail::transform_space::local>
     {
-        return glm::translate( matrix_, translation );
+        return detail::transform_operator<transform const, detail::transform_space::local>{ *this };
     }
 
 
-    auto transform::rotate( float const rotation ) const -> transform
+    auto transform::local( ) noexcept -> detail::transform_operator<transform, detail::transform_space::local>
     {
-        return glm::rotate( matrix_, rotation );
+        return detail::transform_operator<transform, detail::transform_space::local>{ *this };
     }
 
 
-    auto transform::scale( glm::vec2 const scale ) const -> transform
+    auto transform::world( ) noexcept -> detail::transform_operator<transform, detail::transform_space::world>
     {
-        return glm::scale( matrix_, scale );
+        return detail::transform_operator<transform, detail::transform_space::world>{ *this };
     }
 
 
-    auto transform::combine( transform const& other ) -> void
+    auto transform::refresh_world_transform( ) noexcept -> void
     {
-        matrix_ = matrix_ * other.matrix_;
+        // 1. update only if dirty
+        if ( not dirty_ ) { return; }
+
+        // 2. update parent first
+        if ( parent_ptr_ )
+        {
+            parent_ptr_->refresh_world_transform( );
+            world_matrix_ = parent_ptr_->world_matrix_ * local_matrix_;
+        }
+        else
+        {
+            world_matrix_ = local_matrix_;
+        }
+
+        // 3. reset dirty flag
+        dirty_ = false;
     }
 
 
-    auto transform::operator*( transform const& other ) const -> transform
+    auto transform::mark_dirty( ) noexcept -> void
     {
-        transform result{ *this };
-        result.combine( other );
-        return result;
+        dirty_ = true;
+        // TODO: Propagate to children when hierarchy system is implemented
     }
 
 
-    auto transform::from_translation( glm::vec2 const translation ) -> transform
+    auto transform::set_world_matrix( detail::matrix_type const& world_mat ) noexcept -> void
     {
-        return glm::translate( matrix_type{ 1.0 }, translation );
+        // 1. update world matrix directly
+        world_matrix_ = world_mat;
+
+        // 2. if not root node, update local transform to match new world transform ...
+        if ( parent_ptr_ )
+        {
+            parent_ptr_->refresh_world_transform( );
+            local_matrix_ = glm::inverse( parent_ptr_->world_matrix_ ) * world_mat;
+        }
+        else
+        {
+            // ... else just set local to world
+            local_matrix_ = world_mat;
+        }
+
+        // 3. reset dirty flag
+        dirty_ = false;
     }
 
 
-    auto transform::from_rotation( float const rotation ) -> transform
+    auto transform::set_local_matrix( detail::matrix_type const& local_mat ) noexcept -> void
     {
-        return glm::rotate( matrix_type{ 1.0 }, rotation );
+        local_matrix_ = local_mat;
+        mark_dirty( );
     }
 
 
-    auto transform::from_scale( glm::vec2 const scale ) -> transform
+    auto transform::is_child( transform const* /* maybe_child */ ) const noexcept -> bool
     {
-        return glm::scale( matrix_type{ 1.0 }, scale );
+        // todo: implement
+        return false;
     }
 
 
-    // +---------------------------+
-    // | TRANSFORM OPERATOR        |
-    // +---------------------------+
-    transform_operator::transform_operator( gameobject& gameobject )
-        : gameobject_ref_{ gameobject }
+    auto transform::from_translation( glm::vec2 const translation ) noexcept -> detail::matrix_type
     {
+        return glm::translate( detail::matrix_type{ 1.0 }, translation );
     }
 
 
-    auto transform_operator::translate( glm::vec2 const translation ) const -> void
+    auto transform::from_rotation( float const rotation ) noexcept -> detail::matrix_type
     {
-        auto const translated = gameobject_ref_.local_transform( ) * transform::from_translation( translation );
-        gameobject_ref_.set_local_transform( translated );
+        return glm::rotate( detail::matrix_type{ 1.0 }, rotation );
     }
 
 
-    auto transform_operator::rotate( float const rotation ) const -> void
+    auto transform::from_scale( glm::vec2 const scale ) noexcept -> detail::matrix_type
     {
-        auto const rotated = gameobject_ref_.local_transform( ) * transform::from_rotation( rotation );
-        gameobject_ref_.set_local_transform( rotated );
+        return glm::scale( detail::matrix_type{ 1.0 }, scale );
     }
 
+
+    auto transform::from_trs(
+        glm::vec2 const translation, float const rotation, glm::vec2 const scale ) noexcept -> detail::matrix_type
+    {
+        float const c = std::cosf( rotation );
+        float const s = std::sinf( rotation );
+        return detail::matrix_type{
+            scale.x * c, scale.x * s, 0.0f,
+            -scale.y * s, scale.y * c, 0.0f,
+            translation.x, translation.y, 1.0f
+        };
+    }
 }

@@ -1,4 +1,4 @@
-#include <rst/__resource_type/sound/sdl_audio.h>
+#include <rst/__internal/resource/sdl_audio.h>
 
 
 namespace rst
