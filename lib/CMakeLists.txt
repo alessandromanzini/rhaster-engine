@@ -20,36 +20,32 @@ add_library(
 
         # include/public/rst/__command/
         "include/public/rst/__command/command.h"
-        "include/public/rst/__command/gameobject_command.h"
 
         # include/public/rst/__controller/
-        "include/public/rst/__controller/base_controller.h"
-        "include/public/rst/__controller/player_controller.h"
+        "include/public/rst/__input/controller/base_controller.h"
+        "include/public/rst/__input/controller/player_controller.h"
 
         # include/public/rst/__core/
-        "include/public/rst/__core/component.h"
-        "include/public/rst/__core/deletable.h"
         "include/public/rst/__core/earmark.h"
-        "include/public/rst/__core/ecs/component_pool.h"
-        "include/public/rst/__core/ecs/ecs_error.h"
-        "include/public/rst/__core/ecs/entity.h"
-        "include/public/rst/__core/ecs/entity_allocator.h"
-        "include/public/rst/__core/ecs/entity_handle.h"
-        "include/public/rst/__core/ecs/registry.h"
-        "include/public/rst/__core/ecs/view.h"
-        "include/public/rst/__core/gameobject.h"
+        "include/public/rst/__core/__ecs/registry_pool.h"
+        "include/public/rst/__core/__ecs/ecs_error.h"
+        "include/public/rst/__core/__ecs/entity.h"
+        "include/public/rst/__core/__ecs/entity_allocator.h"
+        "include/public/rst/__core/__ecs/entity_handle.h"
+        "include/public/rst/__core/__ecs/registry.h"
+        "include/public/rst/__core/__ecs/view.h"
         "include/public/rst/__core/hare.h"
         "include/public/rst/__core/scene.h"
         "include/public/rst/__core/test.h"
-        "include/public/rst/__core/transform.h"
+        "include/public/rst/__core/component/transform.h"
 
         # include/public/rst/__event/
-        "include/public/rst/__event/event_queue.h"
-        "include/public/rst/__event/multicast_delegate.h"
-        "include/public/rst/__event/observer.h"
-        "include/public/rst/__event/scoped_binding.h"
-        "include/public/rst/__event/subject.h"
-        "include/public/rst/__event/token.h"
+        "include/public/rst/data_type/event/event_queue.h"
+        "include/public/rst/data_type/event/multicast_delegate.h"
+        "include/public/rst/data_type/event/observer.h"
+        "include/public/rst/data_type/event/scoped_binding.h"
+        "include/public/rst/data_type/event/subject.h"
+        "include/public/rst/data_type/event/token.h"
 
         # include/public/rst/__input/
         "include/public/rst/__input/binding_device.h"
@@ -59,17 +55,16 @@ add_library(
         "include/public/rst/__input/input_type.h"
 
         # include/public/rst/__resource_type/
-        "include/public/rst/__resource_type/font/font.h"
-        "include/public/rst/__resource_type/sound/audio.h"
-        "include/public/rst/__resource_type/texture/sprite2D.h"
-        "include/public/rst/__resource_type/texture/texture2D.h"
+        "include/public/rst/__core/resource/font.h"
+        "include/public/rst/__core/resource/audio.h"
+        "include/public/rst/__core/resource/pelt_batch.h"
 
         # include/public/rst/__service/
-        "include/public/rst/__service/service_info.h"
-        "include/public/rst/__service/sound/parallel_sound_system.h"
-        "include/public/rst/__service/sound/sdl/sdl_sound_system.h"
-        "include/public/rst/__service/sound/sound_system.h"
-        "include/public/rst/__service/sound/sound_system_logger.h"
+        "include/public/rst/__core/__service/service_info.h"
+        "include/public/rst/__core/__service/sound/parallel_sound_service.h"
+        "include/public/rst/__core/__service/sound/sdl_sound_service.h"
+        "include/public/rst/__core/__service/sound_service.h"
+        "include/public/rst/__core/__service/sound/sound_logger_service.h"
 
         # include/public/rst/data_type/
         "include/public/rst/data_type/blackboard.h"
@@ -81,11 +76,6 @@ add_library(
         "include/public/rst/data_type/sparse_set.h"
         "include/public/rst/data_type/token_generator.h"
         "include/public/rst/data_type/unique_ref.h"
-
-        # include/public/rst/framework/
-        "include/public/rst/framework/event_queue.h"
-        "include/public/rst/framework/multicast_delegate.h"
-        "include/public/rst/framework/observer.h"
 
         # include/public/rst/meta/
         "include/public/rst/meta/__type_traits/concepts.h"
@@ -109,10 +99,9 @@ add_library(
         "include/public/rst/temp/singleton/game_instance.h"
         "include/public/rst/temp/singleton/game_time.h"
         "include/public/rst/temp/singleton/input_system.h"
-        "include/public/rst/temp/singleton/renderer.h"
         "include/public/rst/temp/singleton/resource_manager.h"
         "include/public/rst/temp/singleton/scene_pool.h"
-        "include/public/rst/temp/singleton/service_locator.h"
+        "include/public/rst/__core/__service/service_locator.h"
 
         # include/public/rst/ (root)
         "include/public/rst/fsm.h"
@@ -124,7 +113,6 @@ add_library(
         "src/binding_device.cpp"
         "src/box_collider_component.cpp"
         "src/collider_component.cpp"
-        "src/component.cpp"
         "src/earmark.cpp"
         "src/entity_allocator.cpp"
         "src/finite_multi_state_machine.cpp"
@@ -132,7 +120,6 @@ add_library(
         "src/font.cpp"
         "src/game_instance.cpp"
         "src/game_time.cpp"
-        "src/gameobject.cpp"
         "src/hare.cpp"
         "src/input_buffer.cpp"
         "src/input_mapping_context.cpp"
@@ -141,7 +128,8 @@ add_library(
         "src/parallel_sound_system.cpp"
         "src/physics_component.cpp"
         "src/player_controller.cpp"
-        "src/renderer.cpp"
+        "src/sdl_erasure.cpp"
+        "src/sdl_renderer_service.cpp"
         "src/resource_manager.cpp"
         "src/scene.cpp"
         "src/scene_pool.cpp"
@@ -149,13 +137,33 @@ add_library(
         "src/sdl_sound_system.cpp"
         "src/service_locator.cpp"
         "src/sound_system_logger.cpp"
-        "src/sprite2D.cpp"
+        "src/pelt_batch.cpp"
         "src/state_stack.cpp"
         "src/subject.cpp"
         "src/text_component.cpp"
-        "src/texture2D.cpp"
         "src/texture_component.cpp"
         "src/transform.cpp"
+        include/public/rst/__core/__system/base_system.h
+        include/public/rst/__core/__system/system_scheduler.h
+        include/public/rst/__core/__system/system_timing.h
+        include/public/rst/meta/__type_traits/enum_traits.h
+        include/public/rst/__core/__service/renderer_service.h
+        include/public/rst/__core/resource/pelt.h
+        include/public/rst/__core/__service/render/sdl_renderer_service.h
+        include/public/rst/__core/resource/type_erasure/sdl_erasure.h
+        include/private/rst/__internal/resource/sdl_pelt.h
+        src/sdl_pelt.cpp
+        include/public/rst/__core/__service/render/unified_render_dispatch.h
+        include/public/rst/__core/__system/renderer_system.h
+        src/renderer_system.cpp
+        include/public/rst/__core/component/pelt_frame.h
+        include/public/rst/__core/__service/renderer_service.h
+        include/public/rst/__core/__ecs/component_constraints.h
+        src/transform.cpp
+        include/public/rst/core.h
+        include/public/rst/__core/ecs.h
+        include/public/rst/__core/service.h
+        include/public/rst/__core/system.h
 )
 
 # include directories

@@ -3,6 +3,11 @@
 
 #include <rst/pch.h>
 
+#include <rst/__core/__ecs/registry.h>
+#include <rst/__core/__service/service_locator.h>
+#include <rst/__core/__system/system_scheduler.h>
+#include <rst/__core/__system/system_timing.h>
+
 
 namespace rst
 {
@@ -23,6 +28,10 @@ namespace rst
     private:
         glm::vec2 const viewport_;
         bool request_quit_{ false };
+
+        ecs::registry registry_{};
+        service_locator service_locator_{};
+        system_scheduler<system_timing> scheduler_{ registry_, service_locator_ };
 
         auto run_one_frame( ) -> void;
     };
