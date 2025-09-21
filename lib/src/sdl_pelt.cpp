@@ -6,7 +6,8 @@
 
 namespace rst
 {
-    sdl_pelt::sdl_pelt( SDL_Renderer& renderer, std::filesystem::path const& full_path )
+    sdl_pelt::sdl_pelt( SDL_Renderer& renderer, earmark const mark, std::filesystem::path const& full_path )
+        : pelt{ mark }
     {
         // 1. load the image
         texture_ptr_ = IMG_LoadTexture( &renderer, full_path.c_str( ) );

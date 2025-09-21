@@ -5,7 +5,6 @@
 
 #include <rst/__core/resource/type_erasure/sdl_erasure.h>
 #include <rst/__core/__service/renderer_service.h>
-#include <rst/__core/__service/render/unified_render_dispatch.h>
 
 
 namespace rst
@@ -35,7 +34,7 @@ namespace rst::service
     }
 
 
-    class sdl_renderer_service final : public renderer_service, public unified_render_dispatch
+    class sdl_renderer_service final : public renderer_service
     {
     public:
         sdl_renderer_service( std::string_view const& window_title, glm::vec2 viewport );
@@ -48,8 +47,6 @@ namespace rst::service
         [[nodiscard]] auto clear_color( ) const noexcept -> glm::vec4 const& override;
         auto set_clear_color( glm::vec4 const& color ) noexcept -> void override;
 
-        auto render_dispatch( ) noexcept -> void override;
-
     private:
         rst::internal::sdl::opaque_window window_;
         rst::internal::sdl::opaque_renderer renderer_;
@@ -58,6 +55,9 @@ namespace rst::service
 
         int z_index_{ 0 };
         std::multiset<internal::request, internal::request_comparator> render_queue_{};
+
+        [[nodiscard]] auto make_pelt( earmark mark, std::filesystem::path const& file_path ) -> std::unique_ptr<pelt> override;
+        auto render_dispatch( ) noexcept -> void override;
     };
 }
 

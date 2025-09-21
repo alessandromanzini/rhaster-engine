@@ -23,6 +23,10 @@ namespace rst
         auto operator=( hare const& ) -> hare&     = delete;
         auto operator=( hare&& ) noexcept -> hare& = delete;
 
+        [[nodiscard]] auto registry( ) noexcept -> ecs::registry&;
+        [[nodiscard]] auto service_locator( ) noexcept -> service_locator&;
+        [[nodiscard]] auto scheduler( ) noexcept -> system_scheduler<system_timing>&;
+
         auto run( ) -> void;
 
     private:
@@ -30,7 +34,7 @@ namespace rst
         bool request_quit_{ false };
 
         ecs::registry registry_{};
-        service_locator service_locator_{};
+        rst::service_locator service_locator_{};
         system_scheduler<system_timing> scheduler_{ registry_, service_locator_ };
 
         auto run_one_frame( ) -> void;

@@ -37,6 +37,7 @@
 // | GLM HEADERS                    |
 // +--------------------------------+
 #include <glm.hpp>
+#include <gtx/matrix_operation.inl>
 #include <gtx/matrix_transform_2d.inl>
 
 // +--------------------------------+

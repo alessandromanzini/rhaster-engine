@@ -6,7 +6,6 @@
 #include <rst/meta/type_traits.h>
 #include <rst/__core/__service/renderer_service.h>
 #include <rst/__core/__service/sound_service.h>
-#include <rst/__core/__service/render/unified_render_dispatch.h>
 
 
 // todo: null service instead of assert
@@ -24,8 +23,7 @@ namespace rst
         }
 
 
-        template <meta::derived_from_all<renderer_service, service::unified_render_dispatch> T, typename... TArgs>
-            requires std::constructible_from<T, TArgs...>
+        template <std::derived_from<renderer_service> T, typename... TArgs> requires std::constructible_from<T, TArgs...>
         auto register_renderer_service( TArgs&&... args ) noexcept(std::is_nothrow_constructible_v<T>) -> renderer_service&
         {
             assert(

@@ -3,11 +3,61 @@
 
 namespace rst
 {
-    transform::transform( glm::vec2 const location ) noexcept : local_matrix_{ from_translation( location ) } { }
+    // +--------------------------------+
+    // | ITERNAL HELPERS                |
+    // +--------------------------------+
+    auto detail::internal::from_translation( glm::vec2 const translation ) noexcept -> matrix_type
+    {
+        return glm::translate( matrix_type{ 1.0 }, translation );
+    }
+
+
+    auto detail::internal::from_rotation( float const rotation ) noexcept -> matrix_type
+    {
+        return glm::rotate( matrix_type{ 1.0 }, rotation );
+    }
+
+
+    auto detail::internal::from_scale( glm::vec2 const scale ) noexcept -> matrix_type
+    {
+        return glm::scale( matrix_type{ 1.0 }, scale );
+    }
+
+
+    auto detail::internal::from_rts(
+        glm::vec2 const translation, float const rotation, glm::vec2 const scale ) noexcept -> matrix_type
+    {
+        return from_rotation( rotation ) * from_translation( translation ) * from_scale( scale );
+    }
+
+
+    auto detail::internal::extract_translation( matrix_type const& mat ) noexcept -> glm::vec2
+    {
+        return { mat[2][0], mat[2][1] };
+    }
+
+
+    auto detail::internal::extract_rotation( matrix_type const& mat ) noexcept -> float
+    {
+        return std::atan2( mat[0][1], mat[0][0] );
+    }
+
+
+    auto detail::internal::extract_scale( matrix_type const& mat ) noexcept -> glm::vec2
+    {
+        return { glm::length( glm::vec2{ mat[0][0], mat[0][1] } ), glm::length( glm::vec2{ mat[1][0], mat[1][1] } ) };
+    }
+
+
+    // +--------------------------------+
+    // | TRANSFORM                      |
+    // +--------------------------------+
+    transform::transform( glm::vec2 const location ) noexcept
+        : local_matrix_{ detail::internal::from_translation( location ) } { }
 
 
     transform::transform( glm::vec2 const location, float const rotation, glm::vec2 const scale ) noexcept
-        : local_matrix_{ from_trs( location, rotation, scale ) } { }
+        : local_matrix_{ detail::internal::from_rts( location, rotation, scale ) } { }
 
 
     auto transform::set_parent( transform* const parent, bool const keep_world_position ) noexcept -> void
@@ -31,14 +81,17 @@ namespace rst
             {
                 // TODO: test if rotation is canceled
                 glm::vec2 const translation = world( ).location( ) - parent->world( ).location( );
-                set_local_matrix( from_translation( translation ) );
+                set_local_matrix( detail::internal::from_translation( translation ) );
             }
-            mark_dirty( );
+            else
+            {
+                mark_dirty( );
+            }
         }
 
         // parenting logic
-        // if ( parent_ptr_ != nullptr ) { parent_ptr_->remove_child( this ); }
-        // if ( parent != nullptr ) { parent->add_child( this ); }
+        if ( parent_ptr_ != nullptr ) { parent_ptr_->remove_child( this ); }
+        if ( parent != nullptr ) { parent->add_child( this ); }
         parent_ptr_ = parent;
     }
 
@@ -91,12 +144,19 @@ namespace rst
     auto transform::mark_dirty( ) noexcept -> void
     {
         dirty_ = true;
-        // TODO: Propagate to children when hierarchy system is implemented
+
+        transform* current = first_child_ptr_;
+        while ( current != nullptr )
+        {
+            current->mark_dirty( );
+            current = current->next_sibling_ptr_;
+        }
     }
 
 
     auto transform::set_world_matrix( detail::matrix_type const& world_mat ) noexcept -> void
     {
+        //todo: check for local matrix if need to use set_local_matrix
         // 1. update world matrix directly
         world_matrix_ = world_mat;
 
@@ -104,12 +164,12 @@ namespace rst
         if ( parent_ptr_ )
         {
             parent_ptr_->refresh_world_transform( );
-            local_matrix_ = glm::inverse( parent_ptr_->world_matrix_ ) * world_mat;
+            set_local_matrix( glm::inverse( parent_ptr_->world_matrix_ ) * world_mat );
         }
         else
         {
             // ... else just set local to world
-            local_matrix_ = world_mat;
+            set_local_matrix( world_mat );
         }
 
         // 3. reset dirty flag
@@ -124,40 +184,80 @@ namespace rst
     }
 
 
-    auto transform::is_child( transform const* /* maybe_child */ ) const noexcept -> bool
+    auto transform::is_child( transform const* maybe_child ) const noexcept -> bool
     {
-        // todo: implement
+        // bad argument check
+        if ( maybe_child == nullptr )
+        {
+            return false;
+        }
+
+        // 0. base case
+        if ( maybe_child == this )
+        {
+            return true;
+        }
+
+        // 1. check siblings, if any
+        if ( next_sibling_ptr_ != nullptr && next_sibling_ptr_->is_child( maybe_child ) )
+        {
+            return true;
+        }
+
+        // 2. check children, if any
+        if ( first_child_ptr_ != nullptr && first_child_ptr_->is_child( maybe_child ) )
+        {
+            return true;
+        }
+
+        // 3. not found in this branch
         return false;
     }
 
 
-    auto transform::from_translation( glm::vec2 const translation ) noexcept -> detail::matrix_type
+    auto transform::add_child( transform* child ) noexcept -> void
     {
-        return glm::translate( detail::matrix_type{ 1.0 }, translation );
+        if ( child == nullptr ) { return; }
+
+        // if no children, set as first child ...
+        if ( first_child_ptr_ == nullptr )
+        {
+            first_child_ptr_ = child;
+        }
+        else
+        {
+            // ... else append to sibling list
+            transform* current = first_child_ptr_;
+            while ( current->next_sibling_ptr_ != nullptr )
+            {
+                current = current->next_sibling_ptr_;
+            }
+            current->next_sibling_ptr_ = child;
+        }
     }
 
 
-    auto transform::from_rotation( float const rotation ) noexcept -> detail::matrix_type
+    auto transform::remove_child( transform const* child ) noexcept -> void
     {
-        return glm::rotate( detail::matrix_type{ 1.0 }, rotation );
-    }
+        // if no children or bad argument, return
+        if ( child == nullptr || first_child_ptr_ == nullptr ) { return; }
 
-
-    auto transform::from_scale( glm::vec2 const scale ) noexcept -> detail::matrix_type
-    {
-        return glm::scale( detail::matrix_type{ 1.0 }, scale );
-    }
-
-
-    auto transform::from_trs(
-        glm::vec2 const translation, float const rotation, glm::vec2 const scale ) noexcept -> detail::matrix_type
-    {
-        float const c = std::cosf( rotation );
-        float const s = std::sinf( rotation );
-        return detail::matrix_type{
-            scale.x * c, scale.x * s, 0.0f,
-            -scale.y * s, scale.y * c, 0.0f,
-            translation.x, translation.y, 1.0f
-        };
+        // ... else find child and bypass
+        if ( first_child_ptr_ == child )
+        {
+            first_child_ptr_ = child->next_sibling_ptr_;
+        }
+        else
+        {
+            transform* current = first_child_ptr_;
+            while ( current->next_sibling_ptr_ != nullptr )
+            {
+                if ( current->next_sibling_ptr_ == child )
+                {
+                    current->next_sibling_ptr_ = current->next_sibling_ptr_->next_sibling_ptr_;
+                    return;
+                }
+            }
+        }
     }
 }

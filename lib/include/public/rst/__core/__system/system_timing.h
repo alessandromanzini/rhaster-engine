@@ -17,12 +17,14 @@ namespace rst
 
         fixed_tick,   // [FIXED]
         pre_physics,  // [FIXED]
+        physics,      // [FIXED]
         post_physics, // [FIXED]
 
         tick,      // [VARIABLE]
         late_tick, // [VARIABLE]
 
         pre_render,  // [VARIABLE]
+        render,      // [VARIABLE]
         post_render, // [VARIABLE]
     };
 
@@ -36,7 +38,7 @@ namespace rst
 
         // check that values are sequential and start from 0
         static_assert( std::to_underlying( system_timing::early_tick ) == 0U );
-        static_assert( count == 8U );
+        static_assert( count == 10U );
     };
 
 

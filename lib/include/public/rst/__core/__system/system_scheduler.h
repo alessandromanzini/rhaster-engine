@@ -20,6 +20,14 @@ namespace rst
             , service_locator_ref_{ locator } { }
 
 
+        ~system_scheduler( ) noexcept = default;
+
+        system_scheduler( system_scheduler const& )                        = delete;
+        system_scheduler( system_scheduler&& ) noexcept                    = delete;
+        auto operator=( system_scheduler const& ) -> system_scheduler&     = delete;
+        auto operator=( system_scheduler&& ) noexcept -> system_scheduler& = delete;
+
+
         template <std::derived_from<base_system> T, typename... TArgs> requires std::constructible_from<T, TArgs...>
         auto register_system( THook const hook, TArgs&&... args ) noexcept -> void
         {

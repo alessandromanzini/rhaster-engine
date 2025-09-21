@@ -1,12 +1,12 @@
 #include <rst/__core/__system/renderer_system.h>
 
-#include <rst/__core/component/pelt_frame.h>
-#include <rst/__core/component/transform.h>
+#include <rst/core.h>
 
 
-namespace rst
+namespace rst::system
 {
     renderer_system::renderer_system( ) : base_system{ "renderer" } { }
+
     renderer_system::~renderer_system( ) noexcept = default;
 
 
@@ -25,7 +25,6 @@ namespace rst
         }
 
         // 2. dispatch render
-        // reinterpret cast is safe here because of the concept in service_locator when registering the service.
-        reinterpret_cast<service::unified_render_dispatch&>( renderer ).render_dispatch( );
+        renderer.render_dispatch( );
     }
 }

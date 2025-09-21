@@ -179,7 +179,7 @@ namespace rst::ecs
 
         template <typename... UComponents>
         using underlying_view_get_type =
-        meta::unwrap_single_t<typename meta::fallback<std::tuple, UComponents&...>::template if_empty<TComponents&...>::type>;
+        meta::unwrap_single<typename meta::fallback<std::tuple, UComponents&...>::template if_empty<TComponents&...>::type>::type;
 
         /**
          * The return type of get() based on requested component types.
@@ -521,7 +521,9 @@ namespace rst::ecs
                 // return the requested components, wrapped around a std::expected
                 if constexpr ( meta::expected_like<TResult, ecs_error> )
                 {
-                    return TResult{ std::in_place, std::get<meta::index_of_v<UComponents, TComponents...>>( pools_ ).unsafe_get( entity )... };
+                    return TResult{
+                        std::in_place, std::get<meta::index_of_v<UComponents, TComponents...>>( pools_ ).unsafe_get( entity )...
+                    };
                 }
                 else
                 {

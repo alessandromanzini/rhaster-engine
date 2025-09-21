@@ -1,12 +1,12 @@
-#ifndef RST_SDL_RENDERER_SYSTEM_H
-#define RST_SDL_RENDERER_SYSTEM_H
+#ifndef RST_SYSTEM_SDL_RENDERER_SYSTEM_H
+#define RST_SYSTEM_SDL_RENDERER_SYSTEM_H
 
 #include <rst/pch.h>
 
 #include <rst/__core/__system/base_system.h>
 
 
-namespace rst
+namespace rst::system
 {
     class renderer_system final : public base_system
     {
@@ -24,4 +24,4 @@ namespace rst
 }
 
 
-#endif //!RST_SDL_RENDERER_SYSTEM_H
+#endif //!RST_SYSTEM_SDL_RENDERER_SYSTEM_H

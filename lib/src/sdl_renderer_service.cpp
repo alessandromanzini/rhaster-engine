@@ -64,6 +64,12 @@ namespace rst::service
     }
 
 
+    auto sdl_renderer_service::make_pelt( earmark const mark, std::filesystem::path const& file_path ) -> std::unique_ptr<pelt>
+    {
+        return renderer_.load_texture( mark, file_path );
+    }
+
+
     auto sdl_renderer_service::render_dispatch( ) noexcept -> void
     {
         // 1. clear the screen

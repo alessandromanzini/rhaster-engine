@@ -56,7 +56,7 @@ namespace rst::internal::sdl
         auto operator=( opaque_renderer const& ) -> opaque_renderer&     = delete;
         auto operator=( opaque_renderer&& ) noexcept -> opaque_renderer& = delete;
 
-        [[nodiscard]] auto load_texture( std::filesystem::path const& full_path ) const -> std::shared_ptr<pelt>;
+        [[nodiscard]] auto load_texture( earmark mark, std::filesystem::path const& full_path ) const -> std::unique_ptr<pelt>;
 
         auto render_pelt( pelt const& texture, glm::vec4 const& dst ) const noexcept -> void;
         auto render_pelt( pelt const& texture, glm::vec4 const& dst, glm::vec4 const& src ) const noexcept -> void;

@@ -137,9 +137,9 @@ namespace rst::internal::sdl
     opaque_renderer::~opaque_renderer( ) noexcept = default;
 
 
-    auto opaque_renderer::load_texture( std::filesystem::path const& full_path ) const -> std::shared_ptr<pelt>
+    auto opaque_renderer::load_texture( earmark const mark, std::filesystem::path const& full_path ) const -> std::unique_ptr<pelt>
     {
-        return std::make_shared<sdl_pelt>( *impl_ptr_->renderer, full_path );
+        return std::make_unique<sdl_pelt>( *impl_ptr_->renderer, mark, full_path );
     }
 
 

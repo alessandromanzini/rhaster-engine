@@ -1,5 +1,6 @@
-#include <SDL.h>
 #include <rst/__core/hare.h>
+
+#include <rst/core.h>
 
 #include <rst/temp/singleton/game_instance.h>
 #include <rst/temp/singleton/game_time.h>
@@ -7,22 +8,24 @@
 #include <rst/temp/singleton/resource_manager.h>
 #include <rst/temp/singleton/scene_pool.h>
 
+#include <SDL.h>
+
 
 namespace rst
 {
-    hare::hare( std::string const& , std::filesystem::path const& data_path, glm::vec2 const viewport )
+    hare::hare( std::string const& window_title, std::filesystem::path const& /* data_path */, glm::vec2 const viewport )
         : viewport_{ viewport }
     {
         if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER ) != 0 )
         {
-            throw std::runtime_error( std::string( "SDL_Init Error: " ) + SDL_GetError( ) );
+            throw std::runtime_error{ std::format( "SDL_Init error: {}", SDL_GetError( ) ) };
         }
-
-
 
         // initialize singletons
         // RENDERER.init( g_window_ptr );
-        RESOURCE_MANAGER.init( data_path );
+        // RESOURCE_MANAGER.init( data_path );
+        service_locator_.register_renderer_service<service::sdl_renderer_service>( window_title, viewport_ );
+        scheduler_.register_system<system::renderer_system>( system_timing::render );
     }
 
 
@@ -34,8 +37,27 @@ namespace rst
     }
 
 
+    auto hare::registry( ) noexcept -> ecs::registry&
+    {
+        return registry_;
+    }
+
+
+    auto hare::service_locator( ) noexcept -> rst::service_locator&
+    {
+        return service_locator_;
+    }
+
+
+    auto hare::scheduler( ) noexcept -> system_scheduler<system_timing>&
+    {
+        return scheduler_;
+    }
+
+
     auto hare::run( ) -> void
     {
+        // todo: error code return type
         GAME_TIME.reset( );
         GAME_INSTANCE.set_screen_dimensions( viewport_ );
         while ( !request_quit_ )
@@ -70,7 +92,7 @@ namespace rst
             //SCENE_POOL.fixed_tick( );
 
             scheduler_.signal_hook( system_timing::pre_physics );
-            // todo: physics
+            scheduler_.signal_hook( system_timing::physics );
             scheduler_.signal_hook( system_timing::post_physics );
 
             GAME_TIME.fixed_tick( );
@@ -89,7 +111,7 @@ namespace rst
         // | RENDER                         |
         // +--------------------------------+
         scheduler_.signal_hook( system_timing::pre_render );
-        // RENDERER.render( );
+        scheduler_.signal_hook( system_timing::render );
         scheduler_.signal_hook( system_timing::post_render );
 
         // +--------------------------------+

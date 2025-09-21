@@ -12,7 +12,6 @@
 #include <rst/__core/__ecs/view.h>
 
 
-// todo: add concepts for components (default constructible, move assignable, etc), for view creation check components existence
 // todo: add event system for entity/component lifecycle (on_construct, on_destroy, on_update, etc)
 namespace rst::ecs
 {

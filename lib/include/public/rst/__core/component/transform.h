@@ -19,10 +19,20 @@ namespace rst
             local, world
         };
 
+
         namespace internal
         {
             template <transform_space space>
             concept valid_transform_space = space == transform_space::local || space == transform_space::world;
+
+            [[nodiscard]] auto from_translation( glm::vec2 translation ) noexcept -> matrix_type;
+            [[nodiscard]] auto from_rotation( float rotation ) noexcept -> matrix_type;
+            [[nodiscard]] auto from_scale( glm::vec2 scale ) noexcept -> matrix_type;
+            [[nodiscard]] auto from_rts( glm::vec2 translation, float rotation, glm::vec2 scale ) noexcept -> matrix_type;
+
+            [[nodiscard]] auto extract_translation( matrix_type const& mat ) noexcept -> glm::vec2;
+            [[nodiscard]] auto extract_rotation( matrix_type const& mat ) noexcept -> float;
+            [[nodiscard]] auto extract_scale( matrix_type const& mat ) noexcept -> glm::vec2;
         }
 
 
@@ -47,7 +57,25 @@ namespace rst
             }
 
 
-            auto set_matrix( matrix_type const& mat ) noexcept -> void
+            [[nodiscard]] auto location( ) const noexcept -> glm::vec2
+            {
+                return internal::extract_translation( matrix( ) );
+            }
+
+
+            [[nodiscard]] auto rotation( ) const noexcept -> float
+            {
+                return internal::extract_rotation( matrix( ) );
+            }
+
+
+            [[nodiscard]] auto scale( ) const noexcept -> glm::vec2
+            {
+                return internal::extract_scale( matrix( ) );
+            }
+
+
+            auto set_matrix( matrix_type const& mat ) noexcept -> void requires ( not std::is_const_v<T> )
             {
                 if constexpr ( space == transform_space::local )
                 {
@@ -60,42 +88,39 @@ namespace rst
             }
 
 
-            [[nodiscard]] auto location( ) const noexcept -> glm::vec2
+            auto translate_to( glm::vec2 const delta ) noexcept -> void requires ( not std::is_const_v<T> )
             {
-                return { matrix( )[2][0], matrix( )[2][1] };
+                set_matrix( internal::from_rts( delta, rotation( ), scale( ) ) );
             }
 
 
-            [[nodiscard]] auto rotation( ) const noexcept -> float
-            {
-                return std::atan2( matrix( )[0][1], matrix( )[0][0] );
-            }
-
-
-            [[nodiscard]] auto scale( ) const noexcept -> glm::vec2
-            {
-                return {
-                    glm::length( glm::vec2{ matrix( )[0][0], matrix( )[0][1] } ),
-                    glm::length( glm::vec2{ matrix( )[1][0], matrix( )[1][1] } )
-                };
-            }
-
-
-            auto translate( glm::vec2 const delta ) noexcept -> void
+            auto translate( glm::vec2 const delta ) noexcept -> void requires ( not std::is_const_v<T> )
             {
                 set_matrix( glm::translate( matrix( ), delta ) );
             }
 
 
-            auto rotate( float const angle ) noexcept -> void
+            auto rotate_to( float const angle ) noexcept -> void requires ( not std::is_const_v<T> )
             {
-                set_matrix( glm::rotate( matrix( ), angle ) );
+                set_matrix( internal::from_rts( location( ), angle, scale( ) ) );
             }
 
 
-            auto scale( glm::vec2 const factor ) noexcept -> void
+            auto rotate( float const angle ) noexcept -> void requires ( not std::is_const_v<T> )
             {
-                set_matrix( glm::scale( matrix( ), factor ) );
+                set_matrix( internal::from_rotation( angle ) * matrix( ) );
+            }
+
+
+            auto scale_to( glm::vec2 const factor ) noexcept -> void requires ( not std::is_const_v<T> )
+            {
+                set_matrix( internal::from_rts( location( ), rotation( ), factor ) );
+            }
+
+
+            auto scale( glm::vec2 const factor ) noexcept -> void requires ( not std::is_const_v<T> )
+            {
+                set_matrix( internal::from_scale( factor ) * matrix( ) );
             }
 
         private:
@@ -135,25 +160,31 @@ namespace rst
 
     private:
         transform* parent_ptr_{ nullptr };
+        transform* first_child_ptr_{ nullptr };
+        transform* next_sibling_ptr_{ nullptr };
+
         detail::matrix_type local_matrix_{ 1.f };
         detail::matrix_type world_matrix_{ 1.f };
         bool dirty_{ true };
 
+        // +--------------------------------+
+        // | DIRTY FLAGGING                 |
+        // +--------------------------------+
         auto refresh_world_transform( ) noexcept -> void;
         auto mark_dirty( ) noexcept -> void;
 
+        // +--------------------------------+
+        // | MATRIX SETTERS                 |
+        // +--------------------------------+
         auto set_world_matrix( detail::matrix_type const& world_mat ) noexcept -> void;
         auto set_local_matrix( detail::matrix_type const& local_mat ) noexcept -> void;
 
+        // +--------------------------------+
+        // | PARENTING                      |
+        // +--------------------------------+
         [[nodiscard]] auto is_child( transform const* maybe_child ) const noexcept -> bool;
-
-        // +--------------------------------+
-        // | STATIC METHODS                 |
-        // +--------------------------------+
-        static auto from_translation( glm::vec2 translation ) noexcept -> detail::matrix_type;
-        static auto from_rotation( float rotation ) noexcept -> detail::matrix_type;
-        static auto from_scale( glm::vec2 scale ) noexcept -> detail::matrix_type;
-        static auto from_trs( glm::vec2 translation, float rotation, glm::vec2 scale ) noexcept -> detail::matrix_type;
+        auto add_child( transform* child ) noexcept -> void;
+        auto remove_child( transform const* child ) noexcept -> void;
     };
 }
 

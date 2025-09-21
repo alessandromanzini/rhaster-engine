@@ -16,7 +16,7 @@ namespace rst
     class sdl_pelt final : public pelt
     {
     public:
-        explicit sdl_pelt( SDL_Renderer& renderer, std::filesystem::path const& full_path );
+        explicit sdl_pelt( SDL_Renderer& renderer, earmark mark, std::filesystem::path const& full_path );
         ~sdl_pelt( ) noexcept override;
 
         sdl_pelt( sdl_pelt const& )                        = delete;
