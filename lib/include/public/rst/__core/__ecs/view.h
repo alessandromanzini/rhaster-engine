@@ -51,8 +51,8 @@ namespace rst::ecs
          * - reserve() - safe (only pre-allocates, doesn't move existing elements)
          * - Modifying component data through the yielded references is always safe
          *
-         * @tparam TView The view type this iterator operates on.
-         * @tparam TComponents The component types being iterated over.
+         * @tparam TView The view type this iterator operates on
+         * @tparam TComponents The component types being iterated over
          */
         template <typename TView, detail::viewable_ecs_component... TComponents> requires ( sizeof...( TComponents ) > 0U )
         class view_range_iterator

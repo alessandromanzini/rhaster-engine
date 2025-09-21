@@ -57,7 +57,7 @@ namespace rst
         /**
          * Registers a sound file within the sound system for future use in playback.
          * @param path Storage path to the sound file
-         * @param type Type of the sound. SOUND_EFFECT for quick sounds or SOUND_TRACK for longer music tracks.
+         * @param type Type of the sound. SOUND_EFFECT for quick sounds or SOUND_TRACK for longer music tracks
          * @param tag_mark
          */
         [[nodiscard]] virtual auto load_sound(

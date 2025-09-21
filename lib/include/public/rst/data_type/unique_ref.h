@@ -53,8 +53,8 @@ namespace rst
      * // const_ptr.value() = 60; // compilation error - const correctness preserved
      * @endcode
      * 
-     * @tparam T The type of object to manage (must be a complete type).
-     * @tparam TDeleter Deleter type for resource cleanup, defaults to std::default_delete<T>.
+     * @tparam T The type of object to manage (must be a complete type)
+     * @tparam TDeleter Deleter type for resource cleanup, defaults to std::default_delete<T>
      */
     template <typename T, typename TDeleter = std::default_delete<T>>
     class unique_ref final
@@ -120,7 +120,7 @@ namespace rst
         /**
          * @brief Move assignment operator that transfers ownership.
          * @param other The unique_ref to move from
-         * @return Reference to this unique_ref.
+         * @return Reference to this unique_ref
          */
         auto operator=( unique_ref&& other ) noexcept -> unique_ref&
         {
@@ -140,7 +140,7 @@ namespace rst
         /**
          * @brief Gets a mutable reference to the managed object.
          * @complexity O(1)
-         * @return Mutable reference to the managed object.
+         * @return Mutable reference to the managed object
          * @note Asserts if the unique_ref doesn't hold a value
          */
         [[nodiscard]] auto value( ) noexcept -> reference_type { return *assert_get( ); }
@@ -148,7 +148,7 @@ namespace rst
         /**
          * @brief Gets a const reference to the managed object.
          * @complexity O(1)
-         * @return Const reference to the managed object.
+         * @return Const reference to the managed object
          * @note Asserts if the unique_ref doesn't hold a value
          */
         [[nodiscard]] auto value( ) const noexcept -> const_reference_type { return *assert_get( ); }
@@ -156,35 +156,35 @@ namespace rst
         /**
          * @brief Dereference operator for mutable access.
          * @complexity O(1)
-         * @return Mutable reference to the managed object.
+         * @return Mutable reference to the managed object
          */
         [[nodiscard]] auto operator*( ) noexcept -> reference_type { return *assert_get( ); }
 
         /**
          * @brief Dereference operator for const access.
          * @complexity O(1)
-         * @return Const reference to the managed object.
+         * @return Const reference to the managed object
          */
         [[nodiscard]] auto operator*( ) const noexcept -> const_reference_type { return *assert_get( ); }
 
         /**
          * @brief Member access operator for mutable access.
          * @complexity O(1)
-         * @return Mutable pointer to the managed object.
+         * @return Mutable pointer to the managed object
          */
         [[nodiscard]] auto operator->( ) noexcept -> pointer_type { return assert_get( ); }
 
         /**
          * @brief Member access operator for const access.
          * @complexity O(1)
-         * @return Const pointer to the managed object.
+         * @return Const pointer to the managed object
          */
         [[nodiscard]] auto operator->( ) const noexcept -> const_pointer_type { return assert_get( ); }
 
         /**
          * @brief Checks if the unique_ref holds a valid object.
          * @complexity O(1)
-         * @return True if it holds a value, false otherwise.
+         * @return True if it holds a value, false otherwise
          */
         [[nodiscard]] auto has_value( ) const noexcept -> bool { return ptr_ != nullptr; }
 
@@ -194,7 +194,7 @@ namespace rst
 
 
         /**
-         * @return T*'s deleter.
+         * @return T*'s deleter
          */
         [[nodiscard]] auto deleter( ) const noexcept -> TDeleter { return deleter_; }
 
@@ -202,7 +202,7 @@ namespace rst
         /**
          * @brief Releases ownership without destroying the managed object.
          * @complexity O(1)
-         * @return Raw pointer to the previously managed object.
+         * @return Raw pointer to the previously managed object
          */
         [[nodiscard]] auto release( ) noexcept -> pointer_type { return std::exchange( ptr_, nullptr ); }
 
@@ -244,7 +244,7 @@ namespace rst
         /**
          * @brief Internal helper that asserts validity before returning pointer.
          * @complexity O(1)
-         * @return Raw pointer to managed object.
+         * @return Raw pointer to managed object
          * @note Asserts if ptr_ is null
          */
         [[nodiscard]] auto assert_get( ) const -> pointer_type
@@ -281,7 +281,7 @@ namespace rst
          * @tparam T The type of object to construct (must be constructible from TArgs)
          * @tparam TArgs Constructor parameter types (automatically deduced)
          * @param args Constructor arguments to forward to T's constructor
-         * @return A unique_ref managing the newly created object.
+         * @return A unique_ref managing the newly created object
          */
         template <typename T, typename... TArgs> requires std::constructible_from<T, TArgs...>
         auto make_unique( TArgs&&... args ) -> unique_ref<T>

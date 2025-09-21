@@ -96,8 +96,8 @@ namespace rst
      * components.remove(100); // O(1) removal
      * @endcode
      *
-     * @tparam TElement The type of elements stored (must be default constructible and move assignable).
-     * @tparam TIndex The index type (must be unsigned integral, defaults to uint32_t).
+     * @tparam TElement The type of elements stored (must be default constructible and move assignable)
+     * @tparam TIndex The index type (must be unsigned integral, defaults to uint32_t)
      */
     template <internal::sparse_set_element TElement, std::unsigned_integral TIndex = uint32_t>
     class sparse_set final : public base_sparse_set<TIndex>
@@ -123,8 +123,8 @@ namespace rst
 
         /**
          * @complexity O(1)
-         * @param index The sparse index to check.
-         * @return True if element exists at @index.
+         * @param index The sparse index to check
+         * @return True if element exists at @index
          */
         [[nodiscard]] auto has( index_type index ) const noexcept -> bool override
         {
@@ -151,7 +151,7 @@ namespace rst
           * @tparam TArgs
           * @param index
           * @param args
-          * @return std::expected containing the new element at the given index, or an error if the index already has an element.
+          * @return std::expected containing the new element at the given index, or an error if the index already has an element
           */
         template <typename... TArgs> requires std::constructible_from<value_type, TArgs...>
         auto insert(
@@ -174,14 +174,14 @@ namespace rst
 
         /**
           * @brief Constructs or replaces an element at the given index with provided arguments.
-          * @note This function only works if TElement is not const.
+          * @note This function only works if TElement is not const
           *
           * @complexity O(1) amortized (may trigger array resize)
           *
           * @tparam TArgs
           * @param index
           * @param args
-          * @return The new element at the given index.
+          * @return The new element at the given index
           */
         template <typename... TArgs> requires ( std::constructible_from<value_type, TArgs...> && not is_const_set )
         auto insert_or_replace(
@@ -208,7 +208,7 @@ namespace rst
         /**
          * Removes the element at the given index if it exists. If the element is not the set, nothing happens.
          * @complexity O(1)
-         * @param index The index of the element to remove.
+         * @param index The index of the element to remove
          */
         auto remove( index_type index ) noexcept(std::is_nothrow_destructible_v<value_type>) -> void override
         {
@@ -236,7 +236,7 @@ namespace rst
 
         /**
          * Clears the sparse set, removing all elements.
-         * @complexity O(n).
+         * @complexity O(n)
          */
         auto clear( ) noexcept(std::is_nothrow_destructible_v<value_type>) -> void override
         {
@@ -248,8 +248,8 @@ namespace rst
 
         /**
          * @complexity O(1)
-         * @param index The index of the element to get.
-         * @return A mutable reference to the element at the given index. Asserts if the index is out of bounds.
+         * @param index The index of the element to get
+         * @return A mutable reference to the element at the given index. Asserts if the index is out of bounds
          */
         [[nodiscard]] auto get( index_type index ) noexcept -> expected_reference_type
         {
@@ -263,8 +263,8 @@ namespace rst
 
         /**
          * @complexity O(1)
-         * @param index The index of the element to get.
-         * @return A const reference to the element at the given index. Asserts if the index is out of bounds.
+         * @param index The index of the element to get
+         * @return A const reference to the element at the given index. Asserts if the index is out of bounds
          */
         [[nodiscard]] auto get( index_type index ) const noexcept -> expected_const_reference_type
         {
@@ -278,10 +278,10 @@ namespace rst
 
         /**
          * @complexity O(1)
-         * @param index The index of the element to get.
-         * @return A mutable reference to the element at the given index. Asserts if the index is out of bounds.
+         * @param index The index of the element to get
+         * @return A mutable reference to the element at the given index. Asserts if the index is out of bounds
          *
-         * @note Asserts on missing index.
+         * @note Asserts on missing index
          */
         [[nodiscard]] auto unsafe_get( index_type index ) noexcept -> reference_type
         {
@@ -292,10 +292,10 @@ namespace rst
 
         /**
          * @complexity O(1)
-         * @param index The index of the element to get.
-         * @return A const reference to the element at the given index. Asserts if the index is out of bounds.
+         * @param index The index of the element to get
+         * @return A const reference to the element at the given index. Asserts if the index is out of bounds
          *
-         * @note Asserts on missing index.
+         * @note Asserts on missing index
          */
         [[nodiscard]] auto unsafe_get( index_type index ) const noexcept -> const_reference_type
         {
@@ -310,7 +310,7 @@ namespace rst
          * The packed array contains the indices of all elements that exist in the sparse set,
          * stored densely for cache-friendly iteration. The order corresponds to insertion order.
          * 
-         * @return A const span over the packed indices array.
+         * @return A const span over the packed indices array
          */
         [[nodiscard]] auto packed( ) const noexcept -> std::span<index_type const> override { return packed_; }
 
@@ -321,7 +321,7 @@ namespace rst
          * Provides direct access to the packed elements' storage. Elements are stored
          * in the same order as their corresponding indices in the packed array.
          * 
-         * @return A mutable span over the elements array.
+         * @return A mutable span over the elements array
          */
         [[nodiscard]] auto data( ) noexcept -> std::span<value_type> { return elements_; }
 
@@ -332,25 +332,25 @@ namespace rst
          * Provides direct read-only access to the packed elements' storage. Elements
          * are stored in the same order as their corresponding indices in the packed array.
          * 
-         * @return A const span over the elements array.
+         * @return A const span over the elements array
          */
         [[nodiscard]] auto data( ) const noexcept -> std::span<value_type const> { return elements_; }
 
 
         /**
-         * @return Returns the number of filled elements in the sparse set.
+         * @return Returns the number of filled elements in the sparse set
          */
         [[nodiscard]] auto size( ) const noexcept -> std::size_t override { return packed_.size( ); }
 
 
         /**
-          * @return The current capacity of the packed storage.
+          * @return The current capacity of the packed storage
           */
         [[nodiscard]] auto capacity( ) const noexcept -> std::size_t override { return packed_.capacity( ); }
 
 
         /**
-          * @return True if the sparse set contains no elements.
+          * @return True if the sparse set contains no elements
           */
         [[nodiscard]] auto empty( ) const noexcept -> bool override { return packed_.empty( ); }
 
@@ -377,8 +377,8 @@ namespace rst
         // | TRANSCODING                    |
         // +--------------------------------+
         /**
-         * @param index Packed index to encode.
-         * @return The positional index for the packed to sparse conversion, encoded to avoid null_element (0U).
+         * @param index Packed index to encode
+         * @return The positional index for the packed to sparse conversion, encoded to avoid null_element (0U)
          */
         [[nodiscard]] static auto encode_sparse_index( index_type index ) noexcept -> sparse_index_type
         {
@@ -387,8 +387,8 @@ namespace rst
 
 
         /**
-         * @param index Sparse index to decode.
-         * @return The positional index for the sparse to packed conversion.
+         * @param index Sparse index to decode
+         * @return The positional index for the sparse to packed conversion
          */
         [[nodiscard]] static auto decode_sparse_index( sparse_index_type index ) noexcept -> index_type
         {
@@ -437,10 +437,10 @@ namespace rst
       *       - reserve( ) - safe (only pre-allocates, doesn't move existing elements)
       *       - Modifying element values in-place is always safe
       *
-      * @tparam TIndex The entity index type (typically uint32_t).
-      * @tparam TElements The element types to intersect.
+      * @tparam TIndex The entity index type (typically uint32_t)
+      * @tparam TElements The element types to intersect
       *
-      * @complexity Iterator operations are O(k) where k is the number of component types.
+      * @complexity Iterator operations are O(k) where k is the number of component types
       */
     template <std::integral TIndex, typename... TElements>
     class sparse_intersection_iterator final
@@ -558,7 +558,7 @@ namespace rst
         /**
          * Create an iterator that intersects multiple sparse sets.
          * @param sets
-         * @param pivot The set used for iteration. Usually be the smallest one.
+         * @param pivot The set used for iteration. Usually be the smallest one
          * @param pos
          */
         explicit sparse_intersection_iterator(
