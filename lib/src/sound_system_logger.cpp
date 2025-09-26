@@ -1,6 +1,7 @@
-#include <rst/__service/sound/sound_system_logger.h>
+#include <rst/__core/__service/sound/sound_logger_service.h>
 
 #include <rst/temp/singleton/resource_manager.h>
+#include <rst/__core/resource/audio.h>
 
 
 // todo: assess code
@@ -12,21 +13,21 @@ namespace rst
     };
 
 
-    sound_system_logger::sound_system_logger(
-        std::unique_ptr<sound_system> sound_system, std::ostream& log, std::ostream& err, std::string const& identifier )
-        : logger_identifier_{ identifier }
+    sound_logger_service::sound_logger_service(
+        std::unique_ptr<sound_service> sound_system, std::ostream& log, std::ostream& err, std::string identifier )
+        : logger_identifier_{ std::move( identifier ) }
         , sound_system_ptr_{ std::move( sound_system ) }
         , log_stream_{ log }
         , error_stream_{ err } { }
 
 
-    auto sound_system_logger::service_type( ) -> rst::service_type
+    auto sound_logger_service::service_type( ) -> service::service_type
     {
         return sound_system_ptr_->service_type( );
     }
 
 
-    auto sound_system_logger::load_sound(
+    auto sound_logger_service::load_sound(
         std::filesystem::path const& path, sound::sound_type const type, earmark const tag_mark ) -> std::shared_ptr<audio>
     {
         log_stream_ << logger_identifier_ << "Loading " << sound_type_to_string[type] << " from " << path << '\n';
@@ -38,7 +39,7 @@ namespace rst
     }
 
 
-    auto sound_system_logger::play( audio const& audio, float const volume, int const loops ) -> int
+    auto sound_logger_service::play( audio const& audio, float const volume, int const loops ) -> int
     {
         log_stream_ << logger_identifier_ << "Requested to playback of " << sound_type_to_string[audio.type( )] << ": " <<
                 sound_info( audio ) << '\n';
@@ -47,7 +48,7 @@ namespace rst
     }
 
 
-    auto sound_system_logger::stop( audio const& audio ) -> bool
+    auto sound_logger_service::stop( audio const& audio ) -> bool
     {
         bool const success{ sound_system_ptr_->stop( audio ) };
         if ( success )
@@ -64,14 +65,14 @@ namespace rst
     }
 
 
-    auto sound_system_logger::stop_all( ) -> void
+    auto sound_logger_service::stop_all( ) -> void
     {
         log_stream_ << logger_identifier_ << "Stopped all playbacks" << '\n';
         sound_system_ptr_->stop_all( );
     }
 
 
-    auto sound_system_logger::pause( audio const& audio ) -> bool
+    auto sound_logger_service::pause( audio const& audio ) -> bool
     {
         bool const success{ sound_system_ptr_->pause( audio ) };
         if ( success )
@@ -88,7 +89,7 @@ namespace rst
     }
 
 
-    auto sound_system_logger::resume( audio const& audio ) -> bool
+    auto sound_logger_service::resume( audio const& audio ) -> bool
     {
         bool const success{ sound_system_ptr_->resume( audio ) };
         if ( success )
@@ -105,38 +106,38 @@ namespace rst
     }
 
 
-    auto sound_system_logger::is_playing( audio const& audio ) const -> bool
+    auto sound_logger_service::is_playing( audio const& audio ) const -> bool
     {
         return sound_system_ptr_->is_playing( audio );
     }
 
 
-    auto sound_system_logger::is_paused( audio const& audio ) const -> bool
+    auto sound_logger_service::is_paused( audio const& audio ) const -> bool
     {
         return sound_system_ptr_->is_paused( audio );
     }
 
 
-    auto sound_system_logger::current_track( ) const -> audio const*
+    auto sound_logger_service::current_track( ) const -> audio const*
     {
         return sound_system_ptr_->current_track( );
     }
 
 
-    auto sound_system_logger::set_master_volume( float const volume ) -> void
+    auto sound_logger_service::set_master_volume( float const volume ) -> void
     {
         sound_system_ptr_->set_master_volume( volume );
         log_stream_ << logger_identifier_ << "Set master volume to " << sound_system_ptr_->master_volume( ) << '\n';
     }
 
 
-    auto sound_system_logger::master_volume( ) const -> float
+    auto sound_logger_service::master_volume( ) const -> float
     {
         return sound_system_ptr_->master_volume( );
     }
 
 
-    auto sound_system_logger::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
+    auto sound_logger_service::set_volume_by_tag( earmark const tag_mark, float const volume ) -> void
     {
         sound_system_ptr_->set_volume_by_tag( tag_mark, volume );
         log_stream_ << logger_identifier_ << "Set volume for tag " << tag_mark << " to " << sound_system_ptr_->
@@ -144,13 +145,13 @@ namespace rst
     }
 
 
-    auto sound_system_logger::volume_by_tag( earmark const tag_mark ) const -> float
+    auto sound_logger_service::volume_by_tag( earmark const tag_mark ) const -> float
     {
         return sound_system_ptr_->volume_by_tag( tag_mark );
     }
 
 
-    auto sound_system_logger::sound_info( audio const& audio ) -> std::string
+    auto sound_logger_service::sound_info( audio const& audio ) -> std::string
     {
         std::stringstream ss{};
         ss << "[TAG: " << audio.tag_mark( ) << ", UID: " << audio.sound_mark( ) << "]";

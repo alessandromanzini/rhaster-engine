@@ -5,6 +5,7 @@
 #include <rst/__input/input_mapping_context.h>
 
 #include <SDL.h>
+#include <rst/__diagnostic/__warren/startle.h>
 
 
 using namespace rst::input;
@@ -43,7 +44,7 @@ namespace rst
         // throw an error if no gamepad ID is available
         if ( ids.empty( ) )
         {
-            throw std::runtime_error( "No gamepad id available." );
+            startle( "no gamepad available." );
         }
 
         // return the first one (they're already sorted)

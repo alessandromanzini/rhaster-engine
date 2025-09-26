@@ -1,4 +1,4 @@
-#include <rst/__controller/player_controller.h>
+#include <rst/__input/controller/player_controller.h>
 
 #include <rst/temp/singleton/game_time.h>
 #include <rst/temp/singleton/input_system.h>

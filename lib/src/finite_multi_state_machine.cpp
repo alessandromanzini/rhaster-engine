@@ -1,5 +1,6 @@
 #include <rst/__behaviour/fsm/state_machine/finite_multi_state_machine.h>
 
+#include <rst/diagnostic.h>
 #include <rst/__behaviour/fsm/transition/base_transition.h>
 
 
@@ -8,17 +9,17 @@ namespace rst
     finite_multi_state_machine::finite_multi_state_machine( blackboard& blackboard ) : blackboard_ref_{ blackboard } { }
 
 
-    auto finite_multi_state_machine::start( earmark const start_state_id ) -> void
+    auto finite_multi_state_machine::start( earmark const start_state_mark ) -> void
     {
-        assert( not started_ && "FiniteMultiStateMachine::start: State machine already started!" );
-        change_state( start_state_id );
+        ensure( not started_, "state machine already started!" );
+        change_state( start_state_mark );
         started_ = true;
     }
 
 
-    auto finite_multi_state_machine::force_transition( earmark const state_id ) -> void
+    auto finite_multi_state_machine::force_transition( earmark const state_mark ) -> void
     {
-        change_state( state_id );
+        change_state( state_mark );
     }
 
 
@@ -47,9 +48,9 @@ namespace rst
     }
 
 
-    auto finite_multi_state_machine::create_state_impl( earmark const state_id, std::unique_ptr<fsm::state>&& state ) -> fsm::state&
+    auto finite_multi_state_machine::create_state_impl( earmark const state_mark, std::unique_ptr<fsm::state>&& state ) -> fsm::state&
     {
-        return *stacks_[state_id].states.emplace_back( std::move( state ) );
+        return *stacks_[state_mark].states.emplace_back( std::move( state ) );
     }
 
 
@@ -61,7 +62,7 @@ namespace rst
 
     auto finite_multi_state_machine::change_state( earmark const mark ) -> void
     {
-        assert( stacks_.contains( mark ) && "FiniteMultiStateMachine::change_state: Invalid state!" );
+        ensure( stacks_.contains( mark ), "invalid state!" );
 
         if ( current_state_mark_ == mark )
         {

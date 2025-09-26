@@ -3,9 +3,10 @@
 
 #include <rst/pch.h>
 
-#include <rst/framework/observer.h>
-#include <rst/temp/singleton/Singleton.h>
 #include <rst/data_type/safe_resource.h>
+#include <rst/data_type/event/observer.h>
+#include <rst/temp/singleton/Singleton.h>
+#include <rst/__core/resource/pelt.h>
 
 
 namespace rst
@@ -29,7 +30,6 @@ namespace rst
     }
 
     // TODO: move all loading functions to services and use Observer pattern to notify when unloading
-    class texture_2d;
     class font;
     class resource_manager final : public singleton<resource_manager>
     {
@@ -39,7 +39,7 @@ namespace rst
     public:
         auto init( std::filesystem::path const& data_path ) -> void;
 
-        auto load_texture( std::filesystem::path const& path ) -> std::shared_ptr<texture_2d>;
+        auto load_texture( std::filesystem::path const& path ) -> std::shared_ptr<pelt>;
         auto load_font( std::filesystem::path const& path, uint8_t size ) -> std::shared_ptr<font>;
 
         [[nodiscard]] auto data_path( ) const -> std::filesystem::path const&;
@@ -60,7 +60,7 @@ namespace rst
         thread::safe_resource<std::set<queued_event_type>> queued_events_{ {} };
         subject lifetime_subject_{};
 
-        std::map<earmark, std::shared_ptr<texture_2d>> loaded_textures_{};
+        std::map<earmark, std::shared_ptr<pelt>> loaded_textures_{};
         std::map<std::pair<earmark, uint8_t>, std::shared_ptr<font>> loaded_fonts_{};
 
         resource_manager( ) = default;

@@ -1,8 +1,8 @@
 #include <rst/__input/binding_device.h>
 
 #include <rst/meta/algorithm.h>
-#include <rst/__controller/player_controller.h>
 #include <rst/__input/input_merge.h>
+#include <rst/__input/controller/player_controller.h>
 
 
 namespace rst::input
@@ -20,7 +20,7 @@ namespace rst::input
                 break;
             case trigger::released: released_commands_.push_back( std::move( info.command ) );
                 break;
-            default: assert( false && "Invalid trigger event!" );
+            default: startle( "invalid trigger event!" );
         }
     }
 
@@ -85,7 +85,14 @@ namespace rst::input
 
     auto device_context::bind_command( earmark const mark, command_info&& command_info ) -> void
     {
-        command_sets_[mark].set( std::move( command_info ) );
+        try
+        {
+            command_sets_[mark].set( std::move( command_info ) );
+        }
+        catch ( std::exception const& e )
+        {
+            alert( "failed to bind command to input action '{}': {}", mark.hash_value( ), e.what( ) );
+        }
     }
 
 

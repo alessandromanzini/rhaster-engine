@@ -1,9 +1,11 @@
 #include <rst/__core/hare.h>
 
+#include <rst/core.h>
+#include <rst/diagnostic.h>
+
 #include <rst/temp/singleton/game_instance.h>
 #include <rst/temp/singleton/game_time.h>
 #include <rst/temp/singleton/input_system.h>
-#include <rst/temp/singleton/renderer.h>
 #include <rst/temp/singleton/resource_manager.h>
 #include <rst/temp/singleton/scene_pool.h>
 
@@ -12,42 +14,49 @@
 
 namespace rst
 {
-    SDL_Window* g_window_ptr{};
-
-
-    hare::hare( std::string const& window_title, std::filesystem::path const& data_path, glm::vec2 const viewport )
+    hare::hare( std::string const& window_title, std::filesystem::path const& /* data_path */, glm::vec2 const viewport )
         : viewport_{ viewport }
     {
         if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER ) != 0 )
         {
-            throw std::runtime_error( std::string( "SDL_Init Error: " ) + SDL_GetError( ) );
-        }
-
-        g_window_ptr = SDL_CreateWindow(
-            window_title.c_str( ), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, viewport_.x, viewport_.y, SDL_WINDOW_OPENGL );
-        if ( g_window_ptr == nullptr )
-        {
-            throw std::runtime_error( std::string( "SDL_CreateWindow Error: " ) + SDL_GetError( ) );
+            startle( "SDL_Init error: {}", SDL_GetError( ) );
         }
 
         // initialize singletons
-        RENDERER.init( g_window_ptr );
-        RESOURCE_MANAGER.init( data_path );
+        // RENDERER.init( g_window_ptr );
+        // RESOURCE_MANAGER.init( data_path );
+        service_locator_.register_renderer_service<service::sdl_renderer_service>( window_title, viewport_ );
+        scheduler_.register_system<system::renderer_system>( system_timing::render );
     }
 
 
     hare::~hare( ) noexcept
     {
         // destroy singletons
-        RENDERER.destroy( );
-
-        SDL_DestroyWindow( g_window_ptr );
-        g_window_ptr = nullptr;
+        // RENDERER.destroy( );
         SDL_Quit( );
     }
 
 
-    auto hare::run( ) -> void
+    auto hare::registry( ) noexcept -> ecs::registry&
+    {
+        return registry_;
+    }
+
+
+    auto hare::service_locator( ) noexcept -> rst::service_locator&
+    {
+        return service_locator_;
+    }
+
+
+    auto hare::scheduler( ) noexcept -> system_scheduler<system_timing>&
+    {
+        return scheduler_;
+    }
+
+
+    auto hare::run( ) noexcept -> detail::hop_result try
     {
         GAME_TIME.reset( );
         GAME_INSTANCE.set_screen_dimensions( viewport_ );
@@ -55,8 +64,19 @@ namespace rst
         {
             run_one_frame( );
         }
-        SCENE_POOL.unload_all_scenes( );
+        // SCENE_POOL.unload_all_scenes( );
         GAME_INSTANCE.destroy( );
+        return detail::hop_result::success;
+    }
+    catch ( std::exception const& e )
+    {
+        alert( "fatal error: {}", e.what( ) );
+        return detail::hop_result::pitfall;
+    }
+    catch ( ... )
+    {
+        alert( "fatal error: unknown" );
+        return detail::hop_result::unknown;
     }
 
 
@@ -68,8 +88,9 @@ namespace rst
         GAME_TIME.tick( );
 
         // +--------------------------------+
-        // | GAME LOOP                      |
+        // | EARLY TICK & INPUT             |
         // +--------------------------------+
+        scheduler_.signal_hook( system_timing::early_tick );
         request_quit_ = !INPUT_SYSTEM.process_input( );
 
         // +--------------------------------+
@@ -77,8 +98,14 @@ namespace rst
         // +--------------------------------+
         while ( GAME_TIME.is_fixed_tick_required( ) )
         {
-            GAME_TIME.set_timing_type( time::timing_type::fixed_delta_time );
-            SCENE_POOL.fixed_tick( );
+            GAME_TIME.set_timing_type( time::timing_type::fixed );
+            scheduler_.signal_hook( system_timing::fixed_tick );
+            //SCENE_POOL.fixed_tick( );
+
+            scheduler_.signal_hook( system_timing::pre_physics );
+            scheduler_.signal_hook( system_timing::physics );
+            scheduler_.signal_hook( system_timing::post_physics );
+
             GAME_TIME.fixed_tick( );
         }
         // todo add service locator as tick parameter
@@ -86,18 +113,22 @@ namespace rst
         // +--------------------------------+
         // | TICK                           |
         // +--------------------------------+
-        GAME_TIME.set_timing_type( time::timing_type::delta_time );
-        SCENE_POOL.tick( );
+        GAME_TIME.set_timing_type( time::timing_type::variable );
+        scheduler_.signal_hook( system_timing::tick );
+        scheduler_.signal_hook( system_timing::late_tick );
+        // SCENE_POOL.tick( );
 
         // +--------------------------------+
-        // | UPDATE SERVICES                |
+        // | RENDER                         |
         // +--------------------------------+
-        RENDERER.render( );
+        scheduler_.signal_hook( system_timing::pre_render );
+        scheduler_.signal_hook( system_timing::render );
+        scheduler_.signal_hook( system_timing::post_render );
 
         // +--------------------------------+
         // | DESTROYED OBJECTS DELETION     |
         // +--------------------------------+
-        SCENE_POOL.cleanup( );
+        // SCENE_POOL.cleanup( );
         RESOURCE_MANAGER.unload_unused_resources( );
 
         // +--------------------------------+

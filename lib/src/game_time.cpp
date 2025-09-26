@@ -36,10 +36,10 @@ namespace rst
     {
         switch ( type )
         {
-            case time::timing_type::delta_time:
+            case time::timing_type::variable:
                 current_delta_ptr_ = &delta_time_;
                 break;
-            case time::timing_type::fixed_delta_time:
+            case time::timing_type::fixed:
                 current_delta_ptr_ = &fixed_time_step_;
                 break;
         }

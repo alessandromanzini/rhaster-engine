@@ -168,7 +168,7 @@ namespace rst::meta
      * @param ref The reference to wrap in a ref_proxy.
      * @return A ref_proxy<T> wrapping the provided reference.
      */
-    template <non_ref T>
+    template <typename T> requires( not std::is_reference_v<T> )
     constexpr auto make_ref_proxy( T& ref ) -> ref_proxy<T>
     {
         return ref_proxy<T>{ ref };

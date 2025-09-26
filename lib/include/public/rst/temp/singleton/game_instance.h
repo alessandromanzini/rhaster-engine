@@ -3,7 +3,7 @@
 
 #include <rst/temp/singleton/Singleton.h>
 
-#include <rst/__controller/player_controller.h>
+#include <rst/__input/controller/player_controller.h>
 
 
 // TODO: remove colliders from here, move to main canvas
