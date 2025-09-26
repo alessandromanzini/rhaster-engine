@@ -2,7 +2,7 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [ opened, synchronize ]
     # Optional: Only run on specific file changes
     # paths:
     #   - "src/**/*.ts"
@@ -30,6 +30,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Install Latest Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          bun --version
 
       - name: Run Claude Code Review
         id: claude-review
