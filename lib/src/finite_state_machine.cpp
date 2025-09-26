@@ -1,5 +1,6 @@
 #include <rst/__behaviour/fsm/state_machine/finite_state_machine.h>
 
+#include <rst/diagnostic.h>
 #include <rst/__behaviour/fsm/transition/base_transition.h>
 
 
@@ -9,17 +10,17 @@ namespace rst
         : blackboard_ref_{ blackboard } { }
 
 
-    auto finite_state_machine::start( earmark const start_state_id ) -> void
+    auto finite_state_machine::start( earmark const start_state_mark ) -> void
     {
-        assert( not started_ && "FiniteStateMachine::start: State machine already started!" );
-        change_state( start_state_id );
+        ensure( not started_, "state machine already started!" );
+        change_state( start_state_mark );
         started_ = true;
     }
 
 
-    auto finite_state_machine::force_transition( earmark const state_id ) -> void
+    auto finite_state_machine::force_transition( earmark const state_mark ) -> void
     {
-        change_state( state_id );
+        change_state( state_mark );
     }
 
 
@@ -57,16 +58,16 @@ namespace rst
     }
 
 
-    auto finite_state_machine::create_state_impl( earmark const state_id, std::unique_ptr<fsm::state>&& state ) -> fsm::state&
+    auto finite_state_machine::create_state_impl( earmark const state_mark, std::unique_ptr<fsm::state>&& state ) -> fsm::state&
     {
-        assert( not stacks_.contains( state_id ) && "FiniteStateMachine::create_state_impl: State already exists!" );
-        return *( stacks_[state_id].state = std::move( state ) );
+        ensure( not stacks_.contains( state_mark ), "state already exists!" );
+        return *( stacks_[state_mark].state = std::move( state ) );
     }
 
 
-    auto finite_state_machine::add_transition_impl( earmark const from, earmark to, std::unique_ptr<fsm::condition>&& condition ) -> void
+    auto finite_state_machine::add_transition_impl( earmark const from, earmark to, std::unique_ptr<fsm::condition>&& cnd ) -> void
     {
-        stacks_[from].transitions.push_back( std::make_pair( std::move( condition ), to ) );
+        stacks_[from].transitions.push_back( std::make_pair( std::move( cnd ), to ) );
     }
 
 
@@ -89,7 +90,7 @@ namespace rst
 
     auto finite_state_machine::change_state( earmark const mark ) -> void
     {
-        assert( stacks_.contains( mark ) && "FiniteStateMachine::change_state: Invalid state!" );
+        ensure( stacks_.contains( mark ), "invalid state!" );
 
         if ( current_state_mark_ == mark )
         {

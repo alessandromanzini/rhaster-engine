@@ -52,7 +52,7 @@ namespace rst
 
     inline auto base_controller::possess( gameobject* pawn ) -> void
     {
-        // TODO: add error logging system
+        // TODO: better error handling
         assert( pawn && "BaseController::possess: Pawn cannot be nullptr!" );
 
         if ( pawn_ptr_ )

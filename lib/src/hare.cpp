@@ -1,6 +1,7 @@
 #include <rst/__core/hare.h>
 
 #include <rst/core.h>
+#include <rst/diagnostic.h>
 
 #include <rst/temp/singleton/game_instance.h>
 #include <rst/temp/singleton/game_time.h>
@@ -18,7 +19,7 @@ namespace rst
     {
         if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER ) != 0 )
         {
-            throw std::runtime_error{ std::format( "SDL_Init error: {}", SDL_GetError( ) ) };
+            startle( "SDL_Init error: {}", SDL_GetError( ) );
         }
 
         // initialize singletons
@@ -55,9 +56,8 @@ namespace rst
     }
 
 
-    auto hare::run( ) -> void
+    auto hare::run( ) noexcept -> detail::hop_result try
     {
-        // todo: error code return type
         GAME_TIME.reset( );
         GAME_INSTANCE.set_screen_dimensions( viewport_ );
         while ( !request_quit_ )
@@ -66,6 +66,17 @@ namespace rst
         }
         // SCENE_POOL.unload_all_scenes( );
         GAME_INSTANCE.destroy( );
+        return detail::hop_result::success;
+    }
+    catch ( std::exception const& e )
+    {
+        alert( "fatal error: {}", e.what( ) );
+        return detail::hop_result::pitfall;
+    }
+    catch ( ... )
+    {
+        alert( "fatal error: unknown" );
+        return detail::hop_result::unknown;
     }
 
 

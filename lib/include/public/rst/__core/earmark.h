@@ -26,6 +26,8 @@ namespace rst
         explicit constexpr earmark( std::string_view const view ) : value_{ meta::hash::hash_cast( view ) } { }
         template <typename T> explicit constexpr earmark( T value ) : value_{ meta::hash::hash_cast( value ) } { }
 
+        [[nodiscard]] constexpr auto hash_value( ) const -> meta::hash::hash_type { return value_; }
+
         // ReSharper disable once CppNonExplicitConversionOperator
         constexpr operator meta::hash::hash_type( ) const { return value_; }
 

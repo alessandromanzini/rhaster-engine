@@ -1,5 +1,7 @@
 #include <rst/__core/resource/font.h>
 
+#include <rst/diagnostic.h>
+
 #include <SDL_ttf.h>
 
 
@@ -11,7 +13,7 @@ namespace rst
         font_ptr_ = TTF_OpenFont( full_path.c_str( ), size );
         if ( font_ptr_ == nullptr )
         {
-            throw std::runtime_error( std::string( "Failed to load font: " ) + SDL_GetError( ) );
+            startle( "failed to load font: {}", SDL_GetError( ) );
         }
     }
 

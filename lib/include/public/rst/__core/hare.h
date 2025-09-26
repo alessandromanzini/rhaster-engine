@@ -11,6 +11,18 @@
 
 namespace rst
 {
+    namespace detail
+    {
+        enum class hop_result : uint8_t
+        {
+            success = 0U, ///< Successful exit
+            flood,        ///< Exhausted resources
+            pitfall,      ///< Caught error
+            unknown       ///< Unknown error
+        };
+    }
+
+
     class hare final
     {
     public:
@@ -27,7 +39,7 @@ namespace rst
         [[nodiscard]] auto service_locator( ) noexcept -> service_locator&;
         [[nodiscard]] auto scheduler( ) noexcept -> system_scheduler<system_timing>&;
 
-        auto run( ) -> void;
+        auto run( ) noexcept -> detail::hop_result;
 
     private:
         glm::vec2 const viewport_;

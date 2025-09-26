@@ -40,7 +40,7 @@ namespace rst
          * @param event
          * @return
          */
-        auto is_queued( TEvent const& event ) const -> bool;
+        auto is_queued( TEvent const& event ) const -> bool requires std::equality_comparable<TEvent>;
         auto is_queued( std::function<bool( TEvent const& )> const& predicate ) const -> bool;
 
         auto clear( ) -> void;
@@ -114,16 +114,9 @@ namespace rst
 
 
     template <typename TEvent>
-    auto event_queue<TEvent>::is_queued( TEvent const& event ) const -> bool
+    auto event_queue<TEvent>::is_queued( TEvent const& event ) const -> bool requires std::equality_comparable<TEvent>
     {
-        if constexpr ( std::equality_comparable<TEvent> )
-        {
-            return queue_.contains( event );
-        }
-        else
-        {
-            assert( false && "Event type is not equality comparable!" );
-        }
+        return queue_.contains( event );
     }
 
 

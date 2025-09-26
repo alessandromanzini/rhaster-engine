@@ -3,6 +3,7 @@
 
 #include <rst/pch.h>
 
+#include <rst/diagnostic.h>
 #include <rst/data_type/token_generator.h>
 #include <rst/data_type/event/scoped_binding.h>
 #include <rst/data_type/event/token.h>
@@ -97,7 +98,7 @@ namespace rst
          */
         auto bind( raw_delegate_sig_type raw_fn_ptr ) noexcept -> void
         {
-            assert( raw_fn_ptr && "multicast_delegate::bind: raw_fn_ptr cannot be nullptr!" );
+            ensure( raw_fn_ptr, "raw_fn_ptr cannot be nullptr!" );
             delegate_traces_.emplace_back(
                 delegate_trace_type{
                     .call_type = event::internal::callable_type::raw_function,
@@ -119,7 +120,7 @@ namespace rst
         template <typename TClass, meta::method_of_class<TClass> TMethod>
         auto bind( TClass* owner, TMethod method ) noexcept -> void
         {
-            assert( owner && "multicast_delegate::bind: owner cannot be nullptr!" );
+            ensure( owner, "owner cannot be nullptr!" );
             delegate_traces_.emplace_back(
                 delegate_trace_type{
                     .call_type = event::internal::callable_type::member_function,

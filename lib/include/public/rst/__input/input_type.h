@@ -3,6 +3,8 @@
 
 #include <rst/pch.h>
 
+#include <rst/diagnostic.h>
+
 #include <SDL_gamecontroller.h>
 #include <SDL_keycode.h>
 
@@ -156,16 +158,16 @@ namespace rst::input
     /**
      * Converts the mask to a sequence number.
      * @param mask Mask to convert
-     * @return Sequencial number representing the bit position
+     * @return Sequential number representing the bit position
      */
     [[nodiscard]] constexpr auto mask_to_seq( uint32_t mask ) -> uint32_t
     {
-        assert( mask != 0 && "Mask cannot be 0!" );
+        ensure( mask != 0U, "mask cannot be 0!" );
 
-        uint32_t pos = 0;
-        while ( ( mask & 1 ) == 0 )
+        uint32_t pos = 0U;
+        while ( ( mask & 1U ) == 0U )
         {
-            mask >>= 1;
+            mask >>= 1U;
             pos++;
         }
         return pos;

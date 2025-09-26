@@ -38,10 +38,10 @@ set( SYSTEM_SOURCES
 
 # --- core services ---
 set( SERVICE_HEADERS
-     "include/public/rst/__core/__service/renderer_service.h"
+     "include/public/rst/__core/__service/base/renderer_service.h"
      "include/public/rst/__core/__service/service_info.h"
      "include/public/rst/__core/__service/service_locator.h"
-     "include/public/rst/__core/__service/sound_service.h"
+     "include/public/rst/__core/__service/base/sound_service.h"
 
      # render service
      "include/public/rst/__core/__service/render/sdl_renderer_service.h"
@@ -56,7 +56,6 @@ set( SERVICE_SOURCES
      "src/parallel_sound_system.cpp"
      "src/sdl_renderer_service.cpp"
      "src/sdl_sound_system.cpp"
-     "src/service_locator.cpp"
      "src/sound_system_logger.cpp"
 )
 
@@ -227,6 +226,7 @@ set( TEMP_SOURCES
 set( PRIVATE_HEADERS
      "include/private/rst/__internal/resource/sdl_audio.h"
      "include/private/rst/__internal/resource/sdl_pelt.h"
+     "include/private/rst/__internal/diagnostic/log.h"
 )
 
 set( PRIVATE_SOURCES
@@ -238,6 +238,14 @@ set( PRIVATE_SOURCES
 set( ROOT_HEADERS
      "include/public/rst/fsm.h"
      "include/public/rst/pch.h"
+     include/public/rst/__diagnostic/__warren/startle.h
+     include/public/rst/__diagnostic/warren.h
+     include/public/rst/diagnostic.h
+     include/public/rst/__diagnostic/__warren/ensure.h
+     include/public/rst/__diagnostic/__warren/alert.h
+     src/alert.cpp
+     src/notice.cpp
+     include/public/rst/__diagnostic/__warren/notice.h
 )
 
 

@@ -1,5 +1,6 @@
 #include <rst/__input/input_mapping_context.h>
 
+#include <rst/diagnostic.h>
 #include <rst/meta/algorithm.h>
 #include <rst/__input/input_merge.h>
 #include <rst/__input/controller/player_controller.h>
@@ -88,7 +89,7 @@ namespace rst
         device_context* const context = meta::find_or_none(
             device_contexts_, [&]( device_context const& ctx ) { return ctx.controller( ) == controller; } );
 
-        assert( context != nullptr && "Can't bind IA: Device context has not been registered for this controller!" );
+        ensure( context != nullptr, "Can't bind IA: Device context has not been registered for this controller!" );
         context->bind_command( mark, { std::move( command ), trigger } );
     }
 }
