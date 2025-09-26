@@ -6,14 +6,10 @@ namespace rst::service
 {
     enum class service_type
     {
-        // built-in service
-        internal = 0U,
-
-        // custom service (user-defined)
-        custom = 1U,
-
-        // sdl-based service
-        sdl = 2U,
+        null = 0U, ///< default, uninitialized service
+        internal,  ///< built-in service
+        sdl,       ///< sdl-based service
+        custom,    ///< custom service (user-defined)
     };
 }
 

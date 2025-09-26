@@ -1,5 +1,6 @@
 #include <rst/__core/resource/pelt_batch.h>
 
+#include <rst/diagnostic.h>
 #include <rst/temp/singleton/game_time.h>
 #include <rst/temp/singleton/resource_manager.h>
 
@@ -18,8 +19,8 @@ namespace rst
         , loop_{ loop }
         , texture_ptr_{ RESOURCE_MANAGER.load_texture( filename ) }
     {
-        assert( frame_delay_ > 0.f && "Frame delay must be greater than 0" );
-        assert( total_frames_ > 0 && "Total frames must be greater than 0" );
+        ensure( frame_delay_ > 0.f, "Frame delay must be greater than 0" );
+        ensure( total_frames_ > 0, "Total frames must be greater than 0" );
 
         frame_width_  = texture_ptr_->dimensions( ).x / static_cast<float>( cols_ );
         frame_height_ = texture_ptr_->dimensions( ).y / static_cast<float>( rows_ );

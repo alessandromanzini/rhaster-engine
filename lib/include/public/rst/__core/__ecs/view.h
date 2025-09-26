@@ -3,6 +3,7 @@
 
 #include <rst/pch.h>
 
+#include <rst/diagnostic.h>
 #include <rst/data_type/sparse_set.h>
 #include <rst/meta/type_traits.h>
 #include <rst/__core/__ecs/component_constraints.h>
@@ -318,7 +319,7 @@ namespace rst::ecs
         template <meta::contains_type<TComponents...>... UComponents>
         [[nodiscard]] auto unsafe_get( entity_type const entity ) noexcept -> underlying_view_get_type<UComponents...>
         {
-            assert( has<UComponents...>( entity ) && "view::unsafe_get: entity not found!" );
+            ensure( has<UComponents...>( entity ), "entity not found!" );
             return get_impl<underlying_view_get_type<UComponents...>, UComponents...>( entity );
         }
 
@@ -339,7 +340,7 @@ namespace rst::ecs
         template <meta::contains_type<TComponents...>... UComponents>
         [[nodiscard]] auto unsafe_get( entity_type const entity ) const noexcept -> underlying_view_get_type<UComponents const...>
         {
-            assert( has<UComponents...>( entity ) && "view::unsafe_get: entity not found!" );
+            ensure( has<UComponents...>( entity ), "entity not found!" );
             return get_impl<underlying_view_get_type<UComponents const...>, UComponents...>( entity );
         }
 

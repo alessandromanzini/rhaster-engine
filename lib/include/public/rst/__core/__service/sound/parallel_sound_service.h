@@ -5,7 +5,7 @@
 
 #include <rst/data_type/safe_resource.h>
 #include <rst/data_type/event/event_queue.h>
-#include <rst/__core/__service/sound_service.h>
+#include <rst/__core/__service/base/sound_service.h>
 
 
 namespace rst

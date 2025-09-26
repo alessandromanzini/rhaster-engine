@@ -1,5 +1,6 @@
 ﻿#include <rst/temp/singleton/resource_manager.h>
 
+#include <rst/diagnostic.h>
 #include <rst/data_type/event/observer.h>
 #include <rst/__core/resource/font.h>
 
@@ -17,7 +18,7 @@ namespace rst
 
         if ( TTF_Init( ) != 0 )
         {
-            throw std::runtime_error( std::string( "Failed to load support for fonts: " ) + SDL_GetError( ) );
+            startle( "Failed to load support for fonts: ", SDL_GetError( ) );
         }
     }
 

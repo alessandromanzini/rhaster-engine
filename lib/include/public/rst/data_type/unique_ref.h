@@ -4,6 +4,8 @@
 
 #include <rst/pch.h>
 
+#include <rst/diagnostic.h>
+
 
 namespace rst
 {
@@ -249,7 +251,7 @@ namespace rst
          */
         [[nodiscard]] auto assert_get( ) const -> pointer_type
         {
-            assert( has_value( ) && "unique_ref::assert_get: dereferencing null pointer!" );
+            ensure( has_value( ), "dereferencing null pointer!" );
             return ptr_;
         }
     };

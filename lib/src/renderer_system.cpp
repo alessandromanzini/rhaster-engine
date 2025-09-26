@@ -13,7 +13,8 @@ namespace rst::system
     auto renderer_system::tick( ecs::registry& registry, service_locator const& locator ) noexcept -> void
     {
         auto& renderer = locator.renderer_service( );
-        auto view      = registry.view<transform, pelt_frame const>( );
+
+        auto view = registry.view<transform, pelt_frame const>( );
 
         // 1. queue renders
         for ( auto [_, transform, frame] : view.each( ) )

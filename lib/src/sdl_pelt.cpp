@@ -1,5 +1,7 @@
 #include <rst/__internal/resource/sdl_pelt.h>
 
+#include <rst/diagnostic.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
 
@@ -13,7 +15,7 @@ namespace rst
         texture_ptr_ = IMG_LoadTexture( &renderer, full_path.c_str( ) );
         if ( texture_ptr_ == nullptr )
         {
-            throw std::runtime_error{ std::format( "IMG_LoadTexture error: {}", SDL_GetError( ) ) };
+            startle( "IMG_LoadTexture error: {}", SDL_GetError( ) );
         }
 
         // 2. query the texture to get its width and height

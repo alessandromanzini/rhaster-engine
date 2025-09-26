@@ -76,15 +76,14 @@ namespace rst
         else
         {
             // if parent is provided, we need to adjust the local transform to keep the world position and set it dirty to
-            // recalculate the world transform.
+            // recalculate the world transform ...
             if ( keep_world_position )
             {
-                // TODO: test if rotation is canceled
-                glm::vec2 const translation = world( ).location( ) - parent->world( ).location( );
-                set_local_matrix( detail::internal::from_translation( translation ) );
+                local( ).translate_to( world( ).location( ) - parent->world( ).location( ) );
             }
             else
             {
+                // ... else just mark dirty to recalculate world transform
                 mark_dirty( );
             }
         }
@@ -156,7 +155,6 @@ namespace rst
 
     auto transform::set_world_matrix( detail::matrix_type const& world_mat ) noexcept -> void
     {
-        //todo: check for local matrix if need to use set_local_matrix
         // 1. update world matrix directly
         world_matrix_ = world_mat;
 

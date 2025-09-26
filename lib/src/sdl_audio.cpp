@@ -1,5 +1,7 @@
 #include <rst/__internal/resource/sdl_audio.h>
 
+#include <rst/diagnostic.h>
+
 
 namespace rst
 {
@@ -7,16 +9,14 @@ namespace rst
         std::filesystem::path const& path, sound::sound_type const type, earmark const sound_mark, earmark const tag_mark )
         : audio{ type, sound_mark, tag_mark }
     {
-        assert( std::filesystem::exists( path ) && "Sound file does not exist!" );
+        ensure( std::filesystem::exists( path ), "sound file does not exist!" );
 
         if ( type == sound::sound_type::sound_effect )
         {
             Mix_Chunk* chunk = Mix_LoadWAV( path.string( ).c_str( ) );
             if ( chunk == nullptr )
             {
-                std::stringstream ss{};
-                ss << "Failed to load chunk: " << path.string( ) << "\n" << "Error: " << Mix_GetError( );
-                throw std::runtime_error( ss.str( ).c_str( ) );
+                startle( "failed to load chunk: {}. error: {}", path.string( ), Mix_GetError( ) );
             }
             resource_ = chunk;
         }
@@ -25,15 +25,13 @@ namespace rst
             Mix_Music* music = Mix_LoadMUS( path.string( ).c_str( ) );
             if ( music == nullptr )
             {
-                std::stringstream ss{};
-                ss << "Failed to load music: " << path.string( ) << "\n" << "Error: " << Mix_GetError( );
-                throw std::runtime_error( ss.str( ).c_str( ) );
+                startle( "failed to load music: {}. error: {}", path.string( ), Mix_GetError( ) );
             }
             resource_ = music;
         }
         else
         {
-            assert( false && "Invalid sound type!" );
+            ensure( false, "invalid sound type!" );
         }
     }
 

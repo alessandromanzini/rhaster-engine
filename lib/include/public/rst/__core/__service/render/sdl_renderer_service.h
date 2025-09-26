@@ -4,7 +4,7 @@
 #include <rst/pch.h>
 
 #include <rst/__core/resource/type_erasure/sdl_erasure.h>
-#include <rst/__core/__service/renderer_service.h>
+#include <rst/__core/__service/base/renderer_service.h>
 
 
 namespace rst

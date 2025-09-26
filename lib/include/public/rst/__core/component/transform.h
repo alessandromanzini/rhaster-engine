@@ -353,6 +353,7 @@ namespace rst
      * glm::vec2 world_pos = child.world().location(); // {110.0f, 70.0f}
      * @endcode
      */
+    //todo: transform might be relocated (sparse set)
     class transform
     {
         friend class detail::transform_operator<transform, detail::transform_space::local>;
@@ -380,7 +381,7 @@ namespace rst
          * @param rotation Initial rotation angle in radians
          * @param scale Initial scale factors (x, y components)
          */
-        explicit transform( glm::vec2 location, float rotation, glm::vec2 scale ) noexcept;
+        explicit transform( glm::vec2 location, float rotation, glm::vec2 scale = { 1.f, 1.f } ) noexcept;
 
         ~transform( ) noexcept                               = default;
         transform( transform const& )                        = default;

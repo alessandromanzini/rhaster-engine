@@ -1,5 +1,6 @@
 #include <rst/__core/__service/sound/sdl_sound_service.h>
 
+#include <rst/diagnostic.h>
 #include <rst/temp/singleton/resource_manager.h>
 #include <rst/__internal/resource/sdl_audio.h>
 
@@ -15,7 +16,7 @@ namespace rst::service
         : channels_{ channels }
         , policy_{ policy }
     {
-        assert( channels_ <= max_channels_ && "Too many channels requested!" );
+        ensure( channels_ <= max_channels_, "Too many channels requested!" );
 
         Mix_OpenAudio(
             static_cast<int>( info.sample_rate ), MIX_DEFAULT_FORMAT, static_cast<int>( info.channel_type ), info.buffer_size );
@@ -51,12 +52,10 @@ namespace rst::service
         }
         else
         {
-            assert(
-                sound_resources_.at( sound_mark ).instance->tag_mark( ) == tag_mark &&
-                "Sound already registered with a different tag!" );
+            ensure( sound_resources_.at( sound_mark ).instance->tag_mark( ) == tag_mark, "sound registered on a different tag!" );
         }
 
-        // initialize the tag volume to 1.0f if it doesn't exist
+        // initialize the tag volume to 1.f if it doesn't exist
         if ( not tag_volumes_.contains( tag_mark ) )
         {
             tag_volumes_[tag_mark] = 1.f;
@@ -260,13 +259,13 @@ namespace rst::service
 
     auto sdl_sound_service::assert_on_missing_sound( [[maybe_unused]] audio const& audio ) const -> void
     {
-        assert( sound_resources_.contains( audio.sound_mark( ) ) && "Sound not registered!" );
+        ensure( sound_resources_.contains( audio.sound_mark( ) ), "sound not registered!" );
     }
 
 
     auto sdl_sound_service::assert_on_missing_tag( [[maybe_unused]] earmark const tag_mark ) const -> void
     {
-        assert( tag_volumes_.contains( tag_mark ) && "Tag not registered!" );
+        ensure( tag_volumes_.contains( tag_mark ), "tag not registered!" );
     }
 
 
@@ -320,7 +319,7 @@ namespace rst::service
     {
         if ( result == -1 )
         {
-            throw std::runtime_error( SDL_GetError( ) );
+            startle( "sdl mixer result error: {}", SDL_GetError( ) );
         }
     }
 }

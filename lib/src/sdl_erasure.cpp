@@ -1,5 +1,6 @@
 #include <rst/__core/resource/type_erasure/sdl_erasure.h>
 
+#include <rst/diagnostic.h>
 #include <rst/__internal/resource/sdl_pelt.h>
 
 #include <SDL.h>
@@ -85,7 +86,7 @@ namespace rst::internal::sdl
     {
         if ( impl_ptr_->window == nullptr )
         {
-            throw std::runtime_error{ std::format( "SDL_CreateWindow error: {}", SDL_GetError( ) ) };
+            startle( "SDL_CreateWindow error: {}", SDL_GetError( ));
         }
     }
 
@@ -129,7 +130,7 @@ namespace rst::internal::sdl
     {
         if ( impl_ptr_->renderer == nullptr )
         {
-            throw std::runtime_error{ std::format( "SDL_CreateRenderer error: {}", SDL_GetError( ) ) };
+            startle( "SDL_CreateRenderer error: {}", SDL_GetError( ) );
         }
     }
 
