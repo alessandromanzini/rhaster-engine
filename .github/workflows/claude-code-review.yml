@@ -31,11 +31,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install Latest Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          bun --version
-
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
