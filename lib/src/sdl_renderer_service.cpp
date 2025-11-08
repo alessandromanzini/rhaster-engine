@@ -24,7 +24,7 @@ namespace rst::service
 
     auto sdl_renderer_service::z_order( int const z_index ) noexcept -> void
     {
-        z_index_ = z_index;
+        z_index_.store( z_index );
     }
 
 

@@ -53,7 +53,7 @@ namespace rst::service
 
         glm::vec4 clear_color_{};
 
-        int z_index_{ 0 };
+        std::atomic<int> z_index_{ 0 };
         std::multiset<internal::request, internal::request_comparator> render_queue_{};
 
         [[nodiscard]] auto make_pelt( earmark mark, std::filesystem::path const& file_path ) -> std::unique_ptr<pelt> override;

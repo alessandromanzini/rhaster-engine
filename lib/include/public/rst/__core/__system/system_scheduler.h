@@ -114,7 +114,6 @@ namespace rst
          * @complexity O(n * s), where n is systems in phase, s is system complexity
          * @note Systems execute in registration order within the phase
          * @note Each system receives registry and service locator references
-         * @note If a system throws, subsequent systems in phase may not execute
          *
          * Execution Flow:
          * 1. Lookup systems vector for the specified hook
@@ -131,9 +130,9 @@ namespace rst
         }
 
     private:
-        ecs::registry& registry_ref_;                                                                     ///< Reference to ECS registry for entity/component access
-        service_locator const& service_locator_ref_;                                                      ///< Reference to service locator for engine services
-        std::array<std::vector<unique_ref<base_system>>, meta::enum_traits<THook>::count> systems_{};    ///< Systems organized by timing phase
+        ecs::registry& registry_ref_;
+        service_locator const& service_locator_ref_;
+        std::array<std::vector<unique_ref<base_system>>, meta::enum_traits<THook>::count> systems_{};
     };
 }
 
