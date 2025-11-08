@@ -30,7 +30,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/alessandromanzini/rhaster-engine">
-    <img src="images/rhaster_logo.png" alt="Logo">
+    <img src="images/rhaster_logo.png" alt="Logo" >
   </a>
 
 <h3 align="center">Rhaster Engine</h3>
