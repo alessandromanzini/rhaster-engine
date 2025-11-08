@@ -1,99 +1,261 @@
-#include <rst/__core/transform.h>
-
-#include <rst/__core/gameobject.h>
+#include <rst/__core/component/transform.h>
 
 
 namespace rst
 {
-    // +---------------------------+
-    // | TRANSFORM                 |
-    // +---------------------------+
-    transform::transform( glm::mat3x3 const& matrix )
-        : matrix_{ matrix } { }
-
-
-    auto transform::position( ) const -> glm::vec2
-    {
-        return matrix_[2];
-    }
-
-
-    auto transform::matrix( ) const -> glm::mat3x3 const&
-    {
-        return matrix_;
-    }
-
-
-    auto transform::translate( glm::vec2 const translation ) const -> transform
-    {
-        return glm::translate( matrix_, translation );
-    }
-
-
-    auto transform::rotate( float const rotation ) const -> transform
-    {
-        return glm::rotate( matrix_, rotation );
-    }
-
-
-    auto transform::scale( glm::vec2 const scale ) const -> transform
-    {
-        return glm::scale( matrix_, scale );
-    }
-
-
-    auto transform::combine( transform const& other ) -> void
-    {
-        matrix_ = matrix_ * other.matrix_;
-    }
-
-
-    auto transform::operator*( transform const& other ) const -> transform
-    {
-        transform result{ *this };
-        result.combine( other );
-        return result;
-    }
-
-
-    auto transform::from_translation( glm::vec2 const translation ) -> transform
+    // +--------------------------------+
+    // | ITERNAL HELPERS                |
+    // +--------------------------------+
+    auto detail::internal::from_translation( glm::vec2 const translation ) noexcept -> matrix_type
     {
         return glm::translate( matrix_type{ 1.0 }, translation );
     }
 
 
-    auto transform::from_rotation( float const rotation ) -> transform
+    auto detail::internal::from_rotation( float const rotation ) noexcept -> matrix_type
     {
         return glm::rotate( matrix_type{ 1.0 }, rotation );
     }
 
 
-    auto transform::from_scale( glm::vec2 const scale ) -> transform
+    auto detail::internal::from_scale( glm::vec2 const scale ) noexcept -> matrix_type
     {
         return glm::scale( matrix_type{ 1.0 }, scale );
     }
 
 
-    // +---------------------------+
-    // | TRANSFORM OPERATOR        |
-    // +---------------------------+
-    transform_operator::transform_operator( gameobject& gameobject )
-        : gameobject_ref_{ gameobject }
+    auto detail::internal::from_rts(
+        glm::vec2 const translation, float const rotation, glm::vec2 const scale ) noexcept -> matrix_type
     {
+        return from_rotation( rotation ) * from_translation( translation ) * from_scale( scale );
     }
 
 
-    auto transform_operator::translate( glm::vec2 const translation ) const -> void
+    auto detail::internal::extract_translation( matrix_type const& mat ) noexcept -> glm::vec2
     {
-        auto const translated = gameobject_ref_.local_transform( ) * transform::from_translation( translation );
-        gameobject_ref_.set_local_transform( translated );
+        return { mat[2][0], mat[2][1] };
     }
 
 
-    auto transform_operator::rotate( float const rotation ) const -> void
+    auto detail::internal::extract_rotation( matrix_type const& mat ) noexcept -> float
     {
-        auto const rotated = gameobject_ref_.local_transform( ) * transform::from_rotation( rotation );
-        gameobject_ref_.set_local_transform( rotated );
+        return std::atan2( mat[0][1], mat[0][0] );
     }
 
+
+    auto detail::internal::extract_scale( matrix_type const& mat ) noexcept -> glm::vec2
+    {
+        return { glm::length( glm::vec2{ mat[0][0], mat[0][1] } ), glm::length( glm::vec2{ mat[1][0], mat[1][1] } ) };
+    }
+
+
+    // +--------------------------------+
+    // | TRANSFORM                      |
+    // +--------------------------------+
+    transform::transform( glm::vec2 const location ) noexcept
+        : local_matrix_{ detail::internal::from_translation( location ) } { }
+
+
+    transform::transform( glm::vec2 const location, float const rotation, glm::vec2 const scale ) noexcept
+        : local_matrix_{ detail::internal::from_rts( location, rotation, scale ) } { }
+
+
+    auto transform::set_parent( transform* const parent, bool const keep_world_position ) noexcept -> void
+    {
+        // parent validation
+        if ( is_child( parent ) || parent == this || parent == parent_ptr_ )
+        {
+            return;
+        }
+
+        if ( parent == nullptr )
+        {
+            // if becoming root object, local transform becomes world space transform
+            set_local_matrix( world_matrix_ );
+        }
+        else
+        {
+            // if parent is provided, we need to adjust the local transform to keep the world position and set it dirty to
+            // recalculate the world transform ...
+            if ( keep_world_position )
+            {
+                local( ).translate_to( world( ).location( ) - parent->world( ).location( ) );
+            }
+            else
+            {
+                // ... else just mark dirty to recalculate world transform
+                mark_dirty( );
+            }
+        }
+
+        // parenting logic
+        if ( parent_ptr_ != nullptr ) { parent_ptr_->remove_child( this ); }
+        if ( parent != nullptr ) { parent->add_child( this ); }
+        parent_ptr_ = parent;
+    }
+
+
+    auto transform::parent( ) const noexcept -> transform*
+    {
+        return parent_ptr_;
+    }
+
+
+    auto transform::local( ) const noexcept -> detail::transform_operator<transform const, detail::transform_space::local>
+    {
+        return detail::transform_operator<transform const, detail::transform_space::local>{ *this };
+    }
+
+
+    auto transform::local( ) noexcept -> detail::transform_operator<transform, detail::transform_space::local>
+    {
+        return detail::transform_operator<transform, detail::transform_space::local>{ *this };
+    }
+
+
+    auto transform::world( ) noexcept -> detail::transform_operator<transform, detail::transform_space::world>
+    {
+        return detail::transform_operator<transform, detail::transform_space::world>{ *this };
+    }
+
+
+    auto transform::refresh_world_transform( ) noexcept -> void
+    {
+        // 1. update only if dirty
+        if ( not dirty_ ) { return; }
+
+        // 2. update parent first
+        if ( parent_ptr_ )
+        {
+            parent_ptr_->refresh_world_transform( );
+            world_matrix_ = parent_ptr_->world_matrix_ * local_matrix_;
+        }
+        else
+        {
+            world_matrix_ = local_matrix_;
+        }
+
+        // 3. reset dirty flag
+        dirty_ = false;
+    }
+
+
+    auto transform::mark_dirty( ) noexcept -> void
+    {
+        dirty_ = true;
+
+        transform* current = first_child_ptr_;
+        while ( current != nullptr )
+        {
+            current->mark_dirty( );
+            current = current->next_sibling_ptr_;
+        }
+    }
+
+
+    auto transform::set_world_matrix( detail::matrix_type const& world_mat ) noexcept -> void
+    {
+        // 1. update world matrix directly
+        world_matrix_ = world_mat;
+
+        // 2. if not root node, update local transform to match new world transform ...
+        if ( parent_ptr_ )
+        {
+            parent_ptr_->refresh_world_transform( );
+            set_local_matrix( glm::inverse( parent_ptr_->world_matrix_ ) * world_mat );
+        }
+        else
+        {
+            // ... else just set local to world
+            set_local_matrix( world_mat );
+        }
+
+        // 3. reset dirty flag
+        dirty_ = false;
+    }
+
+
+    auto transform::set_local_matrix( detail::matrix_type const& local_mat ) noexcept -> void
+    {
+        local_matrix_ = local_mat;
+        mark_dirty( );
+    }
+
+
+    auto transform::is_child( transform const* maybe_child ) const noexcept -> bool
+    {
+        // bad argument check
+        if ( maybe_child == nullptr )
+        {
+            return false;
+        }
+
+        // 0. base case
+        if ( maybe_child == this )
+        {
+            return true;
+        }
+
+        // 1. check siblings, if any
+        if ( next_sibling_ptr_ != nullptr && next_sibling_ptr_->is_child( maybe_child ) )
+        {
+            return true;
+        }
+
+        // 2. check children, if any
+        if ( first_child_ptr_ != nullptr && first_child_ptr_->is_child( maybe_child ) )
+        {
+            return true;
+        }
+
+        // 3. not found in this branch
+        return false;
+    }
+
+
+    auto transform::add_child( transform* child ) noexcept -> void
+    {
+        if ( child == nullptr ) { return; }
+
+        // if no children, set as first child ...
+        if ( first_child_ptr_ == nullptr )
+        {
+            first_child_ptr_ = child;
+        }
+        else
+        {
+            // ... else append to sibling list
+            transform* current = first_child_ptr_;
+            while ( current->next_sibling_ptr_ != nullptr )
+            {
+                current = current->next_sibling_ptr_;
+            }
+            current->next_sibling_ptr_ = child;
+        }
+    }
+
+
+    auto transform::remove_child( transform const* child ) noexcept -> void
+    {
+        // if no children or bad argument, return
+        if ( child == nullptr || first_child_ptr_ == nullptr ) { return; }
+
+        // ... else find child and bypass
+        if ( first_child_ptr_ == child )
+        {
+            first_child_ptr_ = child->next_sibling_ptr_;
+        }
+        else
+        {
+            transform* current = first_child_ptr_;
+            while ( current->next_sibling_ptr_ != nullptr )
+            {
+                if ( current->next_sibling_ptr_ == child )
+                {
+                    current->next_sibling_ptr_ = current->next_sibling_ptr_->next_sibling_ptr_;
+                    return;
+                }
+            }
+        }
+    }
 }

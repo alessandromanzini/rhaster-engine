@@ -12,8 +12,9 @@ namespace rst
     {
         enum class timing_type
         {
-            delta_time, fixed_delta_time
+            variable, fixed
         };
+
 
         template <typename TSpan>
         struct time_span
@@ -75,6 +76,7 @@ namespace rst
         std::chrono::high_resolution_clock::time_point last_time_{};
         float lag_{ 0.f };
 
+        // change to array
         std::list<timed_delegate_type<bool>> intervals_{};
         std::list<timed_delegate_type<void>> timeouts_{};
 
@@ -86,7 +88,8 @@ namespace rst
 
 
     template <typename TReturn>
-    auto game_time::handle_delegates( std::list<timed_delegate_type<TReturn>>& delegates, bool const discard_finished ) const -> void
+    auto game_time::handle_delegates(
+        std::list<timed_delegate_type<TReturn>>& delegates, bool const discard_finished ) const -> void
     {
         for ( auto& [span, delegate] : delegates )
         {
@@ -113,11 +116,7 @@ namespace rst
             }
         }
 
-        std::erase_if(
-            delegates, []( auto& pair )
-            {
-                return pair.first.current <= 0.f;
-            } );
+        std::erase_if( delegates, []( auto& pair ) { return pair.first.current <= 0.f; } );
     }
 
 

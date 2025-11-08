@@ -204,8 +204,8 @@
     <inspection_tool class="CppNoDiscardExpression" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="CppNodiscardFunctionWithoutReturnValue" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="CppNonExceptionSafeResourceAcquisition" enabled="true" level="HINT" enabled_by_default="true" />
-    <inspection_tool class="CppNonExplicitConversionOperator" enabled="true" level="HINT" enabled_by_default="true" />
-    <inspection_tool class="CppNonExplicitConvertingConstructor" enabled="true" level="HINT" enabled_by_default="true" />
+    <inspection_tool class="CppNonExplicitConversionOperator" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="INFORMATION_ATTRIBUTES" />
+    <inspection_tool class="CppNonExplicitConvertingConstructor" enabled="true" level="INFORMATION" enabled_by_default="true" editorAttributes="INFORMATION_ATTRIBUTES" />
     <inspection_tool class="CppNonInlineFunctionDefinitionInHeaderFile" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="CppNonInlineVariableDefinitionInHeaderFile" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="CppNotAllPathsReturnValue" enabled="true" level="WARNING" enabled_by_default="true" />

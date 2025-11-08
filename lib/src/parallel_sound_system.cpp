@@ -1,10 +1,11 @@
-#include <rst/__service/sound/parallel_sound_system.h>
+#include <rst/__core/__service/base/sound_service.h>
+#include <rst/__core/__service/sound/parallel_sound_service.h>
 
 
-namespace rst
+namespace rst::service
 {
     // TODO: assess code
-    parallel_sound_system::parallel_sound_system( std::unique_ptr<sound_system>&& ss )
+    parallel_sound_service::parallel_sound_service( std::unique_ptr<sound_service>&& ss )
         : playback_queue_{ {} }
         , impl_ptr_{ std::move( ss ) }
     {
@@ -12,7 +13,7 @@ namespace rst
     }
 
 
-    parallel_sound_system::~parallel_sound_system( )
+    parallel_sound_service::~parallel_sound_service( )
     {
         running_ = false;
 
@@ -24,20 +25,20 @@ namespace rst
     }
 
 
-    auto parallel_sound_system::service_type( ) -> rst::service_type
+    auto parallel_sound_service::service_type( ) -> service::service_type
     {
         return impl_ptr_->service_type( );
     }
 
 
-    auto parallel_sound_system::load_sound(
+    auto parallel_sound_service::load_sound(
         std::filesystem::path const& path, sound::sound_type const type, earmark const tag_id ) -> std::shared_ptr<audio>
     {
         return impl_ptr_->load_sound( path, type, tag_id );
     }
 
 
-    auto parallel_sound_system::play( audio const& audio, float const volume, int const loops ) -> int
+    auto parallel_sound_service::play( audio const& audio, float const volume, int const loops ) -> int
     {
         auto [lock, queue] = playback_queue_.get( );
         queue.push(
@@ -52,7 +53,7 @@ namespace rst
     }
 
 
-    auto parallel_sound_system::stop( audio const& audio ) -> bool
+    auto parallel_sound_service::stop( audio const& audio ) -> bool
     {
         auto [lock, queue] = playback_queue_.get( );
         queue.push(
@@ -65,13 +66,13 @@ namespace rst
     }
 
 
-    auto parallel_sound_system::stop_all( ) -> void
+    auto parallel_sound_service::stop_all( ) -> void
     {
         impl_ptr_->stop_all( );
     }
 
 
-    auto parallel_sound_system::pause( audio const& audio ) -> bool
+    auto parallel_sound_service::pause( audio const& audio ) -> bool
     {
         auto [lock, queue] = playback_queue_.get( );
         queue.push(
@@ -84,7 +85,7 @@ namespace rst
     }
 
 
-    auto parallel_sound_system::resume( audio const& audio ) -> bool
+    auto parallel_sound_service::resume( audio const& audio ) -> bool
     {
         auto [lock, queue] = playback_queue_.get( );
         queue.push(
@@ -97,49 +98,49 @@ namespace rst
     }
 
 
-    auto parallel_sound_system::is_playing( audio const& audio ) const -> bool
+    auto parallel_sound_service::is_playing( audio const& audio ) const -> bool
     {
         return impl_ptr_->is_playing( audio );
     }
 
 
-    auto parallel_sound_system::is_paused( audio const& audio ) const -> bool
+    auto parallel_sound_service::is_paused( audio const& audio ) const -> bool
     {
         return impl_ptr_->is_paused( audio );
     }
 
 
-    auto parallel_sound_system::current_track( ) const -> audio const*
+    auto parallel_sound_service::current_track( ) const -> audio const*
     {
         return impl_ptr_->current_track( );
     }
 
 
-    auto parallel_sound_system::set_master_volume( float const volume ) -> void
+    auto parallel_sound_service::set_master_volume( float const volume ) -> void
     {
         return impl_ptr_->set_master_volume( volume );
     }
 
 
-    auto parallel_sound_system::master_volume( ) const -> float
+    auto parallel_sound_service::master_volume( ) const -> float
     {
         return impl_ptr_->master_volume( );
     }
 
 
-    auto parallel_sound_system::set_volume_by_tag( earmark const tag_id, float const volume ) -> void
+    auto parallel_sound_service::set_volume_by_tag( earmark const tag_id, float const volume ) -> void
     {
         return impl_ptr_->set_volume_by_tag( tag_id, volume );
     }
 
 
-    auto parallel_sound_system::volume_by_tag( earmark const tag_id ) const -> float
+    auto parallel_sound_service::volume_by_tag( earmark const tag_id ) const -> float
     {
         return impl_ptr_->volume_by_tag( tag_id );
     }
 
 
-    auto parallel_sound_system::create_worker_thread( ) -> void
+    auto parallel_sound_service::create_worker_thread( ) -> void
     {
         worker_thread_ = std::thread(
             [this]

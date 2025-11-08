@@ -7,6 +7,7 @@
 // +--------------------------------+
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <bitset>
 #include <cassert>
 #include <chrono>
@@ -16,6 +17,7 @@
 #include <expected>
 #include <filesystem>
 #include <functional>
+#include <iostream>
 #include <list>
 #include <map>
 #include <memory>
@@ -37,6 +39,7 @@
 // | GLM HEADERS                    |
 // +--------------------------------+
 #include <glm.hpp>
+#include <gtx/matrix_operation.inl>
 #include <gtx/matrix_transform_2d.inl>
 
 // +--------------------------------+

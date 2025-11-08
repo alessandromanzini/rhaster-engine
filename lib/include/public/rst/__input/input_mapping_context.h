@@ -83,17 +83,17 @@ namespace rst
         typename meta::function_traits<TMethod>::class_t* controller, earmark mark, TMethod command,
         input::trigger trigger ) -> void
     {
+        // todo: better error handling
         assert( controller && "InputMappingContext::bind_to_input_action: controller cannot be nullptr!" );
 
         using traits_t = meta::function_traits<TMethod>;
-        using param_t  = meta::safe_tuple_element_t<0, typename traits_t::params_t, bool>;
+        using param_t  = meta::safe_tuple_element_t<0U, typename traits_t::params_t, bool>;
 
-        static_assert(
-            traits_t::arity <= 1, "InputMappingContext::bind_to_input_action only supports one/zero-parameter functions." );
+        static_assert( traits_t::arity <= 1U, "only supports one/zero-parameter functions." );
 
         std::function<void( param_t )> wrapper = [=]( [[maybe_unused]] auto param )
         {
-            if constexpr ( traits_t::arity == 0 )
+            if constexpr ( traits_t::arity == 0U )
             {
                 std::invoke( command, controller );
             }

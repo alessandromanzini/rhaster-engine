@@ -4,12 +4,14 @@
 #include <rst/pch.h>
 
 #include <rst/data_type/deleter.h>
-#include <rst/__core/gameobject.h>
+#include <rst/data_type/optional_ref.h>
 
 
 // TODO: Add documentation
 namespace rst
 {
+    class gameobject{};
+
     class scene final
     {
     public:
